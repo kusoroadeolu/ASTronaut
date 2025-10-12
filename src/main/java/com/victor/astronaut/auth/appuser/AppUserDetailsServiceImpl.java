@@ -1,11 +1,10 @@
 package com.victor.astronaut.auth.appuser;
 
-import exceptions.EmailNotFoundException;
-import exceptions.NoSuchUserException;
+import com.victor.astronaut.exceptions.EmailNotFoundException;
+import com.victor.astronaut.exceptions.NoSuchUserException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
@@ -23,14 +22,16 @@ public class AppUserDetailsServiceImpl implements AppUserDetailsService {
 
 
     @Override
-    public AppUser loadByEmail(String email) {
-        return this.appUserRepository.findAppUserByEmail(email)
+    public AppUserPrincipal loadByEmail(String email) {
+        AppUser appUser = this.appUserRepository.findAppUserByEmail(email)
                 .orElseThrow(() -> new EmailNotFoundException(String.format("Failed to find a user with email: %s", email)));
+        return new AppUserPrincipal(appUser);
     }
 
     @Override
-    public AppUser loadById(Long id) {
-        return this.appUserRepository.findById(id)
+    public AppUserPrincipal loadById(Long id) {
+        AppUser appUser = this.appUserRepository.findById(id)
                 .orElseThrow(() -> new NoSuchUserException(String.format("Failed to find a user with ID: %s", id)));
+        return new AppUserPrincipal(appUser);
     }
 }

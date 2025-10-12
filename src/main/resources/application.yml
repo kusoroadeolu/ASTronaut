@@ -24,3 +24,9 @@ spring:
     show-sql: true
 
 
+jwt:
+  secret: ${JWT_SECRET} #Your JWT Secret
+  ttl: 300000 #5 minutes
+  cookie-name: jwtCookie
+
+

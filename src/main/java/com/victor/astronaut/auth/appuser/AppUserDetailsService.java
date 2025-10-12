@@ -4,8 +4,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 
 public interface AppUserDetailsService extends UserDetailsService {
 
-    public AppUser loadByEmail(String email);
+     AppUserPrincipal loadByEmail(String email);
 
-    public AppUser loadById(Long id);
+     AppUserPrincipal loadById(Long id);
 
 }
