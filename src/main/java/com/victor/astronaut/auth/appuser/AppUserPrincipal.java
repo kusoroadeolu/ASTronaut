@@ -1,5 +1,6 @@
 package com.victor.astronaut.auth.appuser;
 
+import com.victor.astronaut.auth.appuser.entities.AppUser;
 import lombok.NonNull;
 import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;

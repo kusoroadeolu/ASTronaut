@@ -1,0 +1,23 @@
+package com.victor.astronaut.auth.appuser.dtos;
+
+
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+
+public record AppUserRegisterRequest(
+        @NotEmpty(message = "Username cannot be empty")
+        @NotNull(message = "Email cannot be null")
+        String username,
+
+        @NotEmpty(message = "Email cannot be empty")
+        @NotNull(message = "Email cannot be null")
+        @Email(message = "String must be an email")
+        String email,
+
+        @Size(min = 6, max = 100, message = "Password must at least have 6 values")
+        @NotNull(message = "Email cannot be null")
+        String password
+) {
+}

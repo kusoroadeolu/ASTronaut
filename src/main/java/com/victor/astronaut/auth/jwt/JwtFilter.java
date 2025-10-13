@@ -55,7 +55,7 @@ public class JwtFilter extends OncePerRequestFilter {
         }
 
         //Principal cannot be null because the service already guards against null checks
-        AppUserPrincipal principal = this.appUserDetailsService.loadById(id); //TODO implement a redis cache to store user principal based on JWT Token
+        AppUserPrincipal principal = this.appUserDetailsService.loadByJwtToken(jwtToken);
 
         //Check if the token is valid before proceeding
         if(!jwtService.isTokenValid(jwtToken, principal)){

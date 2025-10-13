@@ -1,5 +1,10 @@
-package com.victor.astronaut.auth.appuser;
+package com.victor.astronaut.auth.appuser.impl;
 
+import com.victor.astronaut.auth.appuser.AppUserPrincipalCacheService;
+import com.victor.astronaut.auth.appuser.entities.AppUser;
+import com.victor.astronaut.auth.appuser.AppUserDetailsService;
+import com.victor.astronaut.auth.appuser.AppUserPrincipal;
+import com.victor.astronaut.auth.appuser.AppUserRepository;
 import com.victor.astronaut.exceptions.EmailNotFoundException;
 import com.victor.astronaut.exceptions.NoSuchUserException;
 import lombok.RequiredArgsConstructor;
@@ -13,25 +18,16 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class AppUserDetailsServiceImpl implements AppUserDetailsService {
 
-    private final AppUserRepository appUserRepository;
+    private final AppUserPrincipalCacheService appUserPrincipalCacheService;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         throw new UsernameNotFoundException("Cannot load a user by it's username because usernames are not unique");
     }
 
-
     @Override
-    public AppUserPrincipal loadByEmail(String email) {
-        AppUser appUser = this.appUserRepository.findAppUserByEmail(email)
-                .orElseThrow(() -> new EmailNotFoundException(String.format("Failed to find a user with email: %s", email)));
-        return new AppUserPrincipal(appUser);
+    public AppUserPrincipal loadByJwtToken(String jwtToken) {
+       return this.appUserPrincipalCacheService.getCachedPrincipal(jwtToken);
     }
 
-    @Override
-    public AppUserPrincipal loadById(Long id) {
-        AppUser appUser = this.appUserRepository.findById(id)
-                .orElseThrow(() -> new NoSuchUserException(String.format("Failed to find a user with ID: %s", id)));
-        return new AppUserPrincipal(appUser);
-    }
 }

@@ -1,14 +1,17 @@
-package com.victor.astronaut.auth.appuser;
+package com.victor.astronaut.auth.appuser.entities;
 
+import com.victor.astronaut.auth.appuser.AppUserRole;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
 @Setter
 @Getter
 @Table
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity(name = "app_user")
 public class AppUser {
 
@@ -30,7 +33,6 @@ public class AppUser {
 
     @Column(name = "createdAt", nullable = false)
     private LocalDateTime createdAt;
-
     @PrePersist
     public void createdAt(){
         this.createdAt = LocalDateTime.now();

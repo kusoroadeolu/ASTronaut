@@ -13,4 +13,7 @@ public class JwtConfigProperties {
     private String secret;
     private Long ttl;
     private String cookieName;
+    private int cookieMaxAge;
+    private boolean cookieSecure;
+    public boolean cookieHttpOnly;
 }
