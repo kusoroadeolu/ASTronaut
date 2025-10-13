@@ -16,7 +16,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
     properties:
       hibernate:
         show_sql: true
@@ -27,6 +27,7 @@ spring:
 jwt:
   secret: ${JWT_SECRET} #Your JWT Secret
   ttl: 300000 #5 minutes
+  refresh-before: 60000
   cookie-name: JWT_TOKEN
   cookie-max-age: 60 # 60 minutes
   cookie-http-only: true
@@ -36,7 +37,7 @@ jwt:
 cache:
   principal:
     name: principalCache
-    ttl: 5
+    ttl: 30
 
 
 

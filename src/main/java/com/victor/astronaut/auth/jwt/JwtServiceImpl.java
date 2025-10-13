@@ -117,6 +117,19 @@ public class JwtServiceImpl implements JwtService {
         return this.extractAllClaims(jwtToken).getExpiration().before(new Date(currentTimeMillis));
     }
 
+    @Override
+    public String refreshTokenIfNeeded(String jwtToken, AppUserPrincipal principal){
+        final long currentTimeMillis = System.currentTimeMillis();
+        //Should return true if the date is after a minute before the current millis
+        boolean shouldRefresh = this.extractAllClaims(jwtToken).getExpiration().before(new Date(currentTimeMillis - jwtConfigProperties.getRefreshBefore()));
+
+        if(shouldRefresh){
+            return this.generateToken(principal);
+        }
+
+        return jwtToken;
+    }
+
 
 
 

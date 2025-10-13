@@ -8,7 +8,7 @@ import jakarta.validation.constraints.Size;
 
 public record AppUserRegisterRequest(
         @NotEmpty(message = "Username cannot be empty")
-        @NotNull(message = "Email cannot be null")
+        @NotNull(message = "Username cannot be null")
         String username,
 
         @NotEmpty(message = "Email cannot be empty")

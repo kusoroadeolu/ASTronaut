@@ -11,7 +11,8 @@ import org.springframework.stereotype.Component;
 @Getter
 public class JwtConfigProperties {
     private String secret;
-    private Long ttl;
+    private long ttl;
+    private long refreshBefore;
     private String cookieName;
     private int cookieMaxAge;
     private boolean cookieSecure;

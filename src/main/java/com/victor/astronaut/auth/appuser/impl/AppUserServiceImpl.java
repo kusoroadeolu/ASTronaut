@@ -13,6 +13,7 @@ import com.victor.astronaut.auth.jwt.JwtService;
 import com.victor.astronaut.exceptions.AppUserAlreadyExistsException;
 import com.victor.astronaut.exceptions.AppUserPersistenceException;
 import com.victor.astronaut.exceptions.InvalidCredentialsException;
+import jakarta.servlet.http.Cookie;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,7 +32,6 @@ public class AppUserServiceImpl {
     private final AppUserRepository appUserRepository;
     private final JwtService jwtService;
     private final AppUserPrincipalCacheService cacheService;
-    private final CookieUtils cookieUtils;
 
 
     /**
@@ -62,13 +62,16 @@ public class AppUserServiceImpl {
      * */
     public AppUserLoginResponse loginAppUser(@NonNull AppUserLoginRequest loginRequest){
         final AppUser savedAppUser = this.appUserRepository
-                .findAppUserByEmailAndPassword(loginRequest.email(), loginRequest.password())
+                .findAppUserByEmail(loginRequest.email())
                 .orElseThrow(() -> new InvalidCredentialsException("Invalid credentials. Please re-check your email or password"));
         final AppUserPrincipal principal = new AppUserPrincipal(savedAppUser);
+
+        if(!this.passwordEncoder.matches(loginRequest.password(), savedAppUser.getPassword())){
+            throw new InvalidCredentialsException("Invalid credentials. Please re-check your email or password");
+        }
         final String jwtToken = jwtService.generateToken(principal);
-        cookieUtils.addJwtCookie(jwtToken); //Add the jwt token to a cookie
         cacheService.cachePrincipal(savedAppUser.getId(), principal); //Cache the user principal
-        return this.appUserMapper.toResponse(savedAppUser);
+        return this.appUserMapper.toResponse(savedAppUser, jwtToken);
     }
 
 }

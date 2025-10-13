@@ -13,4 +13,6 @@ public interface JwtService {
     String extractEmail(String jwtToken);
 
     boolean isTokenValid(String jwtToken, AppUserPrincipal principal);
+
+    String refreshTokenIfNeeded(String jwtToken, AppUserPrincipal principal);
 }

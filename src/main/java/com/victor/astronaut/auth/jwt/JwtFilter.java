@@ -1,5 +1,6 @@
 package com.victor.astronaut.auth.jwt;
 
+import com.victor.astronaut.auth.CookieUtils;
 import com.victor.astronaut.auth.appuser.AppUserDetailsService;
 import com.victor.astronaut.auth.appuser.AppUserPrincipal;
 import jakarta.servlet.FilterChain;
@@ -27,6 +28,7 @@ public class JwtFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
     private final JwtConfigProperties jwtConfigProperties;
     private final AppUserDetailsService appUserDetailsService;
+    private final CookieUtils cookieUtils;
 
 
     @Override
@@ -71,6 +73,10 @@ public class JwtFilter extends OncePerRequestFilter {
         final UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities());
         authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
         SecurityContextHolder.getContext().setAuthentication(authToken);
+
+        final String refreshedToken = this.jwtService.refreshTokenIfNeeded(jwtToken, principal);
+        response.addCookie(cookieUtils.addJwtCookie(refreshedToken));
+
         //TODO Implement a method that refreshes the token if it would soon expire
         filterChain.doFilter(request, response);
         log.info("Successfully authenticated user with ID: {}", id);

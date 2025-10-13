@@ -21,8 +21,8 @@ public class AppUserMapper {
                 .build();
     }
 
-    public AppUserLoginResponse toResponse(AppUser appUser){
-        return new AppUserLoginResponse(appUser.getUsername(), appUser.getEmail());
+    public AppUserLoginResponse toResponse(AppUser appUser, String jwtToken){
+        return new AppUserLoginResponse(appUser.getUsername(), appUser.getEmail(), jwtToken);
     }
 
     public AppUserLoginRequest toLoginRequest(AppUser appUser) {
