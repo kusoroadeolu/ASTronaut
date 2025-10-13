@@ -13,11 +13,12 @@ import java.util.List;
 @Setter
 public class AppUserPrincipal implements UserDetails {
 
-    private final AppUser appUser;
+    private AppUser appUser;
 
-    private AppUserPrincipal(){
-        this.appUser = null;
+    public AppUserPrincipal(){
+
     }
+
 
     public AppUserPrincipal(@NonNull AppUser appUser){
         this.appUser = appUser;
@@ -26,24 +27,24 @@ public class AppUserPrincipal implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(appUser.getRole());
+        return List.of(this.appUser.getRole());
     }
 
     @Override
     public String getPassword() {
-        return appUser.getPassword();
+        return this.appUser.getPassword();
     }
 
     @Override
     public String getUsername() {
-        throw new UsernameNotFoundException("");
+        return this.appUser.getUsername();
     }
 
     public Long getId(){
-        return appUser.getId();
+        return this.appUser.getId();
     }
 
     public String getEmail(){
-        return appUser.getEmail();
+        return this.appUser.getEmail();
     }
 }

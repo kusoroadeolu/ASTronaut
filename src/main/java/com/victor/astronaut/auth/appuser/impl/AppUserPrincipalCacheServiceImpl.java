@@ -11,21 +11,21 @@ import org.springframework.stereotype.Service;
 public class AppUserPrincipalCacheServiceImpl implements AppUserPrincipalCacheService {
 
     //Cache's a jwt token
-    @CachePut(key = "#token", cacheNames = "${cache.principal.name}")
+    @CachePut(key = "#id", cacheNames = "principalCache")
     @Override
-    public AppUserPrincipal cachePrincipal(String token, AppUserPrincipal principal){
+    public AppUserPrincipal cachePrincipal(long id, AppUserPrincipal principal){
         return principal;
     }
 
-    @Cacheable(key = "#token", cacheNames = "${cache.principal.name}")
+    @Cacheable(key = "#id", cacheNames = "principalCache")
     @Override
-    public AppUserPrincipal getCachedPrincipal(String token) {
+    public AppUserPrincipal getPrincipal(long id) {
         return null;
     }
 
-    @CacheEvict(key = "#id", cacheNames = "${cache.principal.name}")
+    @CacheEvict(key = "#id", cacheNames = "principalCache")
     @Override
-    public void evictPrincipal(Long id){
+    public void evictPrincipal(long id){
 
     }
 

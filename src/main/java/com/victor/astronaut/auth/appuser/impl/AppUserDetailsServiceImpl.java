@@ -1,12 +1,8 @@
 package com.victor.astronaut.auth.appuser.impl;
 
 import com.victor.astronaut.auth.appuser.AppUserPrincipalCacheService;
-import com.victor.astronaut.auth.appuser.entities.AppUser;
 import com.victor.astronaut.auth.appuser.AppUserDetailsService;
 import com.victor.astronaut.auth.appuser.AppUserPrincipal;
-import com.victor.astronaut.auth.appuser.AppUserRepository;
-import com.victor.astronaut.exceptions.EmailNotFoundException;
-import com.victor.astronaut.exceptions.NoSuchUserException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -26,8 +22,8 @@ public class AppUserDetailsServiceImpl implements AppUserDetailsService {
     }
 
     @Override
-    public AppUserPrincipal loadByJwtToken(String jwtToken) {
-       return this.appUserPrincipalCacheService.getCachedPrincipal(jwtToken);
+    public AppUserPrincipal loadById(long id) {
+       return this.appUserPrincipalCacheService.getPrincipal(id);
     }
 
 }

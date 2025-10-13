@@ -1,24 +1,25 @@
 package com.victor.astronaut.auth.appuser.impl;
 
 import com.victor.astronaut.auth.CookieUtils;
-import com.victor.astronaut.auth.appuser.*;
+import com.victor.astronaut.auth.appuser.AppUserMapper;
+import com.victor.astronaut.auth.appuser.AppUserPrincipal;
+import com.victor.astronaut.auth.appuser.AppUserPrincipalCacheService;
+import com.victor.astronaut.auth.appuser.AppUserRepository;
 import com.victor.astronaut.auth.appuser.dtos.AppUserLoginRequest;
 import com.victor.astronaut.auth.appuser.dtos.AppUserLoginResponse;
 import com.victor.astronaut.auth.appuser.dtos.AppUserRegisterRequest;
 import com.victor.astronaut.auth.appuser.entities.AppUser;
 import com.victor.astronaut.auth.jwt.JwtService;
 import com.victor.astronaut.exceptions.AppUserAlreadyExistsException;
+import com.victor.astronaut.exceptions.AppUserPersistenceException;
 import com.victor.astronaut.exceptions.InvalidCredentialsException;
-import io.jsonwebtoken.InvalidClaimException;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.cache.spi.support.CacheUtils;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.util.WebUtils;
 
 @Service
 @Slf4j
@@ -46,11 +47,11 @@ public class AppUserServiceImpl {
             final AppUser savedAppUser = this.appUserRepository.save(appUser);
             return this.loginAppUser(this.appUserMapper.toLoginRequest(savedAppUser));
         }catch (DataIntegrityViolationException e){
-            log.info("Found user with similar email address.");
+            log.info("Found user with similar email address.", e);
             throw new AppUserAlreadyExistsException("This email address is already taken. Please use a different email", e);
         }catch (Exception e){
-            log.info("An unexpected error occurred while trying to register user: {}", registerRequest.email());
-            throw new AppUserAlreadyExistsException(String.format("An unexpected error occurred while trying to register user: %s", registerRequest.email()));
+            log.info("An unexpected error occurred while trying to register user: {}", registerRequest.email(), e);
+            throw new AppUserPersistenceException(String.format("An unexpected error occurred while trying to register user: %s", registerRequest.email()), e);
         }
     }
 
@@ -66,8 +67,8 @@ public class AppUserServiceImpl {
         final AppUserPrincipal principal = new AppUserPrincipal(savedAppUser);
         final String jwtToken = jwtService.generateToken(principal);
         cookieUtils.addJwtCookie(jwtToken); //Add the jwt token to a cookie
-        cacheService.cachePrincipal(jwtToken, principal); //Cache the user principal
-        return new AppUserLoginResponse(savedAppUser.getUsername(), savedAppUser.getEmail());
+        cacheService.cachePrincipal(savedAppUser.getId(), principal); //Cache the user principal
+        return this.appUserMapper.toResponse(savedAppUser);
     }
 
 }

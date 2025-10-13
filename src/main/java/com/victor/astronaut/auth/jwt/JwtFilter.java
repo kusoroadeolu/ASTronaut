@@ -7,6 +7,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -29,7 +30,9 @@ public class JwtFilter extends OncePerRequestFilter {
 
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {
+        log.info("Authenticating user");
+        this.shouldNotFilter(request);
         final Cookie jwtCookie = WebUtils.getCookie(request, this.jwtConfigProperties.getCookieName());
 
         if(jwtCookie == null){
@@ -55,7 +58,7 @@ public class JwtFilter extends OncePerRequestFilter {
         }
 
         //Principal cannot be null because the service already guards against null checks
-        AppUserPrincipal principal = this.appUserDetailsService.loadByJwtToken(jwtToken);
+        final AppUserPrincipal principal = this.appUserDetailsService.loadById(id);
 
         //Check if the token is valid before proceeding
         if(!jwtService.isTokenValid(jwtToken, principal)){
@@ -65,11 +68,19 @@ public class JwtFilter extends OncePerRequestFilter {
         }
 
 
-        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities());
+        final UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities());
         authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
         SecurityContextHolder.getContext().setAuthentication(authToken);
         //TODO Implement a method that refreshes the token if it would soon expire
         filterChain.doFilter(request, response);
+        log.info("Successfully authenticated user with ID: {}", id);
 
+    }
+
+
+    @Override
+    protected boolean shouldNotFilter(@NonNull HttpServletRequest request) throws ServletException {
+        String requestURI = request.getRequestURI();
+        return requestURI.startsWith("/auth");
     }
 }

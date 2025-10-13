@@ -1,6 +1,7 @@
 package com.victor.astronaut.auth;
 
 import com.victor.astronaut.auth.appuser.AppUserDetailsService;
+import com.victor.astronaut.auth.jwt.JwtFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,6 +17,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @RequiredArgsConstructor
@@ -24,15 +26,19 @@ import org.springframework.security.web.SecurityFilterChain;
 public class WebConfig {
 
     private final AppUserDetailsService appUserDetailsService;
+    private final JwtFilter jwtFilter;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity security) throws Exception {
         return security
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> {
-                    auth.requestMatchers("/", "/auth/**").permitAll();
+                    auth.requestMatchers("/").permitAll();
+                    auth.requestMatchers("/auth/**").permitAll();
+                    auth.anyRequest().authenticated();
                 })
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
 

@@ -16,7 +16,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
     properties:
       hibernate:
         show_sql: true
@@ -31,6 +31,7 @@ jwt:
   cookie-max-age: 60 # 60 minutes
   cookie-http-only: true
   cookie-secure: false
+
 
 cache:
   principal:

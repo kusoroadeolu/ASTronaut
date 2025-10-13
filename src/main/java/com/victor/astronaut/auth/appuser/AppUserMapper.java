@@ -25,7 +25,7 @@ public class AppUserMapper {
         return new AppUserLoginResponse(appUser.getUsername(), appUser.getEmail());
     }
 
-    public @NonNull AppUserLoginRequest toLoginRequest(AppUser appUser) {
+    public AppUserLoginRequest toLoginRequest(AppUser appUser) {
         return new AppUserLoginRequest(appUser.getEmail(), appUser.getPassword());
     }
 }
