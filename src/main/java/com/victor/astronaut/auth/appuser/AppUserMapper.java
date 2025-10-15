@@ -1,10 +1,9 @@
 package com.victor.astronaut.auth.appuser;
 
+import com.victor.astronaut.auth.AppUser;
 import com.victor.astronaut.auth.appuser.dtos.AppUserLoginRequest;
 import com.victor.astronaut.auth.appuser.dtos.AppUserLoginResponse;
 import com.victor.astronaut.auth.appuser.dtos.AppUserRegisterRequest;
-import com.victor.astronaut.auth.appuser.entities.AppUser;
-import lombok.NonNull;
 import org.springframework.stereotype.Service;
 
 @Service

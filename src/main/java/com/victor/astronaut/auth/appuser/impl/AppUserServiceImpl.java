@@ -1,6 +1,5 @@
 package com.victor.astronaut.auth.appuser.impl;
 
-import com.victor.astronaut.auth.CookieUtils;
 import com.victor.astronaut.auth.appuser.AppUserMapper;
 import com.victor.astronaut.auth.appuser.AppUserPrincipal;
 import com.victor.astronaut.auth.appuser.AppUserPrincipalCacheService;
@@ -8,12 +7,11 @@ import com.victor.astronaut.auth.appuser.AppUserRepository;
 import com.victor.astronaut.auth.appuser.dtos.AppUserLoginRequest;
 import com.victor.astronaut.auth.appuser.dtos.AppUserLoginResponse;
 import com.victor.astronaut.auth.appuser.dtos.AppUserRegisterRequest;
-import com.victor.astronaut.auth.appuser.entities.AppUser;
+import com.victor.astronaut.auth.AppUser;
 import com.victor.astronaut.auth.jwt.JwtService;
 import com.victor.astronaut.exceptions.AppUserAlreadyExistsException;
 import com.victor.astronaut.exceptions.AppUserPersistenceException;
 import com.victor.astronaut.exceptions.InvalidCredentialsException;
-import jakarta.servlet.http.Cookie;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

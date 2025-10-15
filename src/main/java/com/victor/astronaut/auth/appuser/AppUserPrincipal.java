@@ -1,11 +1,10 @@
 package com.victor.astronaut.auth.appuser;
 
-import com.victor.astronaut.auth.appuser.entities.AppUser;
+import com.victor.astronaut.auth.AppUser;
 import lombok.NonNull;
 import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import java.util.Collection;
 import java.util.List;

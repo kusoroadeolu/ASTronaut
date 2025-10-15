@@ -1,6 +1,6 @@
 package com.victor.astronaut.auth.appuser;
 
-import com.victor.astronaut.auth.appuser.entities.AppUser;
+import com.victor.astronaut.auth.AppUser;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
