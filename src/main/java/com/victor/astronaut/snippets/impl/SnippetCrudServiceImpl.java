@@ -14,6 +14,10 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,13 +26,14 @@ import static java.lang.String.format;
 @RequiredArgsConstructor
 @Service
 @Slf4j
-public class SnippetCrudServiceImpl {
+public class SnippetCrudServiceImpl implements com.victor.astronaut.snippets.SnippetCrudService {
 
     private final AppUserQueryService appUserQueryService;
     private final SnippetRepository snippetRepository;
     private final SnippetMapper snippetMapper;
 
     @Transactional
+    @Override
     public SnippetResponse createSnippet(long appUserId, @NonNull SnippetCreationRequest creationRequest){
         try{
             log.info("Attempting to create snippet: {} for user with ID: {}", creationRequest.snippetName() ,appUserId);
@@ -46,6 +51,7 @@ public class SnippetCrudServiceImpl {
     }
 
     @Transactional
+    @Override
     public void deleteSnippet(long appUserId, long snippetId){
         try{
             log.info("Attempting to delete snippet with ID: {} for user with ID: {}", snippetId ,appUserId);
@@ -70,6 +76,7 @@ public class SnippetCrudServiceImpl {
 
 
     @Transactional
+    @Override
     public SnippetResponse updateSnippet(long snippetId, long appUserId, @NonNull SnippetUpdateRequest updateRequest){
         try{
             log.info("Attempting to update snippet: {} for user with ID: {}", updateRequest.snippetName() ,appUserId);
@@ -92,6 +99,7 @@ public class SnippetCrudServiceImpl {
 
 
     @Transactional(readOnly = true)
+    @Override
     public SnippetResponse findById(long appUserId, long snippetId){
         log.info("Attempting to find snippet with ID: {} for user with ID: {}", snippetId ,appUserId);
         final AppUser user = this.appUserQueryService.findById(appUserId);
@@ -99,6 +107,15 @@ public class SnippetCrudServiceImpl {
                 .orElseThrow(() -> new NoSuchSnippetException(String.format("Failed to find snippet with ID: %s belonging to user with ID: %s", snippetId, appUserId)));
         log.info("Successfully found snippet: {} for user with ID: {}", found.getName() ,appUserId);
         return this.snippetMapper.toResponse(found);
+    }
+
+
+    @Transactional(readOnly = true)
+    @Override
+    public Page<SnippetResponse> findSnippetsByUser(long appUserId,
+                                                    Pageable pageable){
+        final AppUser user = this.appUserQueryService.findById(appUserId);
+        return this.snippetRepository.findAllByAppUser(user, pageable);
     }
 
 

@@ -45,7 +45,8 @@ public class AppUserServiceImpl implements AppUserService {
             final AppUser appUser = this.appUserMapper.toAppUser(registerRequest, encodedPassword);
             final AppUser savedAppUser = this.appUserRepository.save(appUser);
             log.info("Successfully registered app user with username: {} and email: {}", registerRequest.username(), registerRequest.email());
-            return this.loginAppUser(this.appUserMapper.toLoginRequest(savedAppUser));
+            final String jwtToken = this.cachePrincipalAndGenerateJwtToken(appUser);
+            return this.appUserMapper.toResponse(savedAppUser, jwtToken);
         }catch (DataIntegrityViolationException e){
             log.info("Found user with similar email address.", e);
             throw new AppUserAlreadyExistsException("This email address is already taken. Please use a different email", e);
@@ -56,7 +57,7 @@ public class AppUserServiceImpl implements AppUserService {
     }
 
     /**
-     * Logs in an app user. Generates a jwt token for the app user, caches the user principal.
+     * Logs in an app user.
      * @param loginRequest A dto containing the email and password for the log in
      * @return a dto containing the needed values after login
      * */
@@ -67,17 +68,24 @@ public class AppUserServiceImpl implements AppUserService {
         final AppUser savedAppUser = this.appUserRepository
                 .findAppUserByEmail(loginRequest.email())
                 .orElseThrow(() -> new InvalidCredentialsException("Invalid credentials. Please re-check your email or password"));
-        final AppUserPrincipal principal = new AppUserPrincipal(savedAppUser);
+
 
         if(!this.passwordEncoder.matches(loginRequest.password(), savedAppUser.getPassword())){
             log.info("Failed to login user due to invalid password");
             throw new InvalidCredentialsException("Invalid credentials. Please re-check your email or password");
         }
 
-        final String jwtToken = jwtService.generateToken(principal);
-        cacheService.cachePrincipal(savedAppUser.getId(), principal); //Cache the user principal
-        log.info("Successfully logged in app user with email: {}", loginRequest.email());
+        final String jwtToken = this.cachePrincipalAndGenerateJwtToken(savedAppUser);
         return this.appUserMapper.toResponse(savedAppUser, jwtToken);
+    }
+
+    //Generates a jwt token for the app user, caches the user principal.
+    private String cachePrincipalAndGenerateJwtToken(AppUser appUser){
+        final AppUserPrincipal principal = new AppUserPrincipal(appUser);
+        final String jwtToken = jwtService.generateToken(principal);
+        cacheService.cachePrincipal(appUser.getId(), principal); //Cache the user principal
+        log.info("Successfully logged in app user with email: {}", appUser.getEmail());
+        return jwtToken;
     }
 
 }
