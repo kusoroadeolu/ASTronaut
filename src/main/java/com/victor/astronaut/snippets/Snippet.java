@@ -1,13 +1,12 @@
 package com.victor.astronaut.snippets;
 
-import com.victor.astronaut.auth.AppUser;
+import com.victor.astronaut.appuser.AppUser;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -24,8 +23,14 @@ public class Snippet {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @Column(name = "content", length = 10000, nullable = false)
-    private String content;
+    @Column(name = "name", length = 50, nullable = false)
+    private String name;
+
+    @Column(name = "draft")
+    private boolean isDraft = true;
+
+    @Column(name = "content", length = 10000)
+    private String content = "";
 
     @Column(name = "extra_notes", length = 100)
     private String extraNotes = "";
@@ -33,19 +38,19 @@ public class Snippet {
     @Column(name = "tags")
     private Set<String> tags = new HashSet<>();
 
-    @Column(name = "class_names")
+    @ElementCollection
     private Set<String> classNames = new HashSet<>();
 
-    @Column(name = "class_annotations")
+    @ElementCollection
     private Set<String> classAnnotations = new HashSet<>();
 
-    @Column(name = "class_dependencies")
+    @ElementCollection
     private Set<String> classDependencies = new HashSet<>();
 
-    @Column(name = "method_return_types")
+    @ElementCollection
     private Set<String> methodReturnTypes = new HashSet<>();
 
-    @Column(name = "method_annotations")
+    @ElementCollection
     private Set<String> methodAnnotations = new HashSet<>();
 
     @Column(name = "created_at", nullable = false)

@@ -67,9 +67,10 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-cache</artifactId>
         </dependency>
+
         <dependency>
             <groupId>com.github.javaparser</groupId>
-            <artifactId>javaparser-symbol-solver-core</artifactId>
+            <artifactId>javaparser-core</artifactId>
             <version>3.27.1</version>
         </dependency>
 
