@@ -11,20 +11,14 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.transaction.annotation.Transactional;
 
 public interface SnippetCrudService {
-    @Transactional
-    SnippetResponse createSnippet(long appUserId, @NonNull SnippetCreationRequest creationRequest);
+    SnippetResponse createSnippet(long appUserId, SnippetCreationRequest creationRequest);
 
-    @Transactional
     void deleteSnippet(long appUserId, long snippetId);
 
-    @Transactional
-    SnippetResponse updateSnippet(long snippetId, long appUserId, @NonNull SnippetUpdateRequest updateRequest);
+    SnippetResponse updateSnippet(long snippetId, long appUserId, SnippetUpdateRequest updateRequest);
 
-    @Transactional(readOnly = true)
     SnippetResponse findById(long appUserId, long snippetId);
 
-    @Transactional(readOnly = true)
     Page<SnippetResponse> findSnippetsByUser(long appUserId,
-                                             @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC)
                                              Pageable pageable);
 }

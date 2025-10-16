@@ -45,7 +45,10 @@ public class Snippet {
     private Set<String> classAnnotations = new HashSet<>();
 
     @ElementCollection
-    private Set<String> classDependencies = new HashSet<>();
+    private Set<String> classFields = new HashSet<>();
+
+    @ElementCollection
+    private Set<String> classFieldAnnotations = new HashSet<>();
 
     @ElementCollection
     private Set<String> methodReturnTypes = new HashSet<>();
@@ -58,6 +61,9 @@ public class Snippet {
 
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
+
+
+    private boolean metaDataAvailable = false;
 
     @PrePersist
     public void createdAt(){

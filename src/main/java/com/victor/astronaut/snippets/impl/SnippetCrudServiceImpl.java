@@ -5,33 +5,46 @@ import com.victor.astronaut.appuser.AppUserQueryService;
 import com.victor.astronaut.exceptions.NoSuchSnippetException;
 import com.victor.astronaut.exceptions.SnippetPersistenceException;
 import com.victor.astronaut.snippets.Snippet;
+import com.victor.astronaut.snippets.SnippetCrudService;
 import com.victor.astronaut.snippets.SnippetMapper;
 import com.victor.astronaut.snippets.SnippetRepository;
 import com.victor.astronaut.snippets.dto.SnippetCreationRequest;
 import com.victor.astronaut.snippets.dto.SnippetResponse;
 import com.victor.astronaut.snippets.dto.SnippetUpdateRequest;
+import com.victor.astronaut.snippets.snippetparser.JavaSnippetParser;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import static java.lang.String.format;
 
+/**
+ * Service implementation for managing code snippet CRUD operations.
+ * Handles creating, reading, updating, and deleting snippets for users.
+ */
 @RequiredArgsConstructor
 @Service
 @Slf4j
-public class SnippetCrudServiceImpl implements com.victor.astronaut.snippets.SnippetCrudService {
+public class SnippetCrudServiceImpl implements SnippetCrudService {
 
     private final AppUserQueryService appUserQueryService;
     private final SnippetRepository snippetRepository;
     private final SnippetMapper snippetMapper;
+    private final JavaSnippetParser javaSnippetParser;
 
+    /**
+     * Creates a new snippet for the specified user.
+     *
+     * @param appUserId the ID of the user creating the snippet
+     * @param creationRequest the snippet creation details
+     * @return the created snippet as a response DTO
+     * @throws SnippetPersistenceException if creation fails due to data integrity or unexpected errors
+     */
     @Transactional
     @Override
     public SnippetResponse createSnippet(long appUserId, @NonNull SnippetCreationRequest creationRequest){
@@ -50,6 +63,13 @@ public class SnippetCrudServiceImpl implements com.victor.astronaut.snippets.Sni
         }
     }
 
+    /**
+     * Deletes a snippet belonging to the specified user.
+     *
+     * @param appUserId the ID of the user who owns the snippet
+     * @param snippetId the ID of the snippet to delete
+     * @throws SnippetPersistenceException if deletion fails or snippet doesn't exist/belong to user
+     */
     @Transactional
     @Override
     public void deleteSnippet(long appUserId, long snippetId){
@@ -74,7 +94,16 @@ public class SnippetCrudServiceImpl implements com.victor.astronaut.snippets.Sni
         }
     }
 
-
+    /**
+     * Updates an existing snippet with new content and metadata.
+     *
+     * @param snippetId the ID of the snippet to update
+     * @param appUserId the ID of the user who owns the snippet
+     * @param updateRequest the updated snippet details
+     * @return the updated snippet as a response DTO
+     * @throws NoSuchSnippetException if snippet doesn't exist or doesn't belong to user
+     * @throws SnippetPersistenceException if update fails due to data integrity or unexpected errors
+     */
     @Transactional
     @Override
     public SnippetResponse updateSnippet(long snippetId, long appUserId, @NonNull SnippetUpdateRequest updateRequest){
@@ -85,6 +114,8 @@ public class SnippetCrudServiceImpl implements com.victor.astronaut.snippets.Sni
                     .orElseThrow(() -> new NoSuchSnippetException(String.format("Failed to find snippet with ID: %s belonging to user with ID: %s", snippetId, appUserId)));
             this.modifySnippet(found ,updateRequest);
             final Snippet saved = this.snippetRepository.save(found);
+            //Extract the metadata from the snippet
+            this.javaSnippetParser.parseSnippetContent(saved);
             log.info("Successfully updated snippet: {} for user with ID: {}", updateRequest.snippetName() ,appUserId);
             return this.snippetMapper.toResponse(saved);
         }catch (DataIntegrityViolationException e){
@@ -96,8 +127,14 @@ public class SnippetCrudServiceImpl implements com.victor.astronaut.snippets.Sni
         }
     }
 
-
-
+    /**
+     * Finds a snippet by its ID for the specified user.
+     *
+     * @param appUserId the ID of the user who owns the snippet
+     * @param snippetId the ID of the snippet to find
+     * @return the found snippet as a response DTO
+     * @throws NoSuchSnippetException if snippet doesn't exist or doesn't belong to user
+     */
     @Transactional(readOnly = true)
     @Override
     public SnippetResponse findById(long appUserId, long snippetId){
@@ -109,7 +146,13 @@ public class SnippetCrudServiceImpl implements com.victor.astronaut.snippets.Sni
         return this.snippetMapper.toResponse(found);
     }
 
-
+    /**
+     * Retrieves all snippets belonging to a user with pagination.
+     *
+     * @param appUserId the ID of the user whose snippets to retrieve
+     * @param pageable pagination information
+     * @return a page of snippet responses
+     */
     @Transactional(readOnly = true)
     @Override
     public Page<SnippetResponse> findSnippetsByUser(long appUserId,
@@ -118,8 +161,13 @@ public class SnippetCrudServiceImpl implements com.victor.astronaut.snippets.Sni
         return this.snippetRepository.findAllByAppUser(user, pageable);
     }
 
-
-
+    /**
+     * Builds a new Snippet entity from creation request data.
+     *
+     * @param appUser the user creating the snippet
+     * @param creationRequest the snippet creation details
+     * @return a new Snippet entity
+     */
     public Snippet buildSnippet(AppUser appUser, SnippetCreationRequest creationRequest){
         return Snippet
                 .builder()
@@ -129,6 +177,13 @@ public class SnippetCrudServiceImpl implements com.victor.astronaut.snippets.Sni
                 .build();
     }
 
+    /**
+     * Modifies an existing snippet with updated values.
+     * Sets the snippet as draft if content is blank.
+     *
+     * @param snippet the snippet to modify
+     * @param updateRequest the updated values
+     */
     public void modifySnippet(Snippet snippet, SnippetUpdateRequest updateRequest){
         String content = updateRequest.content();
         boolean isDraft = content.isBlank();
