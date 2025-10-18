@@ -11,6 +11,7 @@ import com.victor.astronaut.snippets.SnippetRepository;
 import com.victor.astronaut.snippets.dto.SnippetCreationRequest;
 import com.victor.astronaut.snippets.dto.SnippetResponse;
 import com.victor.astronaut.snippets.dto.SnippetUpdateRequest;
+import com.victor.astronaut.snippets.projections.SnippetPreview;
 import com.victor.astronaut.snippets.snippetparser.SnippetParser;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
@@ -64,7 +65,7 @@ class SnippetCrudServiceImplTest {
                 .builder()
                 .tags(Set.of("tag0", "tag1"))
                 .name("name")
-                .language(SnippetLanguage.JAVA.getLanguage())
+                .language(SnippetLanguage.JAVA)
                 .isDraft(true)
                 .id(1L)
                 .build();
@@ -273,7 +274,7 @@ class SnippetCrudServiceImplTest {
                 .tags(Set.of("tag0", "tag1"))
                 .content("content")
                 .extraNotes("my_notes")
-                .language(SnippetLanguage.OTHER.getLanguage())
+                .language(SnippetLanguage.OTHER)
                 .isDraft(true)
                 .build();
 
@@ -346,7 +347,7 @@ class SnippetCrudServiceImplTest {
         when(this.snippetRepository.findAllByAppUser(this.user, pageable)).thenReturn(Page.empty());
 
         //Act
-        Page<SnippetResponse> responses = this.snippetCrudService.findSnippetsByUser(userId, pageable);
+        Page<SnippetPreview> responses = this.snippetCrudService.findSnippetsByUser(userId, pageable);
 
         //Assert
         assertNotNull(responses);

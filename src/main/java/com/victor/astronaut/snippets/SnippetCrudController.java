@@ -4,6 +4,7 @@ import com.victor.astronaut.appuser.AppUserPrincipal;
 import com.victor.astronaut.snippets.dto.SnippetCreationRequest;
 import com.victor.astronaut.snippets.dto.SnippetResponse;
 import com.victor.astronaut.snippets.dto.SnippetUpdateRequest;
+import com.victor.astronaut.snippets.projections.SnippetPreview;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -54,12 +55,12 @@ public class SnippetCrudController {
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<Page<SnippetResponse>> findSnippetsByUser(
+    public ResponseEntity<Page<SnippetPreview>> findSnippetsByUser(
             @AuthenticationPrincipal AppUserPrincipal principal,
             @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC)
             Pageable pageable
     ){
-        Page<SnippetResponse> responses = this.snippetCrudService.findSnippetsByUser(principal.getId(), pageable);
+        Page<SnippetPreview> responses = this.snippetCrudService.findSnippetsByUser(principal.getId(), pageable);
         return new ResponseEntity<>(responses, HttpStatus.OK);
     }
 

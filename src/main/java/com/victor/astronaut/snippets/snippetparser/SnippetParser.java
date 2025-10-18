@@ -41,7 +41,7 @@ public class SnippetParser {
      *
      * @param snippet the snippet to parse and process
      */
-    //@Async
+    @Async
     public void parseSnippetContent(Snippet snippet) throws SnippetParseException{
         try{
             CompilationUnit unit;

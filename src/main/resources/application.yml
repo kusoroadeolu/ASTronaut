@@ -10,6 +10,9 @@ spring:
     redis:
       port: 6379
       host: localhost
+    web:
+      pageable:
+        serialization-mode: via_dto
 
 
   datasource:

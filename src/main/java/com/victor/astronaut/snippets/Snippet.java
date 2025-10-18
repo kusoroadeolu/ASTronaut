@@ -31,7 +31,8 @@ public class Snippet {
     private boolean isDraft = true;
 
     @Column(name = "language", nullable = false)
-    private String language;
+    @Enumerated(EnumType.STRING)
+    private SnippetLanguage language;
 
     @Column(name = "content", length = 10000)
     private String content = "";

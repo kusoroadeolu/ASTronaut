@@ -8,6 +8,7 @@ import com.victor.astronaut.snippets.*;
 import com.victor.astronaut.snippets.dto.SnippetCreationRequest;
 import com.victor.astronaut.snippets.dto.SnippetResponse;
 import com.victor.astronaut.snippets.dto.SnippetUpdateRequest;
+import com.victor.astronaut.snippets.projections.SnippetPreview;
 import com.victor.astronaut.snippets.snippetparser.SnippetParser;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -98,7 +99,7 @@ public class SnippetCrudServiceImpl implements SnippetCrudService {
                     final Snippet saved = this.snippetRepository.save(found);
 
                     //Extract the metadata from the snippet, offloads to a separate thread to avoid blocking the main thread
-                    if(found.getLanguage().equalsIgnoreCase(SnippetLanguage.JAVA.getLanguage())){
+                    if(found.getLanguage().equals(SnippetLanguage.JAVA)){
                         this.snippetParser.parseSnippetContent(saved);
                     }
 
@@ -135,7 +136,7 @@ public class SnippetCrudServiceImpl implements SnippetCrudService {
      */
     @Transactional(readOnly = true)
     @Override
-    public Page<SnippetResponse> findSnippetsByUser(long appUserId,
+    public Page<SnippetPreview> findSnippetsByUser(long appUserId,
                                                     Pageable pageable){
         final AppUser user = this.appUserQueryService.findById(appUserId);
         return this.snippetRepository.findAllByAppUser(user, pageable);

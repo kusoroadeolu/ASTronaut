@@ -40,7 +40,8 @@ public class SnippetUtils{
                 .builder()
                 .name(creationRequest.snippetName())
                 .tags(creationRequest.tags())
-                .language(creationRequest.language().getLanguage())
+                .language(creationRequest.language())
+                .isDraft(true)
                 .appUser(appUser)
                 .build();
     }
@@ -49,7 +50,7 @@ public class SnippetUtils{
     //Utility method to modify an already existing snippet
     public static void modifySnippet(Snippet snippet, SnippetUpdateRequest updateRequest){
         String content = updateRequest.content();
-        boolean isDraft = content.isBlank();
+        boolean isDraft = content == null || content.isBlank();
         snippet.setContent(content);
         snippet.setName(updateRequest.snippetName());
         snippet.setTags(updateRequest.tags());

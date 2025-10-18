@@ -3,6 +3,7 @@ package com.victor.astronaut.snippets;
 import com.victor.astronaut.snippets.dto.SnippetCreationRequest;
 import com.victor.astronaut.snippets.dto.SnippetResponse;
 import com.victor.astronaut.snippets.dto.SnippetUpdateRequest;
+import com.victor.astronaut.snippets.projections.SnippetPreview;
 import lombok.NonNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -19,6 +20,6 @@ public interface SnippetCrudService {
 
     SnippetResponse findById(long appUserId, long snippetId);
 
-    Page<SnippetResponse> findSnippetsByUser(long appUserId,
-                                             Pageable pageable);
+    Page<SnippetPreview> findSnippetsByUser(long appUserId,
+                                            Pageable pageable);
 }
