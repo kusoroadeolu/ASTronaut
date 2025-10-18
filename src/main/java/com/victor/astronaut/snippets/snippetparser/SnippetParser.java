@@ -1,9 +1,9 @@
 package com.victor.astronaut.snippets.snippetparser;
 
 import com.github.javaparser.ParseProblemException;
-import com.github.javaparser.Problem;
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
+import com.victor.astronaut.exceptions.SnippetParseException;
 import com.victor.astronaut.snippets.Snippet;
 import com.victor.astronaut.snippets.SnippetRepository;
 import com.victor.astronaut.snippets.snippetparser.visitors.VisitorOrchestrator;
@@ -22,7 +22,7 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class JavaSnippetParser {
+public class SnippetParser {
 
     private final SnippetRepository snippetRepository;
     private final VisitorOrchestrator visitorOrchestrator;
@@ -41,8 +41,8 @@ public class JavaSnippetParser {
      *
      * @param snippet the snippet to parse and process
      */
-    @Async
-    public void parseSnippetContent(Snippet snippet){
+    //@Async
+    public void parseSnippetContent(Snippet snippet) throws SnippetParseException{
         try{
             CompilationUnit unit;
             log.info("Attempting to parse snippet: {}", snippet.getName());
@@ -63,8 +63,9 @@ public class JavaSnippetParser {
      * from the extracted metadata. If this also fails, marks metadata as unavailable.
      *
      * @param snippet the snippet to wrap and parse
+     * @throws SnippetParseException If the reparse fails
      */
-    private void wrapAndRetry(Snippet snippet){
+    private void wrapAndRetry(Snippet snippet) throws SnippetParseException{
         try{
             String wrappedContent = this.wrapContent(snippet.getContent());
             var unit = StaticJavaParser.parse(wrappedContent);
@@ -74,6 +75,8 @@ public class JavaSnippetParser {
         }catch (ParseProblemException e){
             log.info("Failed to parse snippet: {} after wrapping it in a class", snippet.getName() ,e);
             snippet.setMetaDataAvailable(false);
+            snippetRepository.save(snippet);
+            throw new SnippetParseException("Failed to parse snippet: %s. Please re-check the snippet content".formatted(snippet.getName()));
         }
     }
 

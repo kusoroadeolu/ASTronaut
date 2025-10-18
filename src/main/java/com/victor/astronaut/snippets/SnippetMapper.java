@@ -6,6 +6,6 @@ import org.springframework.stereotype.Service;
 @Service
 public class SnippetMapper {
     public SnippetResponse toResponse(Snippet snippet){
-        return new SnippetResponse(snippet.getName(), snippet.getContent(), snippet.getExtraNotes(), snippet.isDraft() ,snippet.getCreatedAt(), snippet.getUpdatedAt());
+        return new SnippetResponse(snippet.getId(), snippet.getTags() ,snippet.getName(), snippet.getContent(), snippet.getExtraNotes(), snippet.isDraft(), snippet.getLanguage() ,snippet.getCreatedAt(), snippet.getUpdatedAt());
     }
 }

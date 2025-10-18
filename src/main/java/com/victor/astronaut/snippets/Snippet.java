@@ -23,11 +23,15 @@ public class Snippet {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+
     @Column(name = "name", length = 50, nullable = false)
     private String name;
 
     @Column(name = "draft")
     private boolean isDraft = true;
+
+    @Column(name = "language", nullable = false)
+    private String language;
 
     @Column(name = "content", length = 10000)
     private String content = "";

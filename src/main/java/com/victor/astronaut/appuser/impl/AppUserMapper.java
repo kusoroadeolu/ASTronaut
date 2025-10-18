@@ -3,7 +3,7 @@ package com.victor.astronaut.appuser.impl;
 import com.victor.astronaut.appuser.AppUserRole;
 import com.victor.astronaut.appuser.AppUser;
 import com.victor.astronaut.appuser.dtos.AppUserLoginRequest;
-import com.victor.astronaut.appuser.dtos.AppUserLoginResponse;
+import com.victor.astronaut.appuser.dtos.AppUserAuthResponse;
 import com.victor.astronaut.appuser.dtos.AppUserRegisterRequest;
 import org.springframework.stereotype.Service;
 
@@ -21,8 +21,8 @@ public class AppUserMapper {
                 .build();
     }
 
-    public AppUserLoginResponse toResponse(AppUser appUser, String jwtToken){
-        return new AppUserLoginResponse(appUser.getUsername(), appUser.getEmail(), jwtToken);
+    public AppUserAuthResponse toResponse(AppUser appUser, String jwtToken){
+        return new AppUserAuthResponse(appUser.getId(), appUser.getUsername(), appUser.getEmail(), jwtToken);
     }
 
     public AppUserLoginRequest toLoginRequest(AppUser appUser) {

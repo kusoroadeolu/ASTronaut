@@ -2,9 +2,9 @@ package com.victor.astronaut.appuser;
 
 public interface AppUserPrincipalCacheService {
     //Cache's a jwt token
-    AppUserPrincipal cachePrincipal(long id, AppUserPrincipal principal);
+    AppUserPrincipalDto cachePrincipal(long id, AppUserPrincipalDto principal);
 
-    AppUserPrincipal getPrincipal(long id);
+    AppUserPrincipalDto getPrincipal(long id);
 
     void evictPrincipal(long id);
 }

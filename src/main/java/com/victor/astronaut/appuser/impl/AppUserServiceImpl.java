@@ -1,10 +1,11 @@
 package com.victor.astronaut.appuser.impl;
 
-import com.victor.astronaut.appuser.AppUserPrincipal;
+import com.victor.astronaut.appuser.AppUserPrincipalDto;
 import com.victor.astronaut.appuser.AppUserPrincipalCacheService;
+import com.victor.astronaut.appuser.AppUserService;
 import com.victor.astronaut.appuser.repositories.AppUserRepository;
 import com.victor.astronaut.appuser.dtos.AppUserLoginRequest;
-import com.victor.astronaut.appuser.dtos.AppUserLoginResponse;
+import com.victor.astronaut.appuser.dtos.AppUserAuthResponse;
 import com.victor.astronaut.appuser.dtos.AppUserRegisterRequest;
 import com.victor.astronaut.appuser.AppUser;
 import com.victor.astronaut.security.JwtService;
@@ -38,7 +39,7 @@ public class AppUserServiceImpl implements AppUserService {
      * */
     @Transactional
     @Override
-    public AppUserLoginResponse registerAppUser(@NonNull AppUserRegisterRequest registerRequest){
+    public AppUserAuthResponse registerAppUser(@NonNull AppUserRegisterRequest registerRequest){
         log.info("Registering app user with username: {} and email: {}", registerRequest.username(), registerRequest.email());
         try{
             final String encodedPassword = this.passwordEncoder.encode(registerRequest.password());
@@ -63,7 +64,7 @@ public class AppUserServiceImpl implements AppUserService {
      * */
     @Transactional(readOnly = true)
     @Override
-    public AppUserLoginResponse loginAppUser(@NonNull AppUserLoginRequest loginRequest){
+    public AppUserAuthResponse loginAppUser(@NonNull AppUserLoginRequest loginRequest){
         log.info("Attempting to login app user with email: {}", loginRequest.email());
         final AppUser savedAppUser = this.appUserRepository
                 .findAppUserByEmail(loginRequest.email())
@@ -81,7 +82,13 @@ public class AppUserServiceImpl implements AppUserService {
 
     //Generates a jwt token for the app user, caches the user principal.
     private String cachePrincipalAndGenerateJwtToken(AppUser appUser){
-        final AppUserPrincipal principal = new AppUserPrincipal(appUser);
+        final AppUserPrincipalDto principal = AppUserPrincipalDto
+                .builder()
+                .email(appUser.getEmail())
+                .id(appUser.getId())
+                .role(appUser.getRole())
+                .username(appUser.getUsername())
+                .build();
         final String jwtToken = jwtService.generateToken(principal);
         cacheService.cachePrincipal(appUser.getId(), principal); //Cache the user principal
         log.info("Successfully logged in app user with email: {}", appUser.getEmail());

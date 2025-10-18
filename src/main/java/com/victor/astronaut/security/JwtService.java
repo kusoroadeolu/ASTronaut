@@ -1,10 +1,10 @@
 package com.victor.astronaut.security;
 
-import com.victor.astronaut.appuser.AppUserPrincipal;
+import com.victor.astronaut.appuser.AppUserPrincipalDto;
 import io.jsonwebtoken.Claims;
 
 public interface JwtService {
-    String generateToken(AppUserPrincipal principal);
+    String generateToken(AppUserPrincipalDto principal);
 
     Claims extractAllClaims(String jwtToken);
 
@@ -12,7 +12,7 @@ public interface JwtService {
 
     String extractEmail(String jwtToken);
 
-    boolean isTokenValid(String jwtToken, AppUserPrincipal principal);
+    boolean isTokenValid(String jwtToken, AppUserPrincipalDto principal);
 
-    String refreshTokenIfNeeded(String jwtToken, AppUserPrincipal principal);
+    String refreshTokenIfNeeded(String jwtToken, AppUserPrincipalDto principal);
 }

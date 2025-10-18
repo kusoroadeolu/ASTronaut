@@ -1,8 +1,9 @@
 package com.victor.astronaut.security.jwt;
 
+import com.victor.astronaut.appuser.AppUserPrincipal;
+import com.victor.astronaut.appuser.AppUserPrincipalDto;
 import com.victor.astronaut.security.CookieUtils;
 import com.victor.astronaut.appuser.AppUserDetailsService;
-import com.victor.astronaut.appuser.AppUserPrincipal;
 import com.victor.astronaut.security.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -61,24 +62,25 @@ public class JwtFilter extends OncePerRequestFilter {
         }
 
         //Principal cannot be null because the service already guards against null checks
-        final AppUserPrincipal principal = this.appUserDetailsService.loadById(id);
+        final AppUserPrincipalDto principalDto = this.appUserDetailsService.loadById(id);
 
         //Check if the token is valid before proceeding
-        if(!jwtService.isTokenValid(jwtToken, principal)){
+        if(!this.jwtService.isTokenValid(jwtToken, principalDto)){
             log.info("JWT Token has expired");
             filterChain.doFilter(request, response);
             return;
         }
+
+        final AppUserPrincipal principal = new AppUserPrincipal(principalDto);
 
 
         final UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities());
         authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
         SecurityContextHolder.getContext().setAuthentication(authToken);
 
-        final String refreshedToken = this.jwtService.refreshTokenIfNeeded(jwtToken, principal);
-        response.addCookie(cookieUtils.addJwtCookie(refreshedToken));
+        final String refreshedToken = this.jwtService.refreshTokenIfNeeded(jwtToken, principalDto);
+        response.addCookie(cookieUtils.createJwtCookie(refreshedToken));
 
-        //TODO Implement a method that refreshes the token if it would soon expire
         filterChain.doFilter(request, response);
         log.info("Successfully authenticated user with ID: {}", id);
 

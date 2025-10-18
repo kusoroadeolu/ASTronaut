@@ -1,8 +1,9 @@
 package com.victor.astronaut.appuser.impl;
 
+import com.victor.astronaut.appuser.AppUserPrincipalDto;
 import com.victor.astronaut.appuser.AppUserPrincipalCacheService;
 import com.victor.astronaut.appuser.AppUserDetailsService;
-import com.victor.astronaut.appuser.AppUserPrincipal;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -22,7 +23,7 @@ public class AppUserDetailsServiceImpl implements AppUserDetailsService {
     }
 
     @Override
-    public AppUserPrincipal loadById(long id) {
+    public AppUserPrincipalDto loadById(long id) {
        return this.appUserPrincipalCacheService.getPrincipal(id);
     }
 

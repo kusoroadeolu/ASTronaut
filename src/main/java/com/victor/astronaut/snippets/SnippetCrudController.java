@@ -4,7 +4,6 @@ import com.victor.astronaut.appuser.AppUserPrincipal;
 import com.victor.astronaut.snippets.dto.SnippetCreationRequest;
 import com.victor.astronaut.snippets.dto.SnippetResponse;
 import com.victor.astronaut.snippets.dto.SnippetUpdateRequest;
-import com.victor.astronaut.snippets.impl.SnippetCrudServiceImpl;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -20,21 +19,21 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/snippets")
-@PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+@PreAuthorize("hasAnyRole('APP_USER', 'APP_ADMIN')")
 public class SnippetCrudController {
 
     private final SnippetCrudService snippetCrudService;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<SnippetResponse> createSnippet(@Valid SnippetCreationRequest request, @AuthenticationPrincipal AppUserPrincipal principal){
+    public ResponseEntity<SnippetResponse> createSnippet(@RequestBody @Valid SnippetCreationRequest request, @AuthenticationPrincipal AppUserPrincipal principal){
         SnippetResponse response = snippetCrudService.createSnippet(principal.getId(), request);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<SnippetResponse> updateSnippet(@PathVariable("id") long id, @Valid SnippetUpdateRequest request, @AuthenticationPrincipal AppUserPrincipal principal){
+    public ResponseEntity<SnippetResponse> updateSnippet(@PathVariable("id") long id, @RequestBody @Valid SnippetUpdateRequest request, @AuthenticationPrincipal AppUserPrincipal principal){
         SnippetResponse response = snippetCrudService.updateSnippet(id, principal.getId(), request);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }

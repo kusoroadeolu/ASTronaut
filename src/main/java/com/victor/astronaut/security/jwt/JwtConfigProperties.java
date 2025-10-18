@@ -14,6 +14,7 @@ public class JwtConfigProperties {
     private long ttl;
     private long refreshBefore;
     private String cookieName;
+    private String cookiePath;
     private int cookieMaxAge;
     private boolean cookieSecure;
     public boolean cookieHttpOnly;

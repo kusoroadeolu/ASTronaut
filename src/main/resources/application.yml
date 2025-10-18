@@ -13,14 +13,14 @@ spring:
 
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/ASTronaut
+    url: jdbc:postgresql://localhost:5432/ASTronaut?currentSchema=public
     username: postgres
     password: password
     driver-class-name: org.postgresql.Driver
 
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
     properties:
       hibernate:
         show_sql: true
@@ -30,12 +30,13 @@ spring:
 
 jwt:
   secret: ${JWT_SECRET} #Your JWT Secret
-  ttl: 300000 #5 minutes
+  ttl: 3_000_000 #5 minutes
   refresh-before: 60000
   cookie-name: JWT_TOKEN
   cookie-max-age: 60 # 60 minutes
   cookie-http-only: true
   cookie-secure: false
+  cookie-path: /
 
 
 cache:

@@ -1,14 +1,18 @@
 package com.victor.astronaut.snippets.dto;
 
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.victor.astronaut.snippets.SnippetLanguage;
+import jakarta.validation.constraints.NotBlank;
+import lombok.Builder;
 
 import java.util.Set;
 
+@Builder
 public record SnippetCreationRequest(
-    @NotEmpty(message = "Snippet name cannot be empty")
-    @NotNull(message = "Snippet name cannot be null")
+    @NotBlank(message = "Snippet name cannot be blank")
     String snippetName,
-    Set<String> tags
+    Set<String> tags,
+    @JsonProperty(defaultValue = "OTHER")
+    SnippetLanguage language
 ) {
 }

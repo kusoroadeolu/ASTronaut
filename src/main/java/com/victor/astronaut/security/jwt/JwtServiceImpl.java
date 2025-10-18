@@ -1,6 +1,6 @@
 package com.victor.astronaut.security.jwt;
 
-import com.victor.astronaut.appuser.AppUserPrincipal;
+import com.victor.astronaut.appuser.AppUserPrincipalDto;
 import com.victor.astronaut.security.JwtService;
 import com.victor.astronaut.exceptions.JwtException;
 import io.jsonwebtoken.Claims;
@@ -37,10 +37,10 @@ public class JwtServiceImpl implements JwtService {
      * @return A signed JWT Token
      * */
     @Override
-    public String generateToken(AppUserPrincipal principal){
-        final String subject = String.valueOf(principal.getId());
+    public String generateToken(AppUserPrincipalDto principal){
+        final String subject = String.valueOf(principal.id());
         final HashMap<String, String> claims = new HashMap<>(1);
-        claims.put("email", principal.getEmail());
+        claims.put("email", principal.email());
 
         final long currentMillis = System.currentTimeMillis();
         final Date issuedAt = new Date(currentMillis);
@@ -106,9 +106,9 @@ public class JwtServiceImpl implements JwtService {
      * @return a boolean value indicating if the token is valid or not
      * */
     @Override
-    public boolean isTokenValid(String jwtToken, AppUserPrincipal principal){
+    public boolean isTokenValid(String jwtToken, AppUserPrincipalDto principal){
         final long subject = this.extractId(jwtToken);
-        return principal.getId().equals(subject) && !isTokenExpired(jwtToken);
+        return principal.id().equals(subject) && !isTokenExpired(jwtToken);
     }
 
 
@@ -119,7 +119,7 @@ public class JwtServiceImpl implements JwtService {
     }
 
     @Override
-    public String refreshTokenIfNeeded(String jwtToken, AppUserPrincipal principal){
+    public String refreshTokenIfNeeded(String jwtToken, AppUserPrincipalDto principal){
         final long currentTimeMillis = System.currentTimeMillis();
         //Should return true if the date is after a minute before the current millis
         boolean shouldRefresh = this.extractAllClaims(jwtToken).getExpiration().before(new Date(currentTimeMillis - jwtConfigProperties.getRefreshBefore()));
