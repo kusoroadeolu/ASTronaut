@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 import java.util.Set;
 
 public interface SnippetPreview {
-    Integer getId();
+    Long getId();
     String getName();
     Set<String> getTags();
     SnippetLanguage getLanguage();

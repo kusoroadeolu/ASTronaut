@@ -3,31 +3,43 @@
 ## [Unreleased]
 
 ### Added
-- **Snippet Management**: Full CRUD operations for code snippets with metadata support
-    - REST endpoints for creating, updating, deleting, and retrieving snippets
-    - Pagination support for user snippet lists
-    - Draft status for incomplete snippets
+- **Snippet Management**: Full CRUD for code snippets + metadata
+    - Rest endpoints for saving, editing, deleting, grabbing snippets
+    - Pagination so you're not drowning in results
+    - Draft status for snippets you haven't finished yet
 
 - **Java Code Parsing & Metadata Extraction**
-    - Asynchronous parsing of Java snippets using JavaParser
-    - Automatic extraction of structural metadata (class names, annotations, fields, methods, return types)
-    - Fallback wrapping logic for code fragments
-    - Virtual thread support for improved async performance
+    - Async parsing with JavaParser (it won't block your thread)
+    - Automatically get all java code based metadata i.e. class names, annotations, methods, return types, all that
+    - Wraps code fragments so they actually parse
+    - Virtual threads for even faster async stuff
 
-- **Authentication & Security**
-    - JWT-based authentication with secure HTTP-only cookies
-    - Automatic token refresh capability
-    - Redis caching of user principals for improved performance
-    - Request validation using Jakarta Bean Validation
-    - Role-based endpoint protection with `@PreAuthorize`
+- **Auth & Security**
+    - JWT tokens stored in secure HTTP-only cookies (no XSS nonsense)
+    - Auto token refresh so you don't get logged out randomly
+    - Redis caching to speed things up
+    - Request validation so bad data doesn't sneak through
+    - Role-based access control for endpoints
+
+- **Search That Actually Works**
+    - Search by tags, names, languages, and code structure
+    - `DirectSnippetSpecBuilder` for exact matches
+    - `FuzzySnippetSpecBuilder` for typos and partial stuff
+    - Toggle fuzzy search on/off per user
+    - Case-insensitive across everything
+    - `SnippetPreview` so queries don't fetch unnecessary data
+    - New search endpoint
 
 ### Changed
-- Refactored auth logic to reduce duplication in token generation and caching
-- Moved `@Transactional` annotations from interfaces to implementation methods
-- Changed JPA DDL strategy from `create` to `update` for safer migrations
+- Cleaned up auth code 
+- Moved `@Transactional` to actual implementations instead of interfaces
+- Changed DDL strategy from `create` to `update` 
+- `Snippet.tags` is now `@ElementCollection` 
+- All parsed metadata is lowercase for consistent searching
 
 ### Technical Details
-- Replaced `javaparser-symbol-solver-core` with `javaparser-core`
-- Integrated Spring Cache and Redis for principal caching
-- Configured virtual threads for async operations
-- Added custom exceptions for better error handling
+- Switched from `javaparser-symbol-solver-core` to just `javaparser-core`
+- Redis + Spring Cache for caching principals
+- Virtual threads doing the async work
+- Custom exceptions for cleaner error handling
+- DB schema updates: `enableFuzzySearch` added to users, tweaked `tags` and `metaDataAvailable` types

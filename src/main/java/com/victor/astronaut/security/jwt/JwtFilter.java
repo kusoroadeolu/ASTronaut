@@ -31,6 +31,7 @@ public class JwtFilter extends OncePerRequestFilter {
     private final JwtConfigProperties jwtConfigProperties;
     private final AppUserDetailsService appUserDetailsService;
     private final CookieUtils cookieUtils;
+    private AppUserPrincipal principal;
 
 
     @Override
@@ -71,7 +72,7 @@ public class JwtFilter extends OncePerRequestFilter {
             return;
         }
 
-        final AppUserPrincipal principal = new AppUserPrincipal(principalDto);
+         this.principal = new AppUserPrincipal(principalDto);
 
 
         final UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities());

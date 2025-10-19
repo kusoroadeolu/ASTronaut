@@ -16,8 +16,8 @@ public class SnippetMapper {
     public SnippetPreview toPreview(Snippet snippet){
         return new SnippetPreview() {
             @Override
-            public Integer getId() {
-              return Math.toIntExact(snippet.getId());
+            public Long getId() {
+              return snippet.getId();
             }
 
             @Override

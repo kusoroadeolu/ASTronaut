@@ -13,6 +13,9 @@ spring:
     web:
       pageable:
         serialization-mode: via_dto
+  h2:
+    console:
+      enabled: true
 
 
   datasource:

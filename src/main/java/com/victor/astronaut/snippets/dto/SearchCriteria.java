@@ -1,12 +1,12 @@
 package com.victor.astronaut.snippets.dto;
 
-import com.victor.astronaut.snippets.Snippet;
 import com.victor.astronaut.snippets.SnippetLanguage;
+import lombok.Builder;
 
 import java.util.HashSet;
 import java.util.Set;
 
-public record SearchFilterDto(
+public record SearchCriteria(
         Set<SnippetLanguage> languages,
         Set<String> tagsOrNames,
         Set<String> classAnnotations,
@@ -16,7 +16,7 @@ public record SearchFilterDto(
         Set<String> methodReturnTypes,
         Set<String> methodAnnotations
 ) {
-    public SearchFilterDto {
+    public SearchCriteria {
         languages = languages == null ? new HashSet<>() : languages;
         tagsOrNames = tagsOrNames == null ? new HashSet<>() : tagsOrNames;
         classNames = classNames == null ? new HashSet<>() : classNames;

@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-public class DirectSnippetSpecBuilder {
+public class DirectSnippetSpecBuilder implements SnippetSpecBuilder {
 
     private final static String TAGS = "tags";
     private final static String NAME = "name";
@@ -29,6 +29,7 @@ public class DirectSnippetSpecBuilder {
      * @param a The {@link AppUser} to get the snippet for
      * @return an instance of this class
      * */
+    @Override
     public DirectSnippetSpecBuilder hasUser(AppUser a){
         Specification<Snippet> spec = (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("appUser"), a);
         this.specifications.add(spec);
@@ -40,6 +41,7 @@ public class DirectSnippetSpecBuilder {
      * @param expectedLangs A set of expected names
      * @return an instance of this class
      * */
+    @Override
     public DirectSnippetSpecBuilder hasAnyLanguage(Set<SnippetLanguage> expectedLangs){
         if(!expectedLangs.isEmpty()){
             Specification<Snippet> spec = this.hasXInSet(LANGUAGE, expectedLangs);
@@ -55,6 +57,7 @@ public class DirectSnippetSpecBuilder {
      * @param expectedVals The set we are filtering with
      * @return an instance of this class
      * */
+    @Override
     public DirectSnippetSpecBuilder hasValFromElementCollection(String fieldName, Set<String> expectedVals){
         if(!fieldName.isEmpty() && !expectedVals.isEmpty()){
             Specification<Snippet> spec = this.hasValFromElementCollectionInSet(fieldName, expectedVals);
@@ -65,6 +68,7 @@ public class DirectSnippetSpecBuilder {
 
 
     //Checks for any snippet that has a tag or a name from the expected tags or names
+    @Override
     public DirectSnippetSpecBuilder hasTagOrName(Set<String> expectedTagsOrNames){
         if (!expectedTagsOrNames.isEmpty()){
             Specification<Snippet> hasTags = this.hasValFromElementCollectionInSet(TAGS, expectedTagsOrNames);
@@ -75,6 +79,7 @@ public class DirectSnippetSpecBuilder {
         return this;
     }
 
+    @Override
     public Specification<Snippet> build(){
         return Specification.allOf(this.specifications);
     }
