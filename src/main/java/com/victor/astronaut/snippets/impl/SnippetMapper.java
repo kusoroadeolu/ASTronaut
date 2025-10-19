@@ -1,6 +1,8 @@
-package com.victor.astronaut.snippets;
+package com.victor.astronaut.snippets.impl;
 
+import com.victor.astronaut.snippets.Snippet;
 import com.victor.astronaut.snippets.dto.SnippetResponse;
+import com.victor.astronaut.snippets.enums.SnippetLanguage;
 import com.victor.astronaut.snippets.projections.SnippetPreview;
 import org.springframework.stereotype.Service;
 

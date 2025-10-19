@@ -8,7 +8,9 @@ import com.victor.astronaut.snippets.*;
 import com.victor.astronaut.snippets.dto.SnippetCreationRequest;
 import com.victor.astronaut.snippets.dto.SnippetResponse;
 import com.victor.astronaut.snippets.dto.SnippetUpdateRequest;
+import com.victor.astronaut.snippets.enums.SnippetLanguage;
 import com.victor.astronaut.snippets.projections.SnippetPreview;
+import com.victor.astronaut.snippets.repos.SnippetRepository;
 import com.victor.astronaut.snippets.snippetparser.SnippetParser;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -84,7 +86,6 @@ public class SnippetCrudServiceImpl implements SnippetCrudService {
      * @param appUserId the ID of the user who owns the snippet
      * @param updateRequest the updated snippet details
      * @return the updated snippet as a response DTO
-     * @throws NoSuchSnippetException if snippet doesn't exist or doesn't belong to user
      * @throws SnippetPersistenceException if update fails due to data integrity or unexpected errors
      */
     @Transactional
@@ -92,9 +93,7 @@ public class SnippetCrudServiceImpl implements SnippetCrudService {
     public SnippetResponse updateSnippet(long snippetId, long appUserId, @NonNull SnippetUpdateRequest updateRequest){
         return executeWithException(
                 "update", snippetId, () -> {
-                    final AppUser user = this.appUserQueryService.findById(appUserId);
-                    Snippet found = snippetRepository.findSnippetByAppUserAndId(user, snippetId)
-                            .orElseThrow(() -> new NoSuchSnippetException(String.format("Failed to find snippet with ID: %s belonging to user with ID: %s", snippetId, appUserId)));
+                    Snippet found = this.findByAppUserIdAndId(appUserId, snippetId);
                     modifySnippet(found ,updateRequest);
                     final Snippet saved = this.snippetRepository.save(found);
 
@@ -114,15 +113,12 @@ public class SnippetCrudServiceImpl implements SnippetCrudService {
      * @param appUserId the ID of the user who owns the snippet
      * @param snippetId the ID of the snippet to find
      * @return the found snippet as a response DTO
-     * @throws NoSuchSnippetException if snippet doesn't exist or doesn't belong to user
      */
     @Transactional(readOnly = true)
     @Override
     public SnippetResponse findById(long appUserId, long snippetId){
         log.info("Attempting to find snippet with ID: {} for user with ID: {}", snippetId ,appUserId);
-        final AppUser user = this.appUserQueryService.findById(appUserId);
-        final Snippet found = this.snippetRepository.findSnippetByAppUserAndId(user, snippetId)
-                .orElseThrow(() -> new NoSuchSnippetException(String.format("Failed to find snippet with ID: %s belonging to user with ID: %s", snippetId, appUserId)));
+        final Snippet found = this.findByAppUserIdAndId(appUserId, snippetId);
         log.info("Successfully found snippet: {} for user with ID: {}", found.getName() ,appUserId);
         return this.snippetMapper.toResponse(found);
     }
@@ -140,6 +136,21 @@ public class SnippetCrudServiceImpl implements SnippetCrudService {
                                                     Pageable pageable){
         final AppUser user = this.appUserQueryService.findById(appUserId);
         return this.snippetRepository.findAllByAppUser(user, pageable);
+    }
+
+    /**
+     * Finds a snippet (if it exists) by its app user ID and snippet ID
+     * @param appUserId The ID of the app user
+     * @param snippetId The ID of the snippet
+     * @return An existing snippet
+     * @throws NoSuchSnippetException NoSuchSnippetException if snippet doesn't exist or doesn't belong to user
+     * */
+    @Transactional(readOnly = true)
+    @Override
+    public Snippet findByAppUserIdAndId(long appUserId, long snippetId){
+        final AppUser user = this.appUserQueryService.findById(appUserId);
+        return this.snippetRepository.findSnippetByAppUserAndId(user, snippetId)
+                .orElseThrow(() -> new NoSuchSnippetException(String.format("Failed to find snippet with ID: %s belonging to user with ID: %s", snippetId, appUserId)));
     }
 
 

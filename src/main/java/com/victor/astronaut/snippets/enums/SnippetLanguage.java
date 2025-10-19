@@ -1,4 +1,4 @@
-package com.victor.astronaut.snippets;
+package com.victor.astronaut.snippets.enums;
 
 public enum SnippetLanguage {
     JAVA("JAVA"),

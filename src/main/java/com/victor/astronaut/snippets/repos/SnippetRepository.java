@@ -1,13 +1,12 @@
-package com.victor.astronaut.snippets;
+package com.victor.astronaut.snippets.repos;
 
 import com.victor.astronaut.appuser.AppUser;
+import com.victor.astronaut.snippets.Snippet;
 import com.victor.astronaut.snippets.projections.SnippetPreview;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.*;
 
-import java.util.List;
 import java.util.Optional;
 
 public interface SnippetRepository extends JpaRepository<Snippet, Long>, JpaSpecificationExecutor<Snippet> {

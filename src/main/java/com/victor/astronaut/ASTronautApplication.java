@@ -8,9 +8,8 @@ import org.springframework.scheduling.annotation.EnableAsync;
 @SpringBootApplication
 public class ASTronautApplication {
 
-    public static void main(String[] args)  {
-        SpringApplication.run(ASTronautApplication.class, args);
-
+    public static void main(String[] args) {
+      SpringApplication.run(ASTronautApplication.class, args);
 
     }
 

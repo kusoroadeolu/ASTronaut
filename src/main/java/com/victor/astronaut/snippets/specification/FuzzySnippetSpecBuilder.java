@@ -2,7 +2,7 @@ package com.victor.astronaut.snippets.specification;
 
 import com.victor.astronaut.appuser.AppUser;
 import com.victor.astronaut.snippets.Snippet;
-import com.victor.astronaut.snippets.SnippetLanguage;
+import com.victor.astronaut.snippets.enums.SnippetLanguage;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;

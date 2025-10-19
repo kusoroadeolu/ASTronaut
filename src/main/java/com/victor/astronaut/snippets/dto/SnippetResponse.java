@@ -1,6 +1,5 @@
 package com.victor.astronaut.snippets.dto;
 
-import com.victor.astronaut.snippets.SnippetLanguage;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;
 

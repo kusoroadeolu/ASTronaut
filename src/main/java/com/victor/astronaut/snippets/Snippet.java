@@ -1,10 +1,10 @@
 package com.victor.astronaut.snippets;
 
 import com.victor.astronaut.appuser.AppUser;
+import com.victor.astronaut.snippets.enums.SnippetLanguage;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;

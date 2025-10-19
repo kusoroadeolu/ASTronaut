@@ -1,7 +1,7 @@
 package com.victor.astronaut.snippets.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.victor.astronaut.snippets.SnippetLanguage;
+import com.victor.astronaut.snippets.enums.SnippetLanguage;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;
 

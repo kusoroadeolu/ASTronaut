@@ -2,7 +2,7 @@ package com.victor.astronaut.snippets.snippetparser;
 
 import com.victor.astronaut.exceptions.SnippetParseException;
 import com.victor.astronaut.snippets.Snippet;
-import com.victor.astronaut.snippets.SnippetRepository;
+import com.victor.astronaut.snippets.repos.SnippetRepository;
 import com.victor.astronaut.snippets.snippetparser.visitors.VisitorOrchestrator;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

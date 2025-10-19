@@ -2,7 +2,7 @@ package com.victor.astronaut.snippets.specification;
 
 import com.victor.astronaut.appuser.AppUser;
 import com.victor.astronaut.snippets.Snippet;
-import com.victor.astronaut.snippets.SnippetLanguage;
+import com.victor.astronaut.snippets.enums.SnippetLanguage;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.util.Set;

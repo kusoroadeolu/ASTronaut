@@ -1,6 +1,6 @@
 package com.victor.astronaut.snippets.projections;
 
-import com.victor.astronaut.snippets.SnippetLanguage;
+import com.victor.astronaut.snippets.enums.SnippetLanguage;
 
 import java.time.LocalDateTime;
 import java.util.Set;

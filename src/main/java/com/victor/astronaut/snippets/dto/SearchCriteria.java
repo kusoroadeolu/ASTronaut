@@ -1,7 +1,6 @@
 package com.victor.astronaut.snippets.dto;
 
-import com.victor.astronaut.snippets.SnippetLanguage;
-import lombok.Builder;
+import com.victor.astronaut.snippets.enums.SnippetLanguage;
 
 import java.util.HashSet;
 import java.util.Set;

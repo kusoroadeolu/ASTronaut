@@ -22,4 +22,7 @@ public interface SnippetCrudService {
 
     Page<SnippetPreview> findSnippetsByUser(long appUserId,
                                             Pageable pageable);
+
+    @Transactional(readOnly = true)
+    Snippet findByAppUserIdAndId(long appUserId, long snippetId);
 }
