@@ -5,6 +5,7 @@ import com.victor.astronaut.snippets.SnippetLanguage;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;
 
+import java.util.HashSet;
 import java.util.Set;
 
 @Builder
@@ -15,4 +16,8 @@ public record SnippetCreationRequest(
     @JsonProperty(defaultValue = "OTHER")
     SnippetLanguage language
 ) {
+    public SnippetCreationRequest{
+        tags = tags == null ? new HashSet<>() : tags;
+    }
+
 }

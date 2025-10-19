@@ -3,6 +3,7 @@ package com.victor.astronaut.appuser;
 import com.victor.astronaut.snippets.Snippet;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -39,9 +40,14 @@ public class AppUser {
 
     @Column(name = "createdAt", nullable = false)
     private LocalDateTime createdAt;
+
+    @Column(name = "enableFuzzySearch")
+    private Boolean enableFuzzySearch;
     @PrePersist
     public void createdAt(){
         this.createdAt = LocalDateTime.now();
+        this.enableFuzzySearch = false;
     }
+
 
 }

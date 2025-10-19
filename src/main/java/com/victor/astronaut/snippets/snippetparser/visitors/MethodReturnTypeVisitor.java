@@ -12,6 +12,6 @@ public final class MethodReturnTypeVisitor extends VoidVisitorAdapter<Set<String
     @Override
     public void visit(MethodDeclaration n, Set<String> arg) {
         super.visit(n, arg);
-        arg.add(n.getTypeAsString());
+        arg.add(n.getTypeAsString().toLowerCase());
     }
 }

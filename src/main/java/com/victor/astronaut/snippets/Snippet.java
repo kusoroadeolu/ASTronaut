@@ -4,6 +4,7 @@ import com.victor.astronaut.appuser.AppUser;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -40,7 +41,7 @@ public class Snippet {
     @Column(name = "extra_notes", length = 100)
     private String extraNotes = "";
 
-    @Column(name = "tags")
+    @ElementCollection
     private Set<String> tags = new HashSet<>();
 
     @ElementCollection
@@ -67,13 +68,14 @@ public class Snippet {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-
-    private boolean metaDataAvailable = false;
+    @Column(name = "metaDataAvailable")
+    private Boolean metaDataAvailable;
 
     @PrePersist
     public void createdAt(){
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
+        this.metaDataAvailable = false;
     }
 
     @PreUpdate

@@ -17,7 +17,7 @@ public final class ClassFieldAnnotationVisitor extends VoidVisitorAdapter<Set<St
                 .getFields()
                 .stream()
                 .flatMap(a -> a.getAnnotations().stream())
-                .map(v -> v.getName().asString())
+                .map(v -> v.getName().asString().toLowerCase())
                 .collect(Collectors.toSet());
 
         arg.addAll(fieldAnnotations);

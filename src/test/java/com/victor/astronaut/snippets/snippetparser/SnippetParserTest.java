@@ -48,7 +48,7 @@ class SnippetParserTest {
         assertEquals(1, snippet.getClassNames().size());
         assertEquals(2, snippet.getClassFields().size());
         verify(snippetRepository, times(1)).save(snippet);
-        assertTrue(snippet.isMetaDataAvailable());
+        assertTrue(snippet.getMetaDataAvailable());
     }
 
     //This test will only pass with the async annotation commented out on the actual method
@@ -74,7 +74,7 @@ class SnippetParserTest {
         assertEquals(1, snippet.getMethodReturnTypes().size());
         assertEquals(0, snippet.getClassNames().size());
         verify(snippetRepository, times(1)).save(snippet);
-        assertTrue(snippet.isMetaDataAvailable());
+        assertTrue(snippet.getMetaDataAvailable());
     }
 
     @Test
@@ -96,7 +96,7 @@ class SnippetParserTest {
         //Act & Assert
         assertThrows(SnippetParseException.class, () -> this.parser.parseSnippetContent(snippet));
         verify(snippetRepository, times(1)).save(snippet);
-        assertFalse(snippet.isMetaDataAvailable());
+        assertFalse(snippet.getMetaDataAvailable());
     }
 
 
