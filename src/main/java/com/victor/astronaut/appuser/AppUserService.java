@@ -1,15 +1,14 @@
 package com.victor.astronaut.appuser;
 
-import com.victor.astronaut.appuser.dtos.AppUserLoginRequest;
-import com.victor.astronaut.appuser.dtos.AppUserAuthResponse;
-import com.victor.astronaut.appuser.dtos.AppUserRegisterRequest;
-import lombok.NonNull;
-import org.springframework.transaction.annotation.Transactional;
+import com.victor.astronaut.appuser.dtos.*;
 
 public interface AppUserService {
-    @Transactional
-    AppUserAuthResponse registerAppUser(@NonNull AppUserRegisterRequest registerRequest);
 
-    @Transactional(readOnly = true)
-    AppUserAuthResponse loginAppUser(@NonNull AppUserLoginRequest loginRequest);
+    AppUserAuthResponse registerAppUser(AppUserRegisterRequest registerRequest);
+
+    AppUserAuthResponse loginAppUser(AppUserLoginRequest loginRequest);
+
+    void deleteAppUser(long userId, AppUserDeleteRequest deleteRequest);
+
+    UpdatePreferencesResponse updateAppUserPreferences(long userId, UpdatePreferencesRequest request);
 }

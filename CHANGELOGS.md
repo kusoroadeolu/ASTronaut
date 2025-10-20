@@ -9,7 +9,7 @@
     - Draft status for snippets you haven't finished yet
 
 - **Java Code Parsing & Metadata Extraction**
-    - Async parsing with JavaParser (it won't block your thread)
+    - Async parsing with JavaParser 
     - Automatically get all java code based metadata i.e. class names, annotations, methods, return types, all that
     - Wraps code fragments so they actually parse
     - Virtual threads for even faster async stuff
@@ -24,17 +24,24 @@
 - **Search That Actually Works**
     - Search by tags, names, languages, and code structure
     - `DirectSnippetSpecBuilder` for exact matches
-    - `FuzzySnippetSpecBuilder` for typos and partial stuff
+    - `FuzzySnippetSpecBuilder` for typos and partial matches
     - Toggle fuzzy search on/off per user
     - Case-insensitive across everything
     - `SnippetPreview` so queries don't fetch unnecessary data
     - New search endpoint
 
+- **Snippet Comparison & Diff Viewer**
+    - Side by side diff comparison between two snippets
+    - Line by line change detection using Myers diff algorithm
+    - Unified diff parsing into structured format
+    - Change categorization: added, removed, unchanged
+    - Diff service with unit and integration testing
+
 ### Changed
-- Cleaned up auth code 
+- Cleaned up auth code
 - Moved `@Transactional` to actual implementations instead of interfaces
-- Changed DDL strategy from `create` to `update` 
-- `Snippet.tags` is now `@ElementCollection` 
+- Changed DDL strategy from `create` to `update`
+- `Snippet.tags` is now `@ElementCollection`
 - All parsed metadata is lowercase for consistent searching
 
 ### Technical Details
@@ -43,3 +50,5 @@
 - Virtual threads doing the async work
 - Custom exceptions for cleaner error handling
 - DB schema updates: `enableFuzzySearch` added to users, tweaked `tags` and `metaDataAvailable` types
+- Integrated java-diff-utils for robust diff algorithm implementation
+- UnifiedDiffUtils for parsing and generating standardized diff format

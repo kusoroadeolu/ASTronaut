@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/auth")
 @Slf4j
-public class AuthController {
+public final class AuthController {
 
     private final AppUserService appUserService;
     private final CookieUtils cookieUtils;
@@ -25,7 +25,6 @@ public class AuthController {
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<AppUserAuthResponse> registerUser(@Valid @RequestBody AppUserRegisterRequest registerRequest, HttpServletResponse response){
         AppUserAuthResponse loginResponse = this.appUserService.registerAppUser(registerRequest);
-        log.info("JWT TOKEN: {}", loginResponse.jwtToken());
         response.addCookie(cookieUtils.createJwtCookie(loginResponse.jwtToken()));
         return new ResponseEntity<>(loginResponse, HttpStatus.CREATED);
     }
@@ -34,9 +33,11 @@ public class AuthController {
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<AppUserAuthResponse> loginUser(@Valid @RequestBody AppUserLoginRequest loginRequest, HttpServletResponse response){
         AppUserAuthResponse loginResponse = this.appUserService.loginAppUser(loginRequest);
-        log.info("JWT TOKEN: {}", loginResponse.jwtToken());
         response.addCookie(cookieUtils.createJwtCookie(loginResponse.jwtToken()));
         return new ResponseEntity<>(loginResponse, HttpStatus.OK);
     }
+
+
+
 
 }

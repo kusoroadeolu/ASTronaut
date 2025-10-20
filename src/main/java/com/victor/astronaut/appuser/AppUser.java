@@ -35,6 +35,9 @@ public class AppUser {
     @Column(name = "role", nullable = false)
     private AppUserRole role;
 
+    @Column(name = "isDeleted", nullable = false)
+    private Boolean isDeleted;
+
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Snippet> snippet = new ArrayList<>();
 
@@ -48,6 +51,7 @@ public class AppUser {
         this.createdAt = LocalDateTime.now();
         this.enableFuzzySearch = false;
     }
+
 
 
 }

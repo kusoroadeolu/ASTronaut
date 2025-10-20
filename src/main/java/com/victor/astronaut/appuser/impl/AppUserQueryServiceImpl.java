@@ -2,6 +2,7 @@ package com.victor.astronaut.appuser.impl;
 
 import com.victor.astronaut.appuser.AppUser;
 import com.victor.astronaut.appuser.repositories.AppUserRepository;
+import com.victor.astronaut.appuser.AppUserQueryService;
 import com.victor.astronaut.exceptions.NoSuchUserException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -10,7 +11,7 @@ import org.springframework.stereotype.Service;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class AppUserQueryServiceImpl implements com.victor.astronaut.appuser.AppUserQueryService {
+public class AppUserQueryServiceImpl implements AppUserQueryService {
 
     private final AppUserRepository appUserRepository;
 

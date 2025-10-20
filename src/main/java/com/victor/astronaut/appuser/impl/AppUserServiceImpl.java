@@ -1,13 +1,8 @@
 package com.victor.astronaut.appuser.impl;
 
-import com.victor.astronaut.appuser.AppUserPrincipalDto;
-import com.victor.astronaut.appuser.AppUserPrincipalCacheService;
-import com.victor.astronaut.appuser.AppUserService;
+import com.victor.astronaut.appuser.*;
+import com.victor.astronaut.appuser.dtos.*;
 import com.victor.astronaut.appuser.repositories.AppUserRepository;
-import com.victor.astronaut.appuser.dtos.AppUserLoginRequest;
-import com.victor.astronaut.appuser.dtos.AppUserAuthResponse;
-import com.victor.astronaut.appuser.dtos.AppUserRegisterRequest;
-import com.victor.astronaut.appuser.AppUser;
 import com.victor.astronaut.security.JwtService;
 import com.victor.astronaut.exceptions.AppUserAlreadyExistsException;
 import com.victor.astronaut.exceptions.AppUserPersistenceException;
@@ -16,6 +11,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +24,7 @@ public class AppUserServiceImpl implements AppUserService {
     private final AppUserMapper appUserMapper;
     private final PasswordEncoder passwordEncoder;
     private final AppUserRepository appUserRepository;
+    private final AppUserQueryService appUserQueryService;
     private final JwtService jwtService;
     private final AppUserPrincipalCacheService cacheService;
 
@@ -42,6 +39,17 @@ public class AppUserServiceImpl implements AppUserService {
     public AppUserAuthResponse registerAppUser(@NonNull AppUserRegisterRequest registerRequest){
         log.info("Registering app user with username: {} and email: {}", registerRequest.username(), registerRequest.email());
         try{
+
+            if(!registerRequest.password().equals(registerRequest.confirmPassword())){
+                log.info("App user submitted mismatched passwords during registration");
+                throw new InvalidCredentialsException("Password and confirm password fields must match");
+            }
+
+            if (this.appUserRepository.existsAppUsersByEmailAndIsDeletedFalse(registerRequest.email())){
+                log.info("Found user with similar email address.");
+                throw new AppUserAlreadyExistsException("This email address is already taken. Please use a different email");
+            }
+
             final String encodedPassword = this.passwordEncoder.encode(registerRequest.password());
             final AppUser appUser = this.appUserMapper.toAppUser(registerRequest, encodedPassword);
             final AppUser savedAppUser = this.appUserRepository.save(appUser);
@@ -49,11 +57,11 @@ public class AppUserServiceImpl implements AppUserService {
             final String jwtToken = this.cachePrincipalAndGenerateJwtToken(appUser);
             return this.appUserMapper.toResponse(savedAppUser, jwtToken);
         }catch (DataIntegrityViolationException e){
-            log.info("Found user with similar email address.", e);
-            throw new AppUserAlreadyExistsException("This email address is already taken. Please use a different email", e);
+            log.info("Failed to register app user due to a data integrity exception", e);
+            throw new AppUserAlreadyExistsException("An unexpected error occurred while trying to register your account", e);
         }catch (Exception e){
             log.info("An unexpected error occurred while trying to register user: {}", registerRequest.email(), e);
-            throw new AppUserPersistenceException(String.format("An unexpected error occurred while trying to register user: %s", registerRequest.email()), e);
+            throw new AppUserPersistenceException("An unexpected error occurred while trying to register your account", e);
         }
     }
 
@@ -64,7 +72,7 @@ public class AppUserServiceImpl implements AppUserService {
      * */
     @Transactional(readOnly = true)
     @Override
-    public AppUserAuthResponse loginAppUser(@NonNull AppUserLoginRequest loginRequest){
+    public AppUserAuthResponse loginAppUser(AppUserLoginRequest loginRequest){
         log.info("Attempting to login app user with email: {}", loginRequest.email());
         final AppUser savedAppUser = this.appUserRepository
                 .findAppUserByEmail(loginRequest.email())
@@ -78,6 +86,59 @@ public class AppUserServiceImpl implements AppUserService {
 
         final String jwtToken = this.cachePrincipalAndGenerateJwtToken(savedAppUser);
         return this.appUserMapper.toResponse(savedAppUser, jwtToken);
+    }
+
+    /**
+     * Deletes a user
+     * @param deleteRequest the dto containing the info needed to delete the user
+     * */
+    @Override
+    public void deleteAppUser(long userId, AppUserDeleteRequest deleteRequest){
+        log.info("Attempting to delete user with ID: {}", userId);
+        final AppUser user = this.appUserQueryService.findById(userId);
+        if(!deleteRequest.password().equals(deleteRequest.confirmPassword())){
+            log.info("App user submitted mismatched passwords during deletion");
+            throw new InvalidCredentialsException("Password and confirm password fields must match");
+        }
+
+        if(passwordEncoder.matches(deleteRequest.password(), user.getPassword())){
+            log.info("Failed to delete user due to invalid password");
+            throw new InvalidCredentialsException("Invalid credentials. Please re-check your password");
+        }
+
+        this.deleteUser(user);
+    }
+
+    @Override
+    public UpdatePreferencesResponse updateAppUserPreferences(long userId, UpdatePreferencesRequest request){
+        try{
+            log.info("Attempting to update user preferences for user with ID: {}", userId);
+            final AppUser user = this.appUserQueryService.findById(userId);
+            user.setEnableFuzzySearch(request.enableFuzzySearch());
+            this.appUserRepository.save(user);
+            log.info("Successfully updated user preferences");
+            return this.appUserMapper.toResponse(request);
+        }catch (DataIntegrityViolationException e){
+            log.info("Failed to update app user settings due to a data integrity exception", e);
+            throw new AppUserAlreadyExistsException("An unexpected error occurred while trying to update your preferences", e);
+        }catch (Exception e){
+            log.info("Failed to update app user settings due to an unexpected exception", e);
+            throw new AppUserPersistenceException("An unexpected error occurred while trying to update your preference", e);
+        }
+
+    }
+
+    @Async
+    public void deleteUser(AppUser user){
+         try{
+             this.appUserRepository.delete(user);
+             log.info("Successfully deleted user: {}", user.getUsername());
+         }catch (Exception e){
+             log.info("Failed to delete user due to an exception: {}", user.getUsername() ,e);
+             user.setIsDeleted(true);
+             this.appUserRepository.save(user);
+             log.info("Successfully marked user as deleted");
+         }
     }
 
     //Generates a jwt token for the app user, caches the user principal.
