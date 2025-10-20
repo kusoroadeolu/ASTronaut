@@ -17,11 +17,11 @@ public record AppUserRegisterRequest(
         String email,
 
         @Size(min = 6, max = 100, message = "Password must at least have 6 values")
-        @NotNull(message = "Email cannot be null")
+        @NotNull(message = "Password cannot be null")
         String password,
 
         @Size(min = 6, max = 100, message = "Password must at least have 6 values")
-        @NotNull(message = "Email cannot be null")
+        @NotNull(message = "Password cannot be null")
         String confirmPassword
 ) {
 }

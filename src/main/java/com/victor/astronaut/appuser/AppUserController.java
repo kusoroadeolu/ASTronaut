@@ -1,8 +1,7 @@
 package com.victor.astronaut.appuser;
 
-import com.victor.astronaut.appuser.dtos.AppUserDeleteRequest;
-import com.victor.astronaut.appuser.dtos.UpdatePreferencesRequest;
-import com.victor.astronaut.appuser.dtos.UpdatePreferencesResponse;
+import com.victor.astronaut.appuser.dtos.*;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -22,17 +21,30 @@ public class AppUserController {
 
     @DeleteMapping
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public ResponseEntity<Void> deleteAppUser(@AuthenticationPrincipal AppUserPrincipal principal, @RequestBody AppUserDeleteRequest request){
+    public ResponseEntity<Void> deleteAppUser(@AuthenticationPrincipal AppUserPrincipal principal, @Valid @RequestBody AppUserDeleteRequest request){
         this.appUserService.deleteAppUser(principal.getId(), request);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @PutMapping("/preferences")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<UpdatePreferencesResponse> updateUserPreferences(@AuthenticationPrincipal AppUserPrincipal principal, @RequestBody UpdatePreferencesRequest request){
+    public ResponseEntity<UpdatePreferencesResponse> updateUserPreferences(@AuthenticationPrincipal AppUserPrincipal principal, @Valid @RequestBody UpdatePreferencesRequest request){
         var response = this.appUserService.updateAppUserPreferences(principal.getId(), request);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    @PutMapping("/me")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<Void> updateUsernameOrEmail(@AuthenticationPrincipal AppUserPrincipal principal, @Valid @RequestBody AppUserUpdateRequest request){
+        this.appUserService.updateUsernameOrEmail(principal.getId(), request);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @PutMapping("/me/password")
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseEntity<Void> updatePassword(@AuthenticationPrincipal AppUserPrincipal principal, @Valid @RequestBody UpdatePasswordRequest request){
+        this.appUserService.updatePassword(principal.getId(), request);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
 
 }

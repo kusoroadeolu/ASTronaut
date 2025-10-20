@@ -4,17 +4,16 @@ import com.victor.astronaut.appuser.*;
 import com.victor.astronaut.appuser.dtos.*;
 import com.victor.astronaut.appuser.repositories.AppUserRepository;
 import com.victor.astronaut.security.JwtService;
-import com.victor.astronaut.exceptions.AppUserAlreadyExistsException;
-import com.victor.astronaut.exceptions.AppUserPersistenceException;
 import com.victor.astronaut.exceptions.InvalidCredentialsException;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import static com.victor.astronaut.appuser.utils.AppUserUtils.handleWithException;
 
 @Service
 @Slf4j
@@ -37,32 +36,20 @@ public class AppUserServiceImpl implements AppUserService {
     @Transactional
     @Override
     public AppUserAuthResponse registerAppUser(@NonNull AppUserRegisterRequest registerRequest){
-        log.info("Registering app user with username: {} and email: {}", registerRequest.username(), registerRequest.email());
-        try{
-
+        return handleWithException("register", registerRequest.username(), () -> {
             if(!registerRequest.password().equals(registerRequest.confirmPassword())){
                 log.info("App user submitted mismatched passwords during registration");
                 throw new InvalidCredentialsException("Password and confirm password fields must match");
             }
 
-            if (this.appUserRepository.existsAppUsersByEmailAndIsDeletedFalse(registerRequest.email())){
-                log.info("Found user with similar email address.");
-                throw new AppUserAlreadyExistsException("This email address is already taken. Please use a different email");
-            }
+            this.appUserQueryService.validateEmail(registerRequest.email()) ;
 
             final String encodedPassword = this.passwordEncoder.encode(registerRequest.password());
             final AppUser appUser = this.appUserMapper.toAppUser(registerRequest, encodedPassword);
             final AppUser savedAppUser = this.appUserRepository.save(appUser);
-            log.info("Successfully registered app user with username: {} and email: {}", registerRequest.username(), registerRequest.email());
             final String jwtToken = this.cachePrincipalAndGenerateJwtToken(appUser);
             return this.appUserMapper.toResponse(savedAppUser, jwtToken);
-        }catch (DataIntegrityViolationException e){
-            log.info("Failed to register app user due to a data integrity exception", e);
-            throw new AppUserAlreadyExistsException("An unexpected error occurred while trying to register your account", e);
-        }catch (Exception e){
-            log.info("An unexpected error occurred while trying to register user: {}", registerRequest.email(), e);
-            throw new AppUserPersistenceException("An unexpected error occurred while trying to register your account", e);
-        }
+        });
     }
 
     /**
@@ -101,7 +88,7 @@ public class AppUserServiceImpl implements AppUserService {
             throw new InvalidCredentialsException("Password and confirm password fields must match");
         }
 
-        if(passwordEncoder.matches(deleteRequest.password(), user.getPassword())){
+        if(!passwordEncoder.matches(deleteRequest.password(), user.getPassword())){
             log.info("Failed to delete user due to invalid password");
             throw new InvalidCredentialsException("Invalid credentials. Please re-check your password");
         }
@@ -109,24 +96,64 @@ public class AppUserServiceImpl implements AppUserService {
         this.deleteUser(user);
     }
 
+    //Updates a user's preferences
+    @Transactional
     @Override
     public UpdatePreferencesResponse updateAppUserPreferences(long userId, UpdatePreferencesRequest request){
-        try{
-            log.info("Attempting to update user preferences for user with ID: {}", userId);
-            final AppUser user = this.appUserQueryService.findById(userId);
+        final AppUser user = this.appUserQueryService.findById(userId);
+        return handleWithException("update", user.getUsername(), () -> {
             user.setEnableFuzzySearch(request.enableFuzzySearch());
             this.appUserRepository.save(user);
             log.info("Successfully updated user preferences");
             return this.appUserMapper.toResponse(request);
-        }catch (DataIntegrityViolationException e){
-            log.info("Failed to update app user settings due to a data integrity exception", e);
-            throw new AppUserAlreadyExistsException("An unexpected error occurred while trying to update your preferences", e);
-        }catch (Exception e){
-            log.info("Failed to update app user settings due to an unexpected exception", e);
-            throw new AppUserPersistenceException("An unexpected error occurred while trying to update your preference", e);
+        });
+    }
+
+    //Updates a user's email or username
+    @Transactional
+    @Override
+    public void updateUsernameOrEmail(long userId, AppUserUpdateRequest request){
+        final AppUser user = this.appUserQueryService.findById(userId);
+        final boolean isPrevUsername = user.getUsername().equals(request.username());
+        final boolean isPrevEmail = user.getEmail().equals(request.email());
+        if(!isPrevUsername){
+            user.setUsername(request.username());
         }
 
+        if (!isPrevEmail){
+            this.appUserQueryService.validateEmail(request.email());
+            user.setEmail(request.email());
+        }
+
+        //Check if the email and username are the same as before
+        if(isPrevEmail && isPrevUsername){
+            return;
+        }
+
+        handleWithException("update", user.getUsername(), () -> {
+            return this.appUserRepository.save(user);
+        });
     }
+
+    //Updates a user's passwords
+    @Transactional
+    @Override
+    public void updatePassword(long userId, UpdatePasswordRequest request){
+        final AppUser user = this.appUserQueryService.findById(userId);
+        if(!passwordEncoder.matches(request.currentPassword(), user.getPassword())){
+            log.info("Failed to update user password due to invalid password");
+            throw new InvalidCredentialsException("Invalid credentials. Please re-check your password");
+        }
+
+        if(!request.newPassword().equals(request.confirmNewPassword())){
+            log.info("App user submitted mismatched passwords during password update");
+            throw new InvalidCredentialsException("Password and confirm password fields must match");
+        }
+
+        user.setPassword(passwordEncoder.encode(request.newPassword()));
+        handleWithException("update", user.getUsername(), () -> this.appUserRepository.save(user));
+    }
+
 
     @Async
     public void deleteUser(AppUser user){

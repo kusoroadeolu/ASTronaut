@@ -14,4 +14,6 @@ public interface AppUserRepository extends JpaRepository<AppUser, Long> {
     boolean existsAppUsersByEmailAndPassword(String email, String password);
 
     boolean existsAppUsersByEmailAndIsDeletedFalse(String email);
+
+     Optional<AppUser> findAppUserByIdAndIsDeletedFalse(long attr0);
 }

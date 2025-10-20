@@ -48,8 +48,8 @@ public class SnippetCrudServiceImpl implements SnippetCrudService {
     @Transactional
     @Override
     public SnippetResponse createSnippet(long appUserId, @NonNull SnippetCreationRequest creationRequest){
+        final AppUser user = this.appUserQueryService.findById(appUserId);
         return executeWithException("create", creationRequest.snippetName(), () -> {
-            final AppUser user = this.appUserQueryService.findById(appUserId);
             final Snippet saved = this.snippetRepository.save(buildSnippet(user, creationRequest));
             return this.snippetMapper.toResponse(saved);
         });
@@ -65,8 +65,8 @@ public class SnippetCrudServiceImpl implements SnippetCrudService {
     @Transactional
     @Override
     public void deleteSnippet(long appUserId, long snippetId){
+        final AppUser user = this.appUserQueryService.findById(appUserId);
         executeWithException("delete", snippetId, () -> {
-            final AppUser user = this.appUserQueryService.findById(appUserId);
             final int count = this.snippetRepository.deleteSnippetByAppUserAndId(user, snippetId);
 
             switch (count){
@@ -91,9 +91,9 @@ public class SnippetCrudServiceImpl implements SnippetCrudService {
     @Transactional
     @Override
     public SnippetResponse updateSnippet(long snippetId, long appUserId, @NonNull SnippetUpdateRequest updateRequest){
+        Snippet found = this.findByAppUserIdAndId(appUserId, snippetId);
         return executeWithException(
                 "update", snippetId, () -> {
-                    Snippet found = this.findByAppUserIdAndId(appUserId, snippetId);
                     modifySnippet(found ,updateRequest);
                     final Snippet saved = this.snippetRepository.save(found);
 
