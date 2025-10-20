@@ -4,7 +4,8 @@ import com.victor.astronaut.appuser.AppUser;
 import com.victor.astronaut.appuser.repositories.AppUserRepository;
 import com.victor.astronaut.appuser.AppUserQueryService;
 import com.victor.astronaut.exceptions.AppUserAlreadyExistsException;
-import com.victor.astronaut.exceptions.NoSuchUserException;
+import com.victor.astronaut.exceptions.NoSuchAppUserException;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -19,15 +20,15 @@ public class AppUserQueryServiceImpl implements AppUserQueryService {
     /**
      * Finds an app user based on the ID
      * @return The app user with the given ID
-     * @throws com.victor.astronaut.exceptions.NoSuchUserException If no app user with the given ID was found
+     * @throws NoSuchAppUserException If no app user with the given ID was found
      * */
     @Override
-    public AppUser findById(long id) throws NoSuchUserException{
-        return appUserRepository.findAppUserByIdAndIsDeletedFalse(id).orElseThrow(() -> new NoSuchUserException(String.format("Failed to find a user with ID: %s", id)));
+    public AppUser findById(long id) throws NoSuchAppUserException {
+        return appUserRepository.findAppUserByIdAndIsDeletedFalse(id).orElseThrow(() -> new NoSuchAppUserException(String.format("Failed to find a user with ID: %s", id)));
     }
 
     @Override
-    public void validateEmail(String email){
+    public void validateEmail(@NonNull String email){
         if (this.appUserRepository.existsAppUsersByEmailAndIsDeletedFalse(email)){
             log.info("Found user with similar email address.");
             throw new AppUserAlreadyExistsException("This email address is already taken. Please use a different email");

@@ -21,6 +21,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.util.WebUtils;
 
 import java.io.IOException;
+import java.util.Set;
 
 @Component
 @RequiredArgsConstructor
@@ -89,8 +90,8 @@ public class JwtFilter extends OncePerRequestFilter {
 
 
     @Override
-    protected boolean shouldNotFilter(@NonNull HttpServletRequest request) throws ServletException {
+    protected boolean shouldNotFilter(@NonNull HttpServletRequest request) {
         String requestURI = request.getRequestURI();
-        return requestURI.startsWith("/auth");
+        return requestURI.startsWith("/auth") || requestURI.startsWith("/swagger") || requestURI.startsWith("/v3/api-docs");
     }
 }

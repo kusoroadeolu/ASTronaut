@@ -19,4 +19,6 @@ public interface AppUserService {
 
     @Transactional
     void updatePassword(long userId, UpdatePasswordRequest request);
+
+    void logoutUser(Long id);
 }

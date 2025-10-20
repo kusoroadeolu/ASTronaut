@@ -1,6 +1,7 @@
 package com.victor.astronaut.security;
 
 import com.victor.astronaut.appuser.AppUserDetailsService;
+import com.victor.astronaut.security.jwt.JwtConfigProperties;
 import com.victor.astronaut.security.jwt.JwtFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -27,6 +28,7 @@ public class WebConfig {
 
     private final AppUserDetailsService appUserDetailsService;
     private final JwtFilter jwtFilter;
+    private final JwtConfigProperties jwtConfigProperties;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity security) throws Exception {
@@ -34,10 +36,20 @@ public class WebConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> {
                     auth.requestMatchers("/").permitAll();
+                    auth.requestMatchers("/swagger-ui/**").permitAll();  // Note the /** wildcard
+                    auth.requestMatchers("/v3/api-docs/**").permitAll();
+                    auth.requestMatchers("/swagger-ui.html").permitAll();
+                    auth.requestMatchers("/api-docs").permitAll();
                     auth.requestMatchers("/auth/**").permitAll();
                     auth.anyRequest().authenticated();
                 })
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .logout(l ->  {
+                    l.logoutUrl("/users/logout");
+                    l.deleteCookies(jwtConfigProperties.getCookieName());
+                    l.logoutSuccessUrl("/index.html");
+                    l.clearAuthentication(true);
+                })
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }

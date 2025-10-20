@@ -59,7 +59,7 @@ public class AppUserServiceImpl implements AppUserService {
      * */
     @Transactional(readOnly = true)
     @Override
-    public AppUserAuthResponse loginAppUser(AppUserLoginRequest loginRequest){
+    public AppUserAuthResponse loginAppUser(@NonNull AppUserLoginRequest loginRequest){
         log.info("Attempting to login app user with email: {}", loginRequest.email());
         final AppUser savedAppUser = this.appUserRepository
                 .findAppUserByEmail(loginRequest.email())
@@ -80,7 +80,7 @@ public class AppUserServiceImpl implements AppUserService {
      * @param deleteRequest the dto containing the info needed to delete the user
      * */
     @Override
-    public void deleteAppUser(long userId, AppUserDeleteRequest deleteRequest){
+    public void deleteAppUser(long userId, @NonNull AppUserDeleteRequest deleteRequest){
         log.info("Attempting to delete user with ID: {}", userId);
         final AppUser user = this.appUserQueryService.findById(userId);
         if(!deleteRequest.password().equals(deleteRequest.confirmPassword())){
@@ -99,7 +99,7 @@ public class AppUserServiceImpl implements AppUserService {
     //Updates a user's preferences
     @Transactional
     @Override
-    public UpdatePreferencesResponse updateAppUserPreferences(long userId, UpdatePreferencesRequest request){
+    public UpdatePreferencesResponse updateAppUserPreferences(long userId, @NonNull UpdatePreferencesRequest request){
         final AppUser user = this.appUserQueryService.findById(userId);
         return handleWithException("update", user.getUsername(), () -> {
             user.setEnableFuzzySearch(request.enableFuzzySearch());
@@ -112,7 +112,7 @@ public class AppUserServiceImpl implements AppUserService {
     //Updates a user's email or username
     @Transactional
     @Override
-    public void updateUsernameOrEmail(long userId, AppUserUpdateRequest request){
+    public void updateUsernameOrEmail(long userId, @NonNull AppUserUpdateRequest request){
         final AppUser user = this.appUserQueryService.findById(userId);
         final boolean isPrevUsername = user.getUsername().equals(request.username());
         final boolean isPrevEmail = user.getEmail().equals(request.email());
@@ -138,7 +138,7 @@ public class AppUserServiceImpl implements AppUserService {
     //Updates a user's passwords
     @Transactional
     @Override
-    public void updatePassword(long userId, UpdatePasswordRequest request){
+    public void updatePassword(long userId, @NonNull UpdatePasswordRequest request){
         final AppUser user = this.appUserQueryService.findById(userId);
         if(!passwordEncoder.matches(request.currentPassword(), user.getPassword())){
             log.info("Failed to update user password due to invalid password");
@@ -166,6 +166,18 @@ public class AppUserServiceImpl implements AppUserService {
              this.appUserRepository.save(user);
              log.info("Successfully marked user as deleted");
          }
+    }
+
+    @Override
+    public void logoutUser(Long id) {
+        log.info("Logging out user with ID: {}", id);
+        try{
+            this.cacheService.evictPrincipal(id);
+        }catch (Exception e){
+            log.info("Failed to remove user principal dto from the cache", e); //Dont throw an exception because its not a sensitive issue
+            return;
+        }
+        log.info("Successfully logged out user with ID: {}", id);
     }
 
     //Generates a jwt token for the app user, caches the user principal.

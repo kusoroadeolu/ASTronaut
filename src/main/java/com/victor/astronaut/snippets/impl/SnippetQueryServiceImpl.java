@@ -8,8 +8,10 @@ import com.victor.astronaut.snippets.repos.SnippetRepository;
 import com.victor.astronaut.snippets.dto.SearchCriteria;
 import com.victor.astronaut.snippets.projections.SnippetPreview;
 import com.victor.astronaut.snippets.specification.SnippetSpecBuilder;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.antlr.v4.runtime.misc.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -35,7 +37,7 @@ public class SnippetQueryServiceImpl implements SnippetQueryService {
      * @return a {@link Page} of {@link SnippetPreview} based on the given criteria from {@link SearchCriteria}
      * */
     @Override
-    public Page<SnippetPreview> searchBasedOnCriteria(long id, SearchCriteria criteria, Pageable pageable){
+    public Page<SnippetPreview> searchBasedOnCriteria(long id, @NonNull SearchCriteria criteria, Pageable pageable){
         final AppUser a = this.userQueryService.findById(id);
         final Specification<Snippet> root;
 

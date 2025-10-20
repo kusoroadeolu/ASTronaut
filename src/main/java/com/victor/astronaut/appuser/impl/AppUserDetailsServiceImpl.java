@@ -4,6 +4,7 @@ import com.victor.astronaut.appuser.AppUserPrincipalDto;
 import com.victor.astronaut.appuser.AppUserPrincipalCacheService;
 import com.victor.astronaut.appuser.AppUserDetailsService;
 
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -18,7 +19,7 @@ public class AppUserDetailsServiceImpl implements AppUserDetailsService {
     private final AppUserPrincipalCacheService appUserPrincipalCacheService;
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+    public UserDetails loadUserByUsername(@NonNull String username) throws UsernameNotFoundException {
         throw new UsernameNotFoundException("Cannot load a user by it's username because usernames are not unique");
     }
 
