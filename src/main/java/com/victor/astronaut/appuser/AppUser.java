@@ -35,7 +35,7 @@ public class AppUser {
     @Column(name = "role", nullable = false)
     private AppUserRole role;
 
-    @Column(name = "isDeleted", nullable = false)
+    @Column(name = "isDeleted")
     private Boolean isDeleted;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)

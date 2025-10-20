@@ -8,6 +8,7 @@ import org.springframework.data.jpa.domain.Specification;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class DirectSnippetSpecBuilder implements SnippetSpecBuilder {
 
@@ -15,7 +16,6 @@ public class DirectSnippetSpecBuilder implements SnippetSpecBuilder {
     private final static String NAME = "name";
     private final static String LANGUAGE = "language";
     private final List<Specification<Snippet>> specifications;
-
     private DirectSnippetSpecBuilder(){
         this.specifications = new ArrayList<>();
     }
@@ -44,7 +44,7 @@ public class DirectSnippetSpecBuilder implements SnippetSpecBuilder {
     @Override
     public DirectSnippetSpecBuilder hasAnyLanguage(Set<SnippetLanguage> expectedLangs){
         if(!expectedLangs.isEmpty()){
-            Specification<Snippet> spec = this.hasXInSet(LANGUAGE, expectedLangs);
+            Specification<Snippet> spec = this.hasLanguageInSet(LANGUAGE, expectedLangs);
             this.specifications.add(spec);
         }
         return this;
@@ -72,7 +72,7 @@ public class DirectSnippetSpecBuilder implements SnippetSpecBuilder {
     public DirectSnippetSpecBuilder hasTagOrName(Set<String> expectedTagsOrNames){
         if (!expectedTagsOrNames.isEmpty()){
             Specification<Snippet> hasTags = this.hasValFromElementCollectionInSet(TAGS, expectedTagsOrNames);
-            Specification<Snippet> hasNames = this.hasXInSet(NAME, expectedTagsOrNames);
+            Specification<Snippet> hasNames = this.hasNameInSet(NAME, expectedTagsOrNames);
             Specification<Snippet> spec = Specification.anyOf(hasNames, hasTags);
             this.specifications.add(spec);
         }
@@ -87,13 +87,22 @@ public class DirectSnippetSpecBuilder implements SnippetSpecBuilder {
 
     //Checks if an entity in the DB has a value in their set(element collection) that matches the values in this set
     private Specification<Snippet> hasValFromElementCollectionInSet(String fieldName, Set<String> set){
-        return (root, query, cb) -> root.join(fieldName).in(set);
+        Set<String> lowerSet = set.stream().map(String::toLowerCase).collect(Collectors.toSet());
+        return (root, query, cb) -> root.join(fieldName).in(lowerSet);
     }
 
 
     //Checks if an entity has a name that exists in the expected names set
-    private Specification<Snippet> hasXInSet(String fieldName, Set<?> expectedNames){
-        return  (root, query, criteriaBuilder) -> root.get(fieldName).in( expectedNames);
+    private Specification<Snippet> hasNameInSet(String fieldName, Set<String> set){
+        Set<String> lowerSet = set.stream().map(String::toLowerCase).collect(Collectors.toSet());
+        return  (root, query, cb) -> cb.lower(root.get(fieldName)).in(lowerSet);
     }
+
+    //Checks if an entity has a name that exists in the expected language set
+    private Specification<Snippet> hasLanguageInSet(String fieldName, Set<SnippetLanguage> expectedLangs){
+        return  (root, query, cb) -> root.get(fieldName).in(expectedLangs);
+    }
+
+
 
 }

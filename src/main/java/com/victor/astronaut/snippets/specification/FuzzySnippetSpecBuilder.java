@@ -3,6 +3,7 @@ package com.victor.astronaut.snippets.specification;
 import com.victor.astronaut.appuser.AppUser;
 import com.victor.astronaut.snippets.Snippet;
 import com.victor.astronaut.snippets.enums.SnippetLanguage;
+import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
@@ -74,7 +75,7 @@ public class FuzzySnippetSpecBuilder implements SnippetSpecBuilder {
     public FuzzySnippetSpecBuilder hasTagOrName(Set<String> expectedTagsOrNames){
         if (!expectedTagsOrNames.isEmpty()){
             Specification<Snippet> hasTags = this.hasValFromElementCollectionInSet(TAGS, expectedTagsOrNames);
-            Specification<Snippet> hasNames = this.hasStringInSet(NAME, expectedTagsOrNames);
+            Specification<Snippet> hasNames = this.hasNameInSet(NAME, expectedTagsOrNames);
             Specification<Snippet> spec = Specification.anyOf(hasNames, hasTags);
             this.specifications.add(spec);
         }
@@ -92,7 +93,7 @@ public class FuzzySnippetSpecBuilder implements SnippetSpecBuilder {
         return (root, query, cb) -> {
             Join<Snippet, String> j = root.join(fieldName);
             Predicate[] predicates = set.stream()
-                    .map(s -> cb.like(j.as(String.class), WILDCARD + s + WILDCARD))
+                    .map(s -> cb.like(j.as(String.class), WILDCARD + s.toLowerCase() + WILDCARD))
                     .toArray(Predicate[]::new);
             return cb.or(predicates);
         };
@@ -100,18 +101,18 @@ public class FuzzySnippetSpecBuilder implements SnippetSpecBuilder {
 
 
     //Checks if an entity has a name that exists fuzzily in the expected names set
-    private Specification<Snippet> hasStringInSet(String fieldName, Set<String> expectedNames){
+    private Specification<Snippet> hasNameInSet(String fieldName, Set<String> expectedNames){
         return  (root, query, cb) -> {
-            Path<String> p = root.get(fieldName);
+            Expression<String> p = cb.lower(root.get(fieldName));
             Predicate[] predicates = expectedNames.stream()
-                    .map(s -> cb.like(p.as(String.class), WILDCARD + s + WILDCARD))
+                    .map(s -> cb.like(p.as(String.class), WILDCARD + s.toLowerCase() + WILDCARD))
                     .toArray(Predicate[]::new);
             return cb.or(predicates);
         };
     }
 
     //Checks if an entity has a name that exists in the expected language set
-    private Specification<Snippet> hasLanguageInSet(String fieldName, Set<SnippetLanguage> expectedLangs){
-        return  (root, query, cb) -> root.get(fieldName).in(expectedLangs);
+    private Specification<Snippet> hasLanguageInSet(String fieldName, Set<SnippetLanguage> expectedLangs) {
+        return (root, query, cb) -> root.get(fieldName).in(expectedLangs);
     }
 }
