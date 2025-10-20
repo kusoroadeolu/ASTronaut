@@ -36,6 +36,14 @@
     - Unified diff parsing into structured format
     - Change categorization: added, removed, unchanged
     - Diff service with unit and integration testing
+  
+- **User Account Management**
+    - Account deletion with soft-delete via `isDeleted` flag
+    - Async permanent data removal with scheduled job fallback
+    - User preference updates (fuzzy search toggle, etc.)
+    - Password confirmation during registration for better security
+    - Enhanced validation flows for registration and deletion
+
 
 ### Changed
 - Cleaned up auth code
@@ -43,6 +51,8 @@
 - Changed DDL strategy from `create` to `update`
 - `Snippet.tags` is now `@ElementCollection`
 - All parsed metadata is lowercase for consistent searching
+- - Improved user registration flow with password confirmation validation
+- Strengthened deletion flow with better security checks
 
 ### Technical Details
 - Switched from `javaparser-symbol-solver-core` to just `javaparser-core`
