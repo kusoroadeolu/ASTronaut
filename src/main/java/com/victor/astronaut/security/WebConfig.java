@@ -40,6 +40,8 @@ public class WebConfig {
                     auth.requestMatchers("/v3/api-docs/**").permitAll();
                     auth.requestMatchers("/swagger-ui.html").permitAll();
                     auth.requestMatchers("/index.html").permitAll();
+                    auth.requestMatchers("/css/header.css", "/js/header.js");
+                    auth.requestMatchers("/css/toast.css", "/js/toast.js").permitAll();
                     auth.requestMatchers("/auth.html", "/auth.js").permitAll();
                     auth.requestMatchers("/api-docs").permitAll();
                     auth.requestMatchers("/auth/**").permitAll();

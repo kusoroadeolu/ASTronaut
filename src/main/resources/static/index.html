@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Astronaut - Code Snippet Management Platform</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.min.css">
+
+    <link rel="stylesheet" href="css/header.css">
+
     <style>
         @font-face {
             font-family: 'System';
@@ -24,84 +27,19 @@
             scroll-behavior: smooth;
         }
 
-        /* Navigation Bar */
-        nav {
-            position: fixed;
-            top: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 1200px;
-            height: 80px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: rgba(15, 23, 42, 0.95);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid #1e293b;
-            z-index: 1000;
-            padding: 0 40px;
+        body {
+            /* 2. ADD PADDING TO PUSH CONTENT DOWN BELOW THE NEW FIXED HEADER (70px height) */
+            padding-top: 70px;
         }
 
-        .logo {
-            font-size: 28px;
-            font-weight: 700;
-            color: #0ea5e9;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            letter-spacing: -0.5px;
-        }
-
-        .logo i {
-            font-size: 32px;
-        }
-
-        .nav-buttons {
-            display: flex;
-            gap: 20px;
-            align-items: center;
-        }
-
-        .btn {
-            padding: 12px 28px;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 600;
-            border: none;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            display: inline-block;
-        }
-
-        .btn-login {
-            background: transparent;
-            color: #94a3b8;
-            border: 1px solid #475569;
-        }
-
-        .btn-login:hover {
-            background: rgba(148, 163, 184, 0.1);
-            color: #cbd5e1;
-            border-color: #64748b;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #0ea5e9 0%, #06b6d4 100%);
-            color: #ffffff;
-            border: none;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 12px 24px rgba(14, 165, 233, 0.3);
-        }
+        /* 3. REMOVED OLD NAVIGATION BAR CSS STYLES */
 
         /* Hero Section */
         .hero {
             width: 1200px;
             margin: 0 auto;
-            padding: 120px 40px 80px;
+            /* Adjusted padding-top as the body now handles the top space */
+            padding: 50px 40px 80px;
             text-align: center;
             min-height: 100vh;
             display: flex;
@@ -109,7 +47,9 @@
             justify-content: center;
             align-items: center;
         }
+        /* ... [Remaining styles are unchanged, as they only affect main content] ... */
 
+        /* Hero Section */
         .hero-content {
             max-width: 800px;
         }
@@ -139,10 +79,47 @@
             flex-wrap: wrap;
         }
 
+        .btn {
+            padding: 12px 28px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        /* Keeping button styles, as they are used in the hero section */
+        .btn-login {
+            background: transparent;
+            color: #94a3b8;
+            border: 1px solid #475569;
+        }
+
+        .btn-login:hover {
+            background: rgba(148, 163, 184, 0.1);
+            color: #cbd5e1;
+            border-color: #64748b;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #0ea5e9 0%, #06b6d4 100%);
+            color: #ffffff;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px rgba(14, 165, 233, 0.3);
+        }
+
         .btn-large {
             padding: 16px 40px;
             font-size: 16px;
         }
+
 
         /* Decorative Elements */
         .hero-decoration {
@@ -287,7 +264,8 @@
 
         /* Responsive Design */
         @media (max-width: 1200px) {
-            nav, .hero, .features, .cta-section, footer {
+            /* Removed 'nav' from this list */
+            .hero, .features, .cta-section, footer {
                 width: 100%;
             }
 
@@ -297,13 +275,7 @@
         }
 
         @media (max-width: 768px) {
-            nav {
-                padding: 0 20px;
-            }
-
-            .logo {
-                font-size: 20px;
-            }
+            /* Removed 'nav' styling */
 
             .hero {
                 padding: 100px 20px 60px;
@@ -349,15 +321,6 @@
     </style>
 </head>
 <body>
-<!-- Navigation Bar -->
-<nav>
-    <div class="logo">
-        <i class="ri-rocket-2-line"></i>
-        Astronaut
-    </div>
-</nav>
-
-<!-- Hero Section -->
 <section class="hero">
     <div class="hero-decoration"></div>
     <div class="hero-decoration-left"></div>
@@ -370,7 +333,6 @@
     </div>
 </section>
 
-<!-- Features Section -->
 <section class="features">
     <h2>Why Choose Astronaut</h2>
     <div class="features-grid">
@@ -405,15 +367,24 @@
     </div>
 </section>
 
-<!-- CTA Section -->
 <section class="cta-section">
     <h2>Ready to Get Started?</h2>
     <p>Join thousands of developers who are already using Astronaut to manage their code snippets.</p>
+    <div class="hero-buttons">
+        <a href="auth.html" class="btn btn-primary btn-large">Get Started Now</a>
+    </div>
 </section>
 
-<!-- Footer -->
 <footer>
     <p>&copy; 2025 Astronaut. All rights reserved. | Terms of Service | Privacy Policy</p>
 </footer>
+
+<script src="js/header.js"></script>
+
+<script>
+    renderHeader({
+        // showUsername is false (default)
+    });
+</script>
 </body>
 </html>

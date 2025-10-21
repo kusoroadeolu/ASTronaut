@@ -36,7 +36,7 @@ spring:
 
 jwt:
   secret: ${JWT_SECRET} #Your JWT Secret
-  ttl: 3_000_000 #5 minutes
+  ttl: 300_000_000 #5 minutes
   refresh-before: 60000
   cookie-name: JWT_TOKEN
   cookie-max-age: 60 # 60 minutes

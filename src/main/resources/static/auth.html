@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Authentication - Astronaut</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.min.css">
+    <link rel="stylesheet" href="css/toast.css">
+
+    <link rel="stylesheet" href="css/header.css">
+
     <style>
         @font-face {
             font-family: 'System';
@@ -17,8 +21,12 @@
             box-sizing: border-box;
         }
 
+        /* 2. REMOVED OLD HEADER STYLES (Header, .header-content, .logo) */
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+            /* Note: Added padding-top to account for the new fixed header's height (70px) */
+            padding-top: 70px;
             background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
             color: #e2e8f0;
             min-height: 100vh;
@@ -26,41 +34,6 @@
             flex-direction: column;
             width: 1200px;
             margin: 0 auto;
-        }
-
-        /* Header */
-        header {
-            padding: 2rem 2rem;
-            border-bottom: 1px solid rgba(148, 163, 184, 0.1);
-            background: rgba(15, 23, 42, 0.5);
-            backdrop-filter: blur(10px);
-        }
-
-        .header-content {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .logo {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #60a5fa;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            transition: color 0.3s ease;
-        }
-
-        .logo:hover {
-            color: #93c5fd;
-        }
-
-        .logo i {
-            font-size: 1.75rem;
         }
 
         /* Main Container */
@@ -71,6 +44,8 @@
             justify-content: center;
             padding: 2rem;
         }
+
+        /* [Remaining Auth Page Styles...] */
 
         /* Auth Card */
         .auth-card {
@@ -265,32 +240,6 @@
             transform: translateY(0);
         }
 
-        /* Messages */
-        .message {
-            padding: 0.75rem 1rem;
-            border-radius: 0.5rem;
-            margin-bottom: 1rem;
-            font-size: 0.9rem;
-            display: none;
-            animation: slideIn 0.3s ease-out;
-        }
-
-        .message.show {
-            display: block;
-        }
-
-        .message.error {
-            background: rgba(239, 68, 68, 0.1);
-            border: 1px solid rgba(239, 68, 68, 0.3);
-            color: #fca5a5;
-        }
-
-        .message.success {
-            background: rgba(16, 185, 129, 0.1);
-            border: 1px solid rgba(16, 185, 129, 0.3);
-            color: #86efac;
-        }
-
         /* Auth Links */
         .auth-link {
             text-align: center;
@@ -336,35 +285,18 @@
             .main-container {
                 padding: 1rem;
             }
-
-            header {
-                padding: 1.5rem 1rem;
-            }
         }
     </style>
 </head>
 <body>
-<header>
-    <div class="header-content">
-        <a href="index.html" class="logo">
-            <i class="ri-rocket-line"></i>
-            Astronaut
-        </a>
-    </div>
-</header>
-
 <div class="main-container">
     <div class="auth-card">
-        <!-- Tabs -->
         <div class="auth-tabs">
             <button class="tab-button active" data-tab="login">Login</button>
             <button class="tab-button" data-tab="register">Register</button>
         </div>
 
-        <!-- Login Form -->
         <form class="form-container active" id="loginForm" data-form="login">
-            <div id="loginMessage" class="message"></div>
-
             <div class="form-group">
                 <label for="loginEmail">Email Address</label>
                 <input type="email" id="loginEmail" name="email" placeholder="you@example.com">
@@ -387,10 +319,7 @@
             </div>
         </form>
 
-        <!-- Register Form -->
         <form class="form-container" id="registerForm" data-form="register">
-            <div id="registerMessage" class="message"></div>
-
             <div class="form-group">
                 <label for="registerUsername">Username</label>
                 <input type="text" id="registerUsername" name="username" placeholder="your_username">
@@ -434,161 +363,155 @@
     <p>&copy; 2025 Astronaut. All rights reserved.</p>
 </footer>
 
-<script>// Form switching functionality
-const tabButtons = document.querySelectorAll('.tab-button');
-const formContainers = document.querySelectorAll('.form-container');
-const switchFormLinks = document.querySelectorAll('.switch-form');
+<script src="js/toast.js"></script>
+<script src="js/header.js"></script>
 
-function switchForm(targetForm) {
-    // Hide all forms and deactivate all tabs
-    formContainers.forEach(form => form.classList.remove('active'));
-    tabButtons.forEach(btn => btn.classList.remove('active'));
+<script>
+    renderHeader({
 
-    // Show target form and activate corresponding tab
-    const targetFormElement = document.getElementById(targetForm + 'Form');
-    const targetTabButton = document.querySelector(`[data-tab="${targetForm}"]`);
-
-    if (targetFormElement) {
-        targetFormElement.classList.add('active');
-    }
-    if (targetTabButton) {
-        targetTabButton.classList.add('active');
-    }
-
-    // Clear messages
-    clearMessages();
-}
-
-// Tab button click handlers
-tabButtons.forEach(button => {
-    button.addEventListener('click', () => {
-        const targetForm = button.getAttribute('data-tab');
-        switchForm(targetForm);
     });
-});
+    // Form switching functionality
+    const tabButtons = document.querySelectorAll('.tab-button');
+    const formContainers = document.querySelectorAll('.form-container');
+    const switchFormLinks = document.querySelectorAll('.switch-form');
 
-// Switch form link handlers
-switchFormLinks.forEach(link => {
-    link.addEventListener('click', (e) => {
-        e.preventDefault();
-        const targetForm = link.getAttribute('data-target');
-        switchForm(targetForm);
-    });
-});
+    function switchForm(targetForm) {
+        // Hide all forms and deactivate all tabs
+        formContainers.forEach(form => form.classList.remove('active'));
+        tabButtons.forEach(btn => btn.classList.remove('active'));
 
-// Password visibility toggle
-const passwordToggles = document.querySelectorAll('.password-toggle');
+        // Show target form and activate corresponding tab
+        const targetFormElement = document.getElementById(targetForm + 'Form');
+        const targetTabButton = document.querySelector(`[data-tab="${targetForm}"]`);
 
-passwordToggles.forEach(toggle => {
-    toggle.addEventListener('click', (e) => {
-        e.preventDefault();
-        const inputId = toggle.getAttribute('data-toggle');
-        const input = document.getElementById(inputId);
-        const icon = toggle.querySelector('i');
-
-        if (input.type === 'password') {
-            input.type = 'text';
-            icon.classList.remove('ri-eye-line');
-            icon.classList.add('ri-eye-off-line');
-        } else {
-            input.type = 'password';
-            icon.classList.remove('ri-eye-off-line');
-            icon.classList.add('ri-eye-line');
+        if (targetFormElement) {
+            targetFormElement.classList.add('active');
         }
-    });
-});
+        if (targetTabButton) {
+            targetTabButton.classList.add('active');
+        }
+    }
 
-// Message display functions
-function showMessage(formType, message, type) {
-    const messageElement = document.getElementById(formType + 'Message');
-    messageElement.textContent = message;
-    messageElement.className = `message show ${type}`;
-}
-
-function clearMessages() {
-    const messages = document.querySelectorAll('.message');
-    messages.forEach(msg => msg.classList.remove('show'));
-}
-
-// Form submission
-const loginForm = document.getElementById('loginForm');
-const registerForm = document.getElementById('registerForm');
-
-loginForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    clearMessages();
-
-    const email = document.getElementById('loginEmail').value;
-    const password = document.getElementById('loginPassword').value;
-
-    try {
-        const response = await fetch(`${window.origin}/auth/login`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password })
+    // Tab button click handlers
+    tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const targetForm = button.getAttribute('data-tab');
+            switchForm(targetForm);
         });
+    });
 
-        if (!response.ok) {
-            const error = await response.json();
-            showMessage('login', error.message, 'error');
-            return;
-        }
-
-        const userData = await response.json();
-
-        // Store user data for dashboard display
-        sessionStorage.setItem('astronaut_user', JSON.stringify({
-            username: userData.username,
-            email: userData.email
-        }));
-
-        setTimeout(() => {
-            window.location.href = `${window.origin}/dashboard.html`;
-        }, 200);
-    } catch (err) {
-        console.error('Login error:', err);
-        showMessage('login', 'An error occurred during login', 'error');
-    }
-});
-
-registerForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    clearMessages();
-
-    const username = document.getElementById('registerUsername').value;
-    const email = document.getElementById('registerEmail').value;
-    const password = document.getElementById('registerPassword').value;
-    const confirmPassword = document.getElementById('confirmPassword').value;
-
-    try {
-        const response = await fetch(`${window.origin}/auth/register`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username, email, password, confirmPassword })
+    // Switch form link handlers
+    switchFormLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const targetForm = link.getAttribute('data-target');
+            switchForm(targetForm);
         });
+    });
 
-        if (!response.ok) {
-            const error = await response.json();
-            showMessage('register', error.message, 'error');
-            return;
+    // Password visibility toggle
+    const passwordToggles = document.querySelectorAll('.password-toggle');
+
+    passwordToggles.forEach(toggle => {
+        toggle.addEventListener('click', (e) => {
+            e.preventDefault();
+            const inputId = toggle.getAttribute('data-toggle');
+            const input = document.getElementById(inputId);
+            const icon = toggle.querySelector('i');
+
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('ri-eye-line');
+                icon.classList.add('ri-eye-off-line');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('ri-eye-off-line');
+                icon.classList.add('ri-eye-line');
+            }
+        });
+    });
+
+    // Form submission
+    const loginForm = document.getElementById('loginForm');
+    const registerForm = document.getElementById('registerForm');
+
+    loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const email = document.getElementById('loginEmail').value;
+        const password = document.getElementById('loginPassword').value;
+
+        try {
+            const response = await fetch(`${window.origin}/auth/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                showToast('error', 'Login Failed', error.message);
+                return;
+            }
+
+            const userData = await response.json();
+
+            // Store user data for dashboard display
+            sessionStorage.setItem('astronaut_user', JSON.stringify({
+                username: userData.username,
+                email: userData.email
+            }));
+
+            showToast('success', 'Login Successful', 'Redirecting to dashboard...');
+
+            setTimeout(() => {
+                window.location.href = `${window.origin}/dashboard.html`;
+            }, 1000);
+        } catch (err) {
+            console.error('Login error:', err);
+            showToast('error', 'Error', 'An error occurred during login');
         }
+    });
 
-        const userData = await response.json();
+    registerForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
 
-        // Store user data for dashboard display
-        sessionStorage.setItem('astronaut_user', JSON.stringify({
-            username: userData.username,
-            email: userData.email
-        }));
+        const username = document.getElementById('registerUsername').value;
+        const email = document.getElementById('registerEmail').value;
+        const password = document.getElementById('registerPassword').value;
+        const confirmPassword = document.getElementById('confirmPassword').value;
 
-        setTimeout(() => {
-            window.location.href = `${window.origin}/dashboard.html`;
-        }, 200);
-    } catch (err) {
-        console.error('Register error:', err);
-        showMessage('register', 'An error occurred during registration', 'error');
-    }
-});</script>
+        try {
+            const response = await fetch(`${window.origin}/auth/register`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, email, password, confirmPassword })
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                showToast('error', 'Registration Failed', error.message);
+                return;
+            }
+
+            const userData = await response.json();
+
+            // Store user data for dashboard display
+            sessionStorage.setItem('astronaut_user', JSON.stringify({
+                username: userData.username,
+                email: userData.email
+            }));
+
+            showToast('success', 'Registration Successful', 'Redirecting to dashboard...');
+
+            setTimeout(() => {
+                window.location.href = `${window.origin}/dashboard.html`;
+            }, 1000);
+        } catch (err) {
+            console.error('Register error:', err);
+            showToast('error', 'Error', 'An error occurred during registration');
+        }
+    });
+</script>
 </body>
 </html>
-

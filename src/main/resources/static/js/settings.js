@@ -2,6 +2,40 @@ const API_BASE = `${window.origin}`;
 let currentUsername = '';
 let currentEmail = '';
 
+// Close modal when clicking outside
+document.addEventListener('DOMContentLoaded', function() {
+    // Render header
+    renderHeader({
+        showUsername: false,
+        buttons: [
+            HeaderButtons.back(),
+            HeaderButtons.logout()
+        ]
+    });
+
+    const deleteModal = document.getElementById('delete-modal');
+    if (deleteModal) {
+        deleteModal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeDeleteModal();
+            }
+        });
+    }
+
+    // Initialize page data
+    initPage();
+
+    // Enter key on delete confirmation fields
+    const deletePasswordField = document.getElementById('delete-confirm-password');
+    if (deletePasswordField) {
+        deletePasswordField.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                confirmDelete();
+            }
+        });
+    }
+});
+
 // Initialize page
 async function initPage() {
     const storedUser = sessionStorage.getItem('astronaut_user');
@@ -14,7 +48,7 @@ async function initPage() {
         document.getElementById('username-display').textContent = currentUsername;
         document.getElementById('email-display').textContent = currentEmail;
     } else {
-        showNotification('User data not found. Please log in again.', 'error');
+        showToast('error', 'Session Expired', 'Please log in again');
         setTimeout(() => {
             window.location.href = '/index.html';
         }, 2000);
@@ -48,7 +82,7 @@ async function fetchUserData() {
         document.getElementById('email-display').textContent = currentEmail;
     } catch (error) {
         console.error('Error fetching user data:', error);
-        showNotification('Failed to load user data', 'error');
+        showToast('error', 'Load Failed', 'Failed to load user data');
     }
 }
 
@@ -72,12 +106,12 @@ async function saveUsername() {
     const newUsername = input.value.trim();
 
     if (!newUsername) {
-        showNotification('Username cannot be empty', 'error');
+        showToast('error', 'Invalid Input', 'Username cannot be empty');
         return;
     }
 
     if (newUsername.length < 1) {
-        showNotification('Username must be at least 1 character', 'error');
+        showToast('error', 'Invalid Input', 'Username must be at least 1 character');
         return;
     }
 
@@ -110,10 +144,10 @@ async function saveUsername() {
             email: currentEmail
         }));
 
-        showNotification('Username updated successfully', 'success');
+        showToast('success', 'Username Updated', 'Your username has been changed successfully');
     } catch (error) {
         console.error('Error updating username:', error);
-        showNotification(error.message || 'Failed to update username', 'error');
+        showToast('error', 'Update Failed', error.message || 'Failed to update username');
     }
 }
 
@@ -137,13 +171,13 @@ async function saveEmail() {
     const newEmail = input.value.trim();
 
     if (!newEmail) {
-        showNotification('Email cannot be empty', 'error');
+        showToast('error', 'Invalid Input', 'Email cannot be empty');
         return;
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(newEmail)) {
-        showNotification('Please enter a valid email address', 'error');
+        showToast('error', 'Invalid Email', 'Please enter a valid email address');
         return;
     }
 
@@ -176,10 +210,10 @@ async function saveEmail() {
             email: newEmail
         }));
 
-        showNotification('Email updated successfully', 'success');
+        showToast('success', 'Email Updated', 'Your email has been changed successfully');
     } catch (error) {
         console.error('Error updating email:', error);
-        showNotification(error.message || 'Failed to update email', 'error');
+        showToast('error', 'Update Failed', error.message || 'Failed to update email');
     }
 }
 
@@ -190,22 +224,22 @@ async function updatePassword() {
     const confirmPassword = document.getElementById('confirm-password').value;
 
     if (!currentPassword || !newPassword || !confirmPassword) {
-        showNotification('All password fields are required', 'error');
+        showToast('error', 'Missing Fields', 'All password fields are required');
         return;
     }
 
     if (newPassword.length < 6) {
-        showNotification('New password must be at least 6 characters', 'error');
+        showToast('error', 'Weak Password', 'New password must be at least 6 characters');
         return;
     }
 
     if (newPassword !== confirmPassword) {
-        showNotification('New passwords do not match', 'error');
+        showToast('error', 'Password Mismatch', 'New passwords do not match');
         return;
     }
 
     if (currentPassword === newPassword) {
-        showNotification('New password must be different from current password', 'error');
+        showToast('error', 'Invalid Change', 'New password must be different from current password');
         return;
     }
 
@@ -233,10 +267,10 @@ async function updatePassword() {
         document.getElementById('new-password').value = '';
         document.getElementById('confirm-password').value = '';
 
-        showNotification('Password updated successfully', 'success');
+        showToast('success', 'Password Updated', 'Your password has been changed successfully');
     } catch (error) {
         console.error('Error updating password:', error);
-        showNotification(error.message || 'Failed to update password', 'error');
+        showToast('error', 'Update Failed', error.message || 'Failed to update password');
     }
 }
 
@@ -262,11 +296,11 @@ async function toggleFuzzySearch() {
             throw new Error('Failed to update preferences');
         }
 
-        showNotification(`Fuzzy search ${isActive ? 'enabled' : 'disabled'}`, 'success');
+        showToast('success', 'Preference Updated', `Fuzzy search ${isActive ? 'enabled' : 'disabled'}`);
     } catch (error) {
         console.error('Error updating preferences:', error);
         toggle.classList.toggle('active');
-        showNotification('Failed to update preferences', 'error');
+        showToast('error', 'Update Failed', 'Failed to update preferences');
     }
 }
 
@@ -289,12 +323,12 @@ async function confirmDelete() {
     const confirmPassword = document.getElementById('delete-confirm-password').value;
 
     if (!password || !confirmPassword) {
-        showNotification('Both password fields are required', 'error');
+        showToast('error', 'Missing Fields', 'Both password fields are required');
         return;
     }
 
     if (password !== confirmPassword) {
-        showNotification('Passwords do not match', 'error');
+        showToast('error', 'Password Mismatch', 'Passwords do not match');
         return;
     }
 
@@ -317,82 +351,12 @@ async function confirmDelete() {
         }
 
         closeDeleteModal();
-        showNotification('Account deleted successfully. Redirecting...', 'success');
+        showToast('success', 'Account Deleted', 'Redirecting to login...');
         setTimeout(() => {
             window.location.href = '/index.html';
         }, 2000);
     } catch (error) {
         console.error('Error deleting account:', error);
-        showNotification(error.message || 'Failed to delete account', 'error');
+        showToast('error', 'Deletion Failed', error.message || 'Failed to delete account');
     }
 }
-
-// Show Notification
-function showNotification(message, type = 'success') {
-    const container = document.getElementById('notification-container');
-    const notification = document.createElement('div');
-    notification.className = `notification ${type}`;
-
-    const icon = type === 'success' ? 'ri-check-circle-line' : 'ri-error-warning-line';
-    notification.innerHTML = `<i class="${icon}"></i><span>${message}</span>`;
-
-    container.appendChild(notification);
-
-    setTimeout(() => {
-        notification.classList.add('out');
-        setTimeout(() => {
-            notification.remove();
-        }, 300);
-    }, 3000);
-}
-
-// Navigation
-function goBack() {
-    window.location.href = '/dashboard.html';
-}
-
-async function logout() {
-    try {
-        await fetch(`${API_BASE}/users/logout`, {
-            method: 'DELETE',
-            credentials: 'include',
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        });
-    } catch (error) {
-        console.error('Error logging out:', error);
-    }
-
-    showNotification('Logging out...', 'success');
-    setTimeout(() => {
-        window.location.href = '/index.html';
-    }, 1000);
-}
-
-// Close modal when clicking outside
-document.addEventListener('DOMContentLoaded', function() {
-    const deleteModal = document.getElementById('delete-modal');
-    if (deleteModal) {
-        deleteModal.addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeDeleteModal();
-            }
-        });
-    }
-
-    // Initialize page data
-    initPage();
-});
-
-// Enter key on delete confirmation fields
-document.addEventListener('DOMContentLoaded', function() {
-    const deletePasswordField = document.getElementById('delete-confirm-password');
-    if (deletePasswordField) {
-        deletePasswordField.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                confirmDelete();
-            }
-        });
-    }
-});

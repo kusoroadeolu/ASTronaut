@@ -2,6 +2,14 @@
 document.addEventListener('DOMContentLoaded', function() {
     let isNavigating = false;
 
+    // At the top of dashboard.js, after DOM loads
+    renderHeader({
+        showUsername: true,
+        buttons: [
+            HeaderButtons.settings()
+        ]
+    });
+
 // Advanced Search Toggle
     const advancedToggle = document.getElementById('advancedToggle');
     const advancedPanel = document.getElementById('advancedPanel');

@@ -6,24 +6,10 @@
     <title>Settings - Astronaut</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.min.css">
     <link rel="stylesheet" href="css/settings.css">
+    <link rel="stylesheet" href="css/toast.css">
+    <link rel="stylesheet" href="css/header.css">
 </head>
 <body>
-<!-- Header -->
-<div class="header">
-    <div class="header-left">
-        <a href="/dashboard" class="logo">🚀 Astronaut</a>
-    </div>
-    <div class="header-right">
-        <button class="btn-header" onclick="goBack()">
-            <i class="ri-arrow-left-line"></i>
-            Back
-        </button>
-        <button class="btn-header btn-logout" onclick="logout()">
-            <i class="ri-logout-box-line"></i>
-            Logout
-        </button>
-    </div>
-</div>
 
 <!-- Main Content -->
 <div class="main-container">
@@ -210,10 +196,8 @@
         </div>
     </div>
 </div>
-
-<!-- Notification Container -->
-<div id="notification-container"></div>
-
+<script src="js/header.js"></script>
+<script src="js/toast.js"></script>
 <script src="js/settings.js"></script>
 </body>
 </html>
