@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snippet Detail - Astronaut</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.min.css">
+    <link rel="stylesheet" href="css/snippet.css">
+</head>
+<body>
+<!-- Header -->
+<div class="header">
+    <div class="header-left">
+        <a href="#" class="logo" onclick="goToDashboard(event)">
+            <i class="ri-rocket-2-line"></i>
+            Astronaut
+        </a>
+    </div>
+    <div class="header-right">
+        <button class="btn-back-header" onclick="goToDashboard()">
+            <i class="ri-arrow-left-line"></i>
+            Back to Dashboard
+        </button>
+    </div>
+</div>
+
+<!-- Main Container -->
+<div class="container">
+    <!-- Read-Only Mode -->
+    <div id="readOnlyMode" class="read-only-mode fade-in">
+        <!-- Metadata Section -->
+        <div class="metadata-section">
+            <h1 class="snippet-title"></h1>
+            <div class="metadata-row">
+                <span class="language-badge"></span>
+                <div class="tags-container"></div>
+                <div class="metadata-dates">
+                    <div class="date-item">
+                        <span class="date-label">Created</span>
+                        <span></span>
+                    </div>
+                    <div class="date-item">
+                        <span class="date-label">Updated</span>
+                        <span></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content Section -->
+        <div class="content-section">
+            <div class="code-display-area">
+                <div class="code-header">
+                    <span class="code-header-label">Code</span>
+                    <button class="btn-copy" onclick="copyCode()">
+                        <i class="ri-file-copy-2-line"></i>
+                        Copy
+                    </button>
+                </div>
+                <div class="code-content">
+                    <div class="line-numbers" id="lineNumbers"></div>
+                    <div class="code-block" id="codeBlock"></div>
+                </div>
+            </div>
+
+            <div class="notes-area">
+                <div class="notes-title">Notes</div>
+                <div class="notes-content"></div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <button class="btn btn-primary" onclick="toggleEditMode()">
+                <i class="ri-edit-line"></i>
+                Edit
+            </button>
+            <button class="btn btn-danger" onclick="deleteSnippet()">
+                <i class="ri-delete-bin-line"></i>
+                Delete
+            </button>
+            <button class="btn btn-secondary" onclick="toggleCompareMode()">
+                <i class="ri-git-compare-line"></i>
+                Compare
+            </button>
+            <button class="btn btn-secondary" onclick="goToDashboard()">
+                <i class="ri-arrow-left-line"></i>
+                Back
+            </button>
+        </div>
+    </div>
+
+    <!-- Edit Mode -->
+    <div id="editMode" class="edit-mode-hidden fade-in">
+        <div class="edit-metadata-section">
+            <div class="form-group">
+                <input type="text" class="form-input form-input-title" id="editTitle" placeholder="Snippet Title">
+            </div>
+
+            <div class="edit-row">
+                <div class="form-group">
+                    <label class="form-label">Language</label>
+                    <select class="form-select" id="editLanguage">
+                        <option value="">Select Language</option>
+                        <option value="JAVA">Java</option>
+                        <option value="OTHER">Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Tags</label>
+                    <input type="text" class="form-input" id="editTags" placeholder="e.g., spring, beans">
+                </div>
+            </div>
+        </div>
+
+        <!-- Edit Content Section -->
+        <div class="edit-content-section">
+            <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label">Code</label>
+                <textarea class="textarea-code" id="editCode" placeholder="Enter your code here..."></textarea>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label">Notes</label>
+                <textarea class="textarea-notes" id="editNotes" placeholder="Add notes about this snippet..."></textarea>
+            </div>
+        </div>
+
+        <!-- Edit Action Buttons -->
+        <div class="action-buttons" style="margin-top: 30px;">
+            <button class="btn btn-success" onclick="saveSnippet()">
+                <i class="ri-save-line"></i>
+                Save
+            </button>
+            <button class="btn btn-danger" onclick="deleteSnippet()">
+                <i class="ri-delete-bin-line"></i>
+                Delete
+            </button>
+            <button class="btn btn-secondary" onclick="toggleEditMode()">
+                <i class="ri-close-line"></i>
+                Cancel
+            </button>
+        </div>
+    </div>
+
+    <!-- Diff View -->
+    <div id="diffView" class="diff-view">
+        <div class="diff-header">
+            <h2 class="diff-title">Compare Snippets</h2>
+            <button class="btn btn-secondary" onclick="exitCompareMode()">
+                <i class="ri-close-line"></i>
+                Exit Compare
+            </button>
+        </div>
+
+        <div class="diff-container">
+            <div class="diff-column">
+                <div class="diff-column-header">Original</div>
+                <div class="diff-content">
+                    <div class="diff-line-numbers" id="diffLineNumbersLeft"></div>
+                    <div class="diff-code" id="diffCodeLeft"></div>
+                </div>
+            </div>
+
+            <div class="diff-column">
+                <div class="diff-column-header">Comparing To</div>
+                <div class="diff-content">
+                    <div class="diff-line-numbers" id="diffLineNumbersRight"></div>
+                    <div class="diff-code" id="diffCodeRight"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="action-buttons">
+            <button class="btn btn-secondary" onclick="exitCompareMode()">
+                <i class="ri-arrow-left-line"></i>
+                Back to Normal View
+            </button>
+        </div>
+    </div>
+</div>
+<script src="js/snippet-detail.js"></script>
+</body>
+</html>

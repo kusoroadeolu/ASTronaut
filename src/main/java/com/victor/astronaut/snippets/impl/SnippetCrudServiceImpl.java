@@ -67,7 +67,7 @@ public class SnippetCrudServiceImpl implements SnippetCrudService {
     public void deleteSnippet(long appUserId, long snippetId){
         final AppUser user = this.appUserQueryService.findById(appUserId);
         executeWithException("delete", snippetId, () -> {
-            final int count = this.snippetRepository.deleteSnippetByAppUserAndId(user, snippetId);
+            final Integer count = this.snippetRepository.deleteSnippetByAppUserAndId(user, snippetId);
 
             switch (count){
                 case 1 -> log.info("Successfully deleted snippet with ID: {} for user with ID: {}", snippetId ,appUserId);

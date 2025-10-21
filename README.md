@@ -282,7 +282,7 @@ Deletes a snippet permanently.
 ## Snippet Analytics
 
 ### Filter Snippets
-**GET** `/snippets/filter`
+**POST** `/snippets/filter`
 
 Searches and filters snippets based on criteria.
 

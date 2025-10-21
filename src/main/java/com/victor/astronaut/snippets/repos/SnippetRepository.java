@@ -11,7 +11,7 @@ import java.util.Optional;
 
 public interface SnippetRepository extends JpaRepository<Snippet, Long>, JpaSpecificationExecutor<Snippet> {
     @Modifying
-    int deleteSnippetByAppUserAndId(AppUser user, long snippetId);
+    Integer deleteSnippetByAppUserAndId(AppUser user, long snippetId);
 
     Optional<Snippet> findSnippetByAppUserAndId(AppUser appUser, Long id);
 

@@ -124,7 +124,7 @@ document.addEventListener('DOMContentLoaded', function() {
             card.addEventListener('click', function() {
                 const snippetId = this.getAttribute('data-snippet-id');
                 console.log('Navigating to snippet:', snippetId);
-                // window.location.href = `/snippet-detail.html?id=${snippetId}`;
+                window.location.href = `/snippet-detail.html?id=${snippetId}`;
             });
         });
     }
