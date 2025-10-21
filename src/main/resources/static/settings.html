@@ -1,0 +1,972 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - Astronaut</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        @font-face {
+            font-family: 'System';
+            src: local(-apple-system), local(BlinkMacSystemFont), local("Segoe UI"), local(sans-serif);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #e2e8f0;
+            min-height: 100vh;
+            width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 70px;
+            background: rgba(15, 23, 42, 0.95);
+            border-bottom: 1px solid #334155;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 40px;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+            width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            cursor: pointer;
+            text-decoration: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .logo:hover {
+            opacity: 0.8;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .btn-header {
+            padding: 8px 16px;
+            border: 1px solid #475569;
+            background: transparent;
+            color: #94a3b8;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-header:hover {
+            background: #1e293b;
+            border-color: #64748b;
+            color: #cbd5e1;
+        }
+
+        .btn-logout {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: #ef4444;
+            color: #ef4444;
+        }
+
+        .btn-logout:hover {
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+        }
+
+        /* Main Content */
+        .main-container {
+            margin-top: 90px;
+            padding: 40px;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .page-title {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 30px;
+            color: #f1f5f9;
+        }
+
+        /* Settings Section */
+        .settings-section {
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            transition: all 0.3s ease;
+        }
+
+        .settings-section:hover {
+            border-color: #475569;
+            background: rgba(30, 41, 59, 0.7);
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #f1f5f9;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title i {
+            font-size: 20px;
+            color: #3b82f6;
+        }
+
+        .setting-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 0;
+            border-bottom: 1px solid #334155;
+        }
+
+        .setting-row:last-child {
+            border-bottom: none;
+        }
+
+        .setting-label {
+            font-size: 14px;
+            color: #94a3b8;
+            font-weight: 500;
+        }
+
+        .setting-value {
+            font-size: 14px;
+            color: #cbd5e1;
+        }
+
+        .setting-controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        /* Edit Mode */
+        .edit-input {
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid #475569;
+            color: #e2e8f0;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .edit-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background: rgba(15, 23, 42, 0.8);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: #94a3b8;
+            border: 1px solid #475569;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(71, 85, 105, 0.1);
+            border-color: #64748b;
+            color: #cbd5e1;
+        }
+
+        .btn-danger {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border: 1px solid #ef4444;
+        }
+
+        .btn-danger:hover {
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+        }
+
+        .btn-success {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+            border: 1px solid #10b981;
+        }
+
+        .btn-success:hover {
+            background: rgba(16, 185, 129, 0.2);
+            color: #6ee7b7;
+        }
+
+        /* Password Section */
+        .password-form {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-group label {
+            font-size: 14px;
+            color: #94a3b8;
+            font-weight: 500;
+        }
+
+        .password-input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .password-input-wrapper input {
+            width: 100%;
+            padding-right: 40px;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 12px;
+            background: none;
+            border: none;
+            color: #64748b;
+            cursor: pointer;
+            font-size: 18px;
+            transition: color 0.3s ease;
+        }
+
+        .password-toggle:hover {
+            color: #94a3b8;
+        }
+
+        /* Preferences Section */
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 28px;
+            background: #334155;
+            border-radius: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+        }
+
+        .toggle-switch.active {
+            background: #10b981;
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            background: white;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .toggle-switch.active::after {
+            left: 24px;
+        }
+
+        /* Danger Zone */
+        .danger-zone {
+            border-color: #ef4444;
+            background: rgba(239, 68, 68, 0.05);
+        }
+
+        .danger-zone:hover {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: #ef4444;
+        }
+
+        .danger-zone .section-title {
+            color: #ef4444;
+        }
+
+        .danger-zone .section-title i {
+            color: #ef4444;
+        }
+
+        .danger-warning {
+            font-size: 13px;
+            color: #fca5a5;
+            margin-bottom: 16px;
+            padding: 12px;
+            background: rgba(239, 68, 68, 0.1);
+            border-left: 3px solid #ef4444;
+            border-radius: 4px;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 20px 25px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #f1f5f9;
+            margin-bottom: 12px;
+        }
+
+        .modal-warning {
+            font-size: 13px;
+            color: #fca5a5;
+            margin-bottom: 20px;
+            padding: 12px;
+            background: rgba(239, 68, 68, 0.1);
+            border-left: 3px solid #ef4444;
+            border-radius: 4px;
+        }
+
+        .modal-form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .modal-form-group label {
+            font-size: 14px;
+            color: #94a3b8;
+            font-weight: 500;
+        }
+
+        .modal-form-group input {
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid #475569;
+            color: #e2e8f0;
+            padding: 10px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        .modal-form-group input:focus {
+            outline: none;
+            border-color: #ef4444;
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        .modal-actions .btn {
+            flex: 1;
+            justify-content: center;
+        }
+
+        /* Notification */
+        .notification {
+            position: fixed;
+            top: 90px;
+            right: 40px;
+            padding: 16px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: slideIn 0.3s ease;
+            z-index: 1500;
+            max-width: 400px;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes slideOut {
+            from {
+                opacity: 1;
+                transform: translateX(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+        }
+
+        .notification.out {
+            animation: slideOut 0.3s ease;
+        }
+
+        .notification.success {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid #10b981;
+            color: #6ee7b7;
+        }
+
+        .notification.error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid #ef4444;
+            color: #fca5a5;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            body {
+                width: 100%;
+            }
+
+            .header {
+                width: 100%;
+                padding: 0 20px;
+            }
+
+            .main-container {
+                padding: 20px;
+                margin-left: 0;
+                margin-right: 0;
+            }
+
+            .settings-section {
+                padding: 20px;
+            }
+
+            .notification {
+                right: 20px;
+                left: 20px;
+                max-width: none;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- Header -->
+<div class="header">
+    <div class="header-left">
+        <a href="/dashboard" class="logo">🚀 Astronaut</a>
+    </div>
+    <div class="header-right">
+        <button class="btn-header" onclick="goBack()">
+            <i class="ri-arrow-left-line"></i>
+            Back
+        </button>
+        <button class="btn-header btn-logout" onclick="logout()">
+            <i class="ri-logout-box-line"></i>
+            Logout
+        </button>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="main-container">
+    <h1 class="page-title">Settings</h1>
+
+    <!-- Account Section -->
+    <div class="settings-section">
+        <div class="section-title">
+            <i class="ri-user-line"></i>
+            Account
+        </div>
+
+        <div class="setting-row">
+            <div>
+                <div class="setting-label">Username</div>
+                <div class="setting-value" id="username-display">john_doe</div>
+            </div>
+            <div class="setting-controls">
+                <button class="btn btn-secondary" id="username-edit-btn" onclick="toggleUsernameEdit()">
+                    <i class="ri-edit-line"></i>
+                    Edit
+                </button>
+            </div>
+        </div>
+
+        <div class="setting-row" id="username-edit-row" style="display: none;">
+            <div style="flex: 1;">
+                <input type="text" class="edit-input" id="username-input" placeholder="Enter new username">
+            </div>
+            <div class="setting-controls">
+                <button class="btn btn-secondary" onclick="toggleUsernameEdit()">
+                    <i class="ri-close-line"></i>
+                    Cancel
+                </button>
+                <button class="btn btn-primary" onclick="saveUsername()">
+                    <i class="ri-check-line"></i>
+                    Save
+                </button>
+            </div>
+        </div>
+
+        <div class="setting-row">
+            <div>
+                <div class="setting-label">Email</div>
+                <div class="setting-value" id="email-display">john@example.com</div>
+            </div>
+            <div class="setting-controls">
+                <button class="btn btn-secondary" id="email-edit-btn" onclick="toggleEmailEdit()">
+                    <i class="ri-edit-line"></i>
+                    Edit
+                </button>
+            </div>
+        </div>
+
+        <div class="setting-row" id="email-edit-row" style="display: none;">
+            <div style="flex: 1;">
+                <input type="email" class="edit-input" id="email-input" placeholder="Enter new email">
+            </div>
+            <div class="setting-controls">
+                <button class="btn btn-secondary" onclick="toggleEmailEdit()">
+                    <i class="ri-close-line"></i>
+                    Cancel
+                </button>
+                <button class="btn btn-primary" onclick="saveEmail()">
+                    <i class="ri-check-line"></i>
+                    Save
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Password Section -->
+    <div class="settings-section">
+        <div class="section-title">
+            <i class="ri-lock-line"></i>
+            Change Password
+        </div>
+
+        <div class="password-form">
+            <div class="form-group">
+                <label for="current-password">Current Password</label>
+                <div class="password-input-wrapper">
+                    <input type="password" id="current-password" class="edit-input" placeholder="Enter current password">
+                    <button class="password-toggle" onclick="togglePasswordVisibility('current-password')">
+                        <i class="ri-eye-line"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="new-password">New Password</label>
+                <div class="password-input-wrapper">
+                    <input type="password" id="new-password" class="edit-input" placeholder="Enter new password">
+                    <button class="password-toggle" onclick="togglePasswordVisibility('new-password')">
+                        <i class="ri-eye-line"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="confirm-password">Confirm New Password</label>
+                <div class="password-input-wrapper">
+                    <input type="password" id="confirm-password" class="edit-input" placeholder="Confirm new password">
+                    <button class="password-toggle" onclick="togglePasswordVisibility('confirm-password')">
+                        <i class="ri-eye-line"></i>
+                    </button>
+                </div>
+            </div>
+
+            <button class="btn btn-primary" onclick="updatePassword()" style="align-self: flex-end;">
+                <i class="ri-check-line"></i>
+                Update Password
+            </button>
+        </div>
+    </div>
+
+    <!-- Preferences Section -->
+    <div class="settings-section">
+        <div class="section-title">
+            <i class="ri-settings-3-line"></i>
+            Preferences
+        </div>
+
+        <div class="setting-row">
+            <div>
+                <div class="setting-label">Enable Fuzzy Search</div>
+                <div class="setting-value" style="font-size: 12px; margin-top: 4px; color: #64748b;">
+                    Improves search results with approximate matching
+                </div>
+            </div>
+            <div class="setting-controls">
+                <button class="toggle-switch active" id="fuzzy-search-toggle" onclick="toggleFuzzySearch()"></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Danger Zone Section -->
+    <div class="settings-section danger-zone">
+        <div class="section-title">
+            <i class="ri-error-warning-line"></i>
+            Danger Zone
+        </div>
+
+        <div class="danger-warning">
+            <i class="ri-alert-line"></i>
+            Deleting your account is permanent and cannot be undone. All your code snippets and data will be lost.
+        </div>
+
+        <button class="btn btn-danger" onclick="openDeleteModal()" style="width: 100%; justify-content: center;">
+            <i class="ri-delete-bin-line"></i>
+            Delete My Account
+        </button>
+    </div>
+</div>
+
+<!-- Delete Account Modal -->
+<div class="modal" id="delete-modal">
+    <div class="modal-content">
+        <div class="modal-title">Delete Account</div>
+        <div class="modal-warning">
+            <i class="ri-error-warning-line"></i>
+            This action is permanent. Please type your username to confirm.
+        </div>
+
+        <div class="modal-form-group">
+            <label for="confirm-username">Type your username to confirm</label>
+            <input type="text" id="confirm-username" placeholder="john_doe">
+        </div>
+
+        <div class="modal-actions">
+            <button class="btn btn-secondary" onclick="closeDeleteModal()">
+                <i class="ri-close-line"></i>
+                Cancel
+            </button>
+            <button class="btn btn-danger" onclick="confirmDelete()">
+                <i class="ri-delete-bin-line"></i>
+                Delete Account
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Notification Container -->
+<div id="notification-container"></div>
+
+<script>
+    // Current user data
+    let currentUsername = 'john_doe';
+    let currentEmail = 'john@example.com';
+
+    // Toggle Username Edit
+    function toggleUsernameEdit() {
+        const editRow = document.getElementById('username-edit-row');
+        const displayRow = document.querySelector('.setting-row');
+        const input = document.getElementById('username-input');
+
+        if (editRow.style.display === 'none') {
+            editRow.style.display = 'flex';
+            input.value = currentUsername;
+            input.focus();
+        } else {
+            editRow.style.display = 'none';
+        }
+    }
+
+    // Save Username
+    function saveUsername() {
+        const input = document.getElementById('username-input');
+        const newUsername = input.value.trim();
+
+        if (!newUsername) {
+            showNotification('Username cannot be empty', 'error');
+            return;
+        }
+
+        if (newUsername.length < 3) {
+            showNotification('Username must be at least 3 characters', 'error');
+            return;
+        }
+
+        currentUsername = newUsername;
+        document.getElementById('username-display').textContent = newUsername;
+        document.getElementById('username-edit-row').style.display = 'none';
+        showNotification('Username updated successfully', 'success');
+    }
+
+    // Toggle Email Edit
+    function toggleEmailEdit() {
+        const editRow = document.getElementById('email-edit-row');
+        const input = document.getElementById('email-input');
+
+        if (editRow.style.display === 'none') {
+            editRow.style.display = 'flex';
+            input.value = currentEmail;
+            input.focus();
+        } else {
+            editRow.style.display = 'none';
+        }
+    }
+
+    // Save Email
+    function saveEmail() {
+        const input = document.getElementById('email-input');
+        const newEmail = input.value.trim();
+
+        if (!newEmail) {
+            showNotification('Email cannot be empty', 'error');
+            return;
+        }
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(newEmail)) {
+            showNotification('Please enter a valid email address', 'error');
+            return;
+        }
+
+        currentEmail = newEmail;
+        document.getElementById('email-display').textContent = newEmail;
+        document.getElementById('email-edit-row').style.display = 'none';
+        showNotification('Email updated successfully', 'success');
+    }
+
+    // Toggle Password Visibility
+    function togglePasswordVisibility(inputId) {
+        const input = document.getElementById(inputId);
+        const button = event.target.closest('.password-toggle');
+        const icon = button.querySelector('i');
+
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.className = 'ri-eye-off-line';
+        } else {
+            input.type = 'password';
+            icon.className = 'ri-eye-line';
+        }
+    }
+
+    // Update Password
+    function updatePassword() {
+        const currentPassword = document.getElementById('current-password').value;
+        const newPassword = document.getElementById('new-password').value;
+        const confirmPassword = document.getElementById('confirm-password').value;
+
+        if (!currentPassword || !newPassword || !confirmPassword) {
+            showNotification('All password fields are required', 'error');
+            return;
+        }
+
+        if (newPassword.length < 8) {
+            showNotification('New password must be at least 8 characters', 'error');
+            return;
+        }
+
+        if (newPassword !== confirmPassword) {
+            showNotification('New passwords do not match', 'error');
+            return;
+        }
+
+        if (currentPassword === newPassword) {
+            showNotification('New password must be different from current password', 'error');
+            return;
+        }
+
+        // Clear form
+        document.getElementById('current-password').value = '';
+        document.getElementById('new-password').value = '';
+        document.getElementById('confirm-password').value = '';
+
+        showNotification('Password updated successfully', 'success');
+    }
+
+    // Toggle Fuzzy Search
+    function toggleFuzzySearch() {
+        const toggle = document.getElementById('fuzzy-search-toggle');
+        toggle.classList.toggle('active');
+        const isActive = toggle.classList.contains('active');
+        showNotification(`Fuzzy search ${isActive ? 'enabled' : 'disabled'}`, 'success');
+    }
+
+    // Open Delete Modal
+    function openDeleteModal() {
+        document.getElementById('delete-modal').classList.add('active');
+        document.getElementById('confirm-username').value = '';
+        document.getElementById('confirm-username').focus();
+    }
+
+    // Close Delete Modal
+    function closeDeleteModal() {
+        document.getElementById('delete-modal').classList.remove('active');
+    }
+
+    // Confirm Delete
+    function confirmDelete() {
+        const input = document.getElementById('confirm-username');
+        const enteredUsername = input.value.trim();
+
+        if (!enteredUsername) {
+            showNotification('Please enter your username', 'error');
+            return;
+        }
+
+        if (enteredUsername !== currentUsername) {
+            showNotification('Username does not match', 'error');
+            return;
+        }
+
+        closeDeleteModal();
+        showNotification('Account deleted successfully. Redirecting...', 'success');
+        setTimeout(() => {
+            window.location.href = '/';
+        }, 2000);
+    }
+
+    // Show Notification
+    function showNotification(message, type = 'success') {
+        const container = document.getElementById('notification-container');
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+
+        const icon = type === 'success' ? 'ri-check-circle-line' : 'ri-error-warning-line';
+        notification.innerHTML = `<i class="${icon}"></i><span>${message}</span>`;
+
+        container.appendChild(notification);
+
+        setTimeout(() => {
+            notification.classList.add('out');
+            setTimeout(() => {
+                notification.remove();
+            }, 300);
+        }, 3000);
+    }
+
+    // Navigation
+    function goBack() {
+        window.location.href = '/dashboard';
+    }
+
+    function logout() {
+        showNotification('Logging out...', 'success');
+        setTimeout(() => {
+            window.location.href = '/';
+        }, 1000);
+    }
+
+    // Close modal when clicking outside
+    document.getElementById('delete-modal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeDeleteModal();
+        }
+    });
+
+    // Enter key to confirm username in modal
+    document.getElementById('confirm-username').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            confirmDelete();
+        }
+    });
+</script>
+</body>
+</html>

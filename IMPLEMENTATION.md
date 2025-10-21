@@ -63,7 +63,7 @@ Stores code snippets and their extracted metadata.
 - `tags` — User-defined tags (Set<String>)
 - `classNames` — Extracted class names (Set<String>)
 - `classAnnotations` — Class-level annotations (Set<String>)
-- `classFields` — Field names (Set<String>)
+- `classFields` — Field types (Set<String>)
 - `classFieldAnnotations` — Field-level annotations (Set<String>)
 - `methodReturnTypes` — Method return types (Set<String>)
 - `methodAnnotations` — Method-level annotations (Set<String>)
@@ -174,10 +174,10 @@ Specifications use JPA Criteria API to construct type-safe queries:
 
 ```java
 // Direct: exact match for tag "spring"
-root.join("tags").in("spring")
+root.join("tags").in("spring");
 
 // Fuzzy: partial match for tag containing "spr"
-root.join("tags").like("%spr%")
+root.join("tags").like("%spr%");
 ```
 
 All string comparisons are case-insensitive (converted to lowercase).
@@ -299,3 +299,15 @@ All validation happens at DTO level with `@Valid` annotations on controller meth
 
 ---
 
+## Future Enhancements
+
+- Support for additional languages (Python, JavaScript, Go, etc.) with language-specific parsers
+- Advanced diff visualization with side-by-side highlighting
+- Snippet versioning and history tracking
+- Collaborative snippets with sharing and permissions
+- Custom metadata fields defined by users
+- Full-text search on content using database features
+- Snippet templates and boilerplate management
+- Integration with code review tools
+
+No java script yet we're just making the prompt for the UI rn yk. So we will iterate over the UI till we get something good before we get the JS. So we need a landing page, a login page, a page where users can see their snippets. Also a search bar for names and tags and another for advanced search(the metadata). Also we need a way for users to compare two snippets. Also another screen where users can logout, delete their account, toggle fuzzy search and update their username, password and email .So yeah I want us to iterate over it so we can fully understand what we want the UI to look like before we create the prompt. Do you understand?

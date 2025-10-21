@@ -4,6 +4,7 @@ import com.victor.astronaut.snippets.Snippet;
 import com.victor.astronaut.snippets.dto.SnippetResponse;
 import com.victor.astronaut.snippets.enums.SnippetLanguage;
 import com.victor.astronaut.snippets.projections.SnippetPreview;
+import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -40,6 +41,11 @@ public class SnippetMapper {
             @Override
             public LocalDateTime getCreatedAt() {
                 return snippet.getCreatedAt();
+            }
+
+            @Override
+            public LocalDateTime getUpdatedAt(){
+                return snippet.getUpdatedAt();
             }
         };
     }

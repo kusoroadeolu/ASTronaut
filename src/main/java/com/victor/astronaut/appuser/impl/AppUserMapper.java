@@ -16,6 +16,7 @@ public class AppUserMapper {
                 .username(registerRequest.username())
                 .email(registerRequest.email())
                 .role(AppUserRole.APP_USER)
+                .isDeleted(false)
                 .build();
     }
 

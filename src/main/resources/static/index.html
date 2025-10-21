@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Astronaut - Code Snippet Management Platform</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.min.css">
+    <style>
+        @font-face {
+            font-family: 'System';
+            src: local(-apple-system), local(BlinkMacSystemFont), local('Segoe UI');
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: #0f172a;
+            color: #e2e8f0;
+            scroll-behavior: smooth;
+        }
+
+        /* Navigation Bar */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 1200px;
+            height: 80px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid #1e293b;
+            z-index: 1000;
+            padding: 0 40px;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: 700;
+            color: #0ea5e9;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            letter-spacing: -0.5px;
+        }
+
+        .logo i {
+            font-size: 32px;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 12px 28px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-login {
+            background: transparent;
+            color: #94a3b8;
+            border: 1px solid #475569;
+        }
+
+        .btn-login:hover {
+            background: rgba(148, 163, 184, 0.1);
+            color: #cbd5e1;
+            border-color: #64748b;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #0ea5e9 0%, #06b6d4 100%);
+            color: #ffffff;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px rgba(14, 165, 233, 0.3);
+        }
+
+        /* Hero Section */
+        .hero {
+            width: 1200px;
+            margin: 0 auto;
+            padding: 120px 40px 80px;
+            text-align: center;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .hero-content {
+            max-width: 800px;
+        }
+
+        .hero h1 {
+            font-size: 56px;
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 24px;
+            background: linear-gradient(135deg, #e2e8f0 0%, #94a3b8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero p {
+            font-size: 18px;
+            color: #cbd5e1;
+            line-height: 1.6;
+            margin-bottom: 40px;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-large {
+            padding: 16px 40px;
+            font-size: 16px;
+        }
+
+        /* Decorative Elements */
+        .hero-decoration {
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(14, 165, 233, 0.1) 0%, transparent 70%);
+            top: 50%;
+            right: 10%;
+            transform: translateY(-50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .hero-decoration-left {
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(6, 182, 212, 0.08) 0%, transparent 70%);
+            top: 30%;
+            left: 5%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* Features Section */
+        .features {
+            width: 1200px;
+            margin: 0 auto;
+            padding: 80px 40px;
+            background: linear-gradient(180deg, rgba(15, 23, 42, 0) 0%, rgba(14, 165, 233, 0.05) 100%);
+        }
+
+        .features h2 {
+            font-size: 42px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 60px;
+            color: #e2e8f0;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 24px;
+            margin-bottom: 60px;
+        }
+
+        .feature-card {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 32px 24px;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(14, 165, 233, 0.1) 0%, transparent 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .feature-card:hover {
+            border-color: #0ea5e9;
+            transform: translateY(-8px);
+            box-shadow: 0 16px 32px rgba(14, 165, 233, 0.15);
+        }
+
+        .feature-card:hover::before {
+            opacity: 1;
+        }
+
+        .feature-icon {
+            font-size: 48px;
+            color: #0ea5e9;
+            margin-bottom: 16px;
+            display: flex;
+            justify-content: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .feature-card h3 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #e2e8f0;
+            position: relative;
+            z-index: 1;
+        }
+
+        .feature-card p {
+            font-size: 14px;
+            color: #94a3b8;
+            line-height: 1.6;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* CTA Section */
+        .cta-section {
+            width: 1200px;
+            margin: 0 auto;
+            padding: 80px 40px;
+            text-align: center;
+        }
+
+        .cta-section h2 {
+            font-size: 42px;
+            font-weight: 700;
+            margin-bottom: 24px;
+            color: #e2e8f0;
+        }
+
+        .cta-section p {
+            font-size: 16px;
+            color: #cbd5e1;
+            margin-bottom: 40px;
+        }
+
+        /* Footer */
+        footer {
+            width: 1200px;
+            margin: 0 auto;
+            padding: 40px;
+            border-top: 1px solid #1e293b;
+            text-align: center;
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            nav, .hero, .features, .cta-section, footer {
+                width: 100%;
+            }
+
+            .features-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            nav {
+                padding: 0 20px;
+            }
+
+            .logo {
+                font-size: 20px;
+            }
+
+            .hero {
+                padding: 100px 20px 60px;
+            }
+
+            .hero h1 {
+                font-size: 36px;
+            }
+
+            .hero p {
+                font-size: 16px;
+            }
+
+            .hero-buttons {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .features h2 {
+                font-size: 32px;
+            }
+
+            .hero-decoration, .hero-decoration-left {
+                display: none;
+            }
+        }
+
+        /* Code-like accent */
+        .code-accent {
+            font-family: 'Courier New', monospace;
+            color: #10b981;
+            background: rgba(16, 185, 129, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+<!-- Navigation Bar -->
+<nav>
+    <div class="logo">
+        <i class="ri-rocket-2-line"></i>
+        Astronaut
+    </div>
+</nav>
+
+<!-- Hero Section -->
+<section class="hero">
+    <div class="hero-decoration"></div>
+    <div class="hero-decoration-left"></div>
+    <div class="hero-content">
+        <h1>Manage Your Code Snippets with Ease</h1>
+        <p>Astronaut is a modern platform for developers to store, organize, and share code snippets. Keep your most useful code at your fingertips with powerful search and organization tools.</p>
+        <div class="hero-buttons">
+            <a href="auth.html" class="btn btn-primary btn-large">Get Started</a>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="features">
+    <h2>Why Choose Astronaut</h2>
+    <div class="features-grid">
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="ri-code-line"></i>
+            </div>
+            <h3>Automatic Metadata Extraction</h3>
+            <p>Save Java snippets and automatically extract class names, annotations, methods, and field information for intelligent searching.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="ri-search-2-line"></i>
+            </div>
+            <h3>Advanced Search</h3>
+            <p>Search by class names, annotations, method signatures, return types, and tags. Toggle fuzzy search for flexible matching.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="ri-layout-column-line"></i>
+            </div>
+            <h3>Side-by-Side Diff</h3>
+            <p>Compare two snippets instantly and see exactly what changed. Line-by-line highlighting makes differences crystal clear.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="ri-folder-line"></i>
+            </div>
+            <h3>Organize with Tags</h3>
+            <p>Tag your snippets and filter by metadata. Keep your code library organized and easy to navigate.</p>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section">
+    <h2>Ready to Get Started?</h2>
+    <p>Join thousands of developers who are already using Astronaut to manage their code snippets.</p>
+</section>
+
+<!-- Footer -->
+<footer>
+    <p>&copy; 2025 Astronaut. All rights reserved. | Terms of Service | Privacy Policy</p>
+</footer>
+</body>
+</html>

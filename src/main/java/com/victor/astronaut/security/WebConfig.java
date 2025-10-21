@@ -39,6 +39,8 @@ public class WebConfig {
                     auth.requestMatchers("/swagger-ui/**").permitAll();  // Note the /** wildcard
                     auth.requestMatchers("/v3/api-docs/**").permitAll();
                     auth.requestMatchers("/swagger-ui.html").permitAll();
+                    auth.requestMatchers("/index.html").permitAll();
+                    auth.requestMatchers("/auth.html", "/auth.js").permitAll();
                     auth.requestMatchers("/api-docs").permitAll();
                     auth.requestMatchers("/auth/**").permitAll();
                     auth.anyRequest().authenticated();

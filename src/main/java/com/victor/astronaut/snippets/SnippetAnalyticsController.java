@@ -37,7 +37,7 @@ public class SnippetAnalyticsController {
     private final SnippetQueryService queryService;
     private final SnippetDiffService diffService;
 
-    @GetMapping("/filter")
+    @PostMapping("/filter")
     @Operation(summary = "Filter snippets", description = "Searches and filters snippets based on provided criteria")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Snippets filtered successfully")

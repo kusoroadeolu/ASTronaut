@@ -13,7 +13,7 @@ public final class ClassFieldVisitor extends VoidVisitorAdapter<Set<String>> {
     @Override
     public void visit(ClassOrInterfaceDeclaration n, Set<String> arg) {
         super.visit(n, arg);
-        Set<String> fieldNames = n.getFields().stream().flatMap(a -> a.getVariables().stream()).map(v -> v.getName().asString().toLowerCase()).collect(Collectors.toSet());
-        arg.addAll(fieldNames);
+        Set<String> fieldTypes = n.getFields().stream().flatMap(a -> a.getVariables().stream()).map(v -> v.getType().asString().toLowerCase()).collect(Collectors.toSet());
+        arg.addAll(fieldTypes);
     }
 }
