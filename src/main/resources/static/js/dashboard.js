@@ -1,5 +1,6 @@
-// Wait for DOM to be fully loaded
+// Dashboard.js(Shows all snippets + search logic + settings) Wait for DOM to be fully loaded
 document.addEventListener('DOMContentLoaded', function() {
+    let isNavigating = false;
 
 // Advanced Search Toggle
     const advancedToggle = document.getElementById('advancedToggle');
@@ -66,7 +67,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 updatePagination();
             } else if (response.status === 401) {
                 // User not authenticated, redirect to login
-                window.location.href = '/login.html';
+                // if(!isNavigating){
+                //     window.location.href = '/index.html';
+                // }
             } else {
                 console.error('Failed to fetch snippets');
                 showEmptyState('Failed to load snippets. Please try again.');
@@ -121,10 +124,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Add click handlers to new cards
         document.querySelectorAll('.snippet-card').forEach(card => {
-            card.addEventListener('click', function() {
+            card.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
                 const snippetId = this.getAttribute('data-snippet-id');
                 console.log('Navigating to snippet:', snippetId);
-                window.location.href = `/snippet-detail.html?id=${snippetId}`;
+                isNavigating = true;
+                window.location.replace(`/snippet-detail.html?id=${snippetId}`);
             });
         });
     }
@@ -148,7 +154,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (settingsBtn) {
         settingsBtn.addEventListener('click', function() {
             console.log('Opening settings');
-            // window.location.href = '/settings.html';
+            window.location.href = '/settings.html';
         });
     }
 
@@ -236,7 +242,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 totalPages = data.page.totalPages;
                 updatePagination();
             } else if (response.status === 401) {
-                window.location.href = '/login.html';
+                console.log("Pagination auth error: ", err)
+                window.location.href = '/index.html';
             } else {
                 console.error('Failed to filter snippets');
                 showEmptyState('Failed to filter snippets. Please try again.');

@@ -1,4 +1,5 @@
 // Toast Notification System
+//Snippet-detail.js shows snippet info and allows snippet editing
 function showToast(type, title, message) {
     // Create container if it doesn't exist
     let container = document.querySelector('.toast-container');
