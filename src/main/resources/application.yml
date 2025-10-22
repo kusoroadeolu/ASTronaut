@@ -51,7 +51,7 @@ cache:
     ttl: 30
 
 rate-limit:
-  req-per-minute: 30
+  req-per-minute: 60
 
 springdoc:
   swagger-ui:
