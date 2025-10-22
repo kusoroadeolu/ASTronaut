@@ -50,6 +50,9 @@ cache:
     name: principalCache
     ttl: 30
 
+rate-limit:
+  req-per-minute: 30
+
 springdoc:
   swagger-ui:
     path: /swagger-ui.html

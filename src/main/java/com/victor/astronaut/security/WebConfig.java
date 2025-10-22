@@ -3,6 +3,7 @@ package com.victor.astronaut.security;
 import com.victor.astronaut.appuser.AppUserDetailsService;
 import com.victor.astronaut.security.jwt.JwtConfigProperties;
 import com.victor.astronaut.security.jwt.JwtFilter;
+import com.victor.astronaut.security.ratelimits.RateLimitFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,6 +16,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -28,6 +30,7 @@ public class WebConfig {
 
     private final AppUserDetailsService appUserDetailsService;
     private final JwtFilter jwtFilter;
+    private final RateLimitFilter rateLimitFilter;
     private final JwtConfigProperties jwtConfigProperties;
 
     @Bean
@@ -36,11 +39,9 @@ public class WebConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> {
                     auth.requestMatchers("/").permitAll();
-                    auth.requestMatchers("/swagger-ui/**").permitAll();  // Note the /** wildcard
-                    auth.requestMatchers("/v3/api-docs/**").permitAll();
-                    auth.requestMatchers("/swagger-ui.html").permitAll();
                     auth.requestMatchers("/index.html").permitAll();
-                    auth.requestMatchers("/css/header.css", "/js/header.js");
+                    auth.requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/api-docs", "/swagger-ui.html").permitAll();
+                    auth.requestMatchers("/css/header.css", "/js/header.js").permitAll();
                     auth.requestMatchers("/css/toast.css", "/js/toast.js").permitAll();
                     auth.requestMatchers("/auth.html", "/auth.js").permitAll();
                     auth.requestMatchers("/api-docs").permitAll();
@@ -55,6 +56,7 @@ public class WebConfig {
                     l.clearAuthentication(true);
                 })
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(rateLimitFilter, JwtFilter.class)
                 .build();
     }
 
@@ -74,7 +76,6 @@ public class WebConfig {
     public PasswordEncoder passwordEncoder(){
         return new BCryptPasswordEncoder(12);
     }
-
 
 
 }

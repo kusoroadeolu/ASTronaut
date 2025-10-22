@@ -1,9 +1,9 @@
 package com.victor.astronaut.security.jwt;
 
+import com.victor.astronaut.appuser.AppUserDetailsService;
 import com.victor.astronaut.appuser.AppUserPrincipal;
 import com.victor.astronaut.appuser.AppUserPrincipalDto;
 import com.victor.astronaut.security.CookieUtils;
-import com.victor.astronaut.appuser.AppUserDetailsService;
 import com.victor.astronaut.security.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -21,7 +21,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.util.WebUtils;
 
 import java.io.IOException;
-import java.util.Set;
 
 @Component
 @RequiredArgsConstructor
