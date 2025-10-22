@@ -1,3 +1,17 @@
+// Load highlight.js
+// const highlightLink = document.createElement('link');
+// highlightLink.rel = 'stylesheet';
+// highlightLink.href = 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css';
+// document.head.appendChild(highlightLink);
+
+const highlightScript = document.createElement('script');
+highlightScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js';
+document.head.appendChild(highlightScript);
+
+// Load marked.js
+const markedScript = document.createElement('script');
+markedScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/marked/11.1.1/marked.min.js';
+document.head.appendChild(markedScript);
 
 // Get snippet ID from URL
 const urlParams = new URLSearchParams(window.location.search);
@@ -110,7 +124,20 @@ function displaySnippet() {
 
     if (codeBlock) {
         const content = snippetData.content || 'No code content available';
-        codeBlock.textContent = content;
+
+        // Apply syntax highlighting if hljs is loaded and language is Java
+        if (window.hljs && snippetData.language === 'JAVA') {
+            try {
+                const highlighted = window.hljs.highlight(content, { language: 'java' });
+                codeBlock.innerHTML = highlighted.value;
+                codeBlock.classList.add('hljs');
+            } catch (e) {
+                console.error('Highlighting failed:', e);
+                codeBlock.textContent = content;
+            }
+        } else {
+            codeBlock.textContent = content;
+        }
 
         if (lineNumbers) {
             const lineCount = content.split('\n').length;
@@ -120,7 +147,19 @@ function displaySnippet() {
 
     const notesContent = document.querySelector('.notes-content');
     if (notesContent) {
-        notesContent.textContent = snippetData.extraNotes || 'No notes available';
+        const notes = snippetData.extraNotes || 'No notes available';
+
+        // Render markdown if marked is loaded
+        if (window.marked) {
+            try {
+                notesContent.innerHTML = window.marked.parse(notes);
+            } catch (e) {
+                console.error('Markdown parsing failed:', e);
+                notesContent.textContent = notes;
+            }
+        } else {
+            notesContent.textContent = notes;
+        }
     }
 
     populateEditMode();
@@ -226,8 +265,18 @@ async function saveSnippet() {
         if (response.ok) {
             snippetData = await response.json();
             console.log('Snippet updated:', snippetData);
+
+            // Explicitly switch to read-only mode
+            const readOnlyMode = document.getElementById('readOnlyMode');
+            const editMode = document.getElementById('editMode');
+
+            editMode.style.display = 'none';
+            editMode.classList.add('edit-mode-hidden');
+            readOnlyMode.style.display = 'block';
+
+            // Then update the display
             displaySnippet();
-            toggleEditMode();
+
             showToast('success', 'Saved!', 'Snippet updated successfully');
         } else {
             const error = await response.json();
@@ -430,7 +479,7 @@ function renderDiffColumn(lineNumbersId, codeId, lines) {
         .map(line => `<div>${line.lineNum}</div>`)
         .join('');
 
-    // Render code with highlighting
+    // Render code with highlighting and diff colors
     codeEl.innerHTML = lines
         .map(line => {
             let className = '';
@@ -439,7 +488,18 @@ function renderDiffColumn(lineNumbersId, codeId, lines) {
             } else if (line.lineType === 'REMOVED') {
                 className = 'diff-line-removed';
             }
-            return `<div class="${className}">${escapeHtml(line.lineContent)}</div>`;
+
+            // Apply syntax highlighting if available
+            let content = escapeHtml(line.lineContent);
+            if (window.hljs && snippetData && snippetData.language === 'JAVA') {
+                try {
+                    content = window.hljs.highlight(line.lineContent, { language: 'java' }).value;
+                } catch (e) {
+                    content = escapeHtml(line.lineContent);
+                }
+            }
+
+            return `<div class="${className}">${content}</div>`;
         })
         .join('');
 }
@@ -492,7 +552,16 @@ function exitCompareMode() {
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
+
     console.log('Page loaded, fetching snippet data...');
+    // Render header with back button
+    renderHeader({
+        showUsername: true,
+        buttons: [
+            HeaderButtons.back()
+        ]
+    });
+
     fetchSnippetData();
 });
 

@@ -2,6 +2,22 @@ const API_BASE = `${window.origin}`;
 let currentUsername = '';
 let currentEmail = '';
 
+function togglePasswordVisibility(inputId) {
+    const input = document.getElementById(inputId);
+    const button = input.parentElement.querySelector('.password-toggle');
+    const icon = button.querySelector('i');
+
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.remove('ri-eye-line');
+        icon.classList.add('ri-eye-off-line');
+    } else {
+        input.type = 'password';
+        icon.classList.remove('ri-eye-off-line');
+        icon.classList.add('ri-eye-line');
+    }
+}
+
 // Close modal when clicking outside
 document.addEventListener('DOMContentLoaded', function() {
     // Render header
@@ -12,6 +28,7 @@ document.addEventListener('DOMContentLoaded', function() {
             HeaderButtons.logout()
         ]
     });
+
 
     const deleteModal = document.getElementById('delete-modal');
     if (deleteModal) {

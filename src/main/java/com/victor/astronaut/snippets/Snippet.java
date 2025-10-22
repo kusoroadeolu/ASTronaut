@@ -38,7 +38,7 @@ public class Snippet {
     @Column(name = "content", length = 10000)
     private String content = "";
 
-    @Column(name = "extra_notes", length = 100)
+    @Column(name = "extra_notes", length = 500)
     private String extraNotes = "";
 
     @ElementCollection

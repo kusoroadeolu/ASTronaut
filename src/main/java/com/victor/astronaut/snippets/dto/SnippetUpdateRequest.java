@@ -23,4 +23,10 @@ public record SnippetUpdateRequest(
         String content,
         String extraNotes
 ) {
+
+    public SnippetUpdateRequest{
+        content = content.trim();
+        extraNotes = extraNotes.trim();
+    }
+
 }

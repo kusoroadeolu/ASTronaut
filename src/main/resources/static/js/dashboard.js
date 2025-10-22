@@ -1,6 +1,5 @@
 // Dashboard.js(Shows all snippets + search logic + settings) Wait for DOM to be fully loaded
 document.addEventListener('DOMContentLoaded', function() {
-    let isNavigating = false;
 
     // At the top of dashboard.js, after DOM loads
     renderHeader({
@@ -75,9 +74,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 updatePagination();
             } else if (response.status === 401) {
                 // User not authenticated, redirect to login
-                // if(!isNavigating){
-                //     window.location.href = '/index.html';
-                // }
+
+                window.location.href = '/index.html';
+
             } else {
                 console.error('Failed to fetch snippets');
                 showEmptyState('Failed to load snippets. Please try again.');
@@ -136,9 +135,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 e.preventDefault();
                 e.stopPropagation();
                 const snippetId = this.getAttribute('data-snippet-id');
-                console.log('Navigating to snippet:', snippetId);
-                isNavigating = true;
-                window.location.replace(`/snippet-detail.html?id=${snippetId}`);
+                window.location.href = `/snippet-detail.html?id=${snippetId}`;
             });
         });
     }
@@ -442,10 +439,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (response.ok) {
                     const newSnippet = await response.json();
                     console.log('Snippet created:', newSnippet);
-                    closeModal();
-                    // Refresh snippets to show the new one
-                    currentPage = 0; // Go back to first page
-                    fetchSnippets();
+                    // Redirect to the newly created snippet's detail page
+                    window.location.href = `/snippet-detail.html?id=${newSnippet.id}`;
                 } else {
                     const error = await response.json();
                     alert(`Error: ${error.message || 'Failed to create snippet'}`);
