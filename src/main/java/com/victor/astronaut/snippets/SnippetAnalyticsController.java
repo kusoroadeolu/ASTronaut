@@ -45,7 +45,7 @@ public class SnippetAnalyticsController {
     public ResponseEntity<Page<SnippetPreview>> filterSnippets(
             @RequestBody SearchCriteria searchCriteria,
             @ParameterObject
-            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC)
+            @PageableDefault(size = 20, sort = "updatedAt", direction = Sort.Direction.DESC)
             Pageable pageable,
             @AuthenticationPrincipal AppUserPrincipal principal
     ){

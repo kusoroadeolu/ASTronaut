@@ -1,530 +1,277 @@
-# Astronaut API Documentation
+# ASTronaut - README
 
 ## Overview
+ASTronaut(emphasis on the AST) was basically built by me to organize my java snippets without needing to go to GitHub everytime. Yes, there are probably better snippet organizers out there, with better UI and better features, but basically I just needed something that could allow me to search my java snippets based on certain metadata and compare two snippets 
 
-The Astronaut API provides comprehensive endpoints for user authentication, account management, and code snippet management with advanced search and comparison features.
+## Who is ASTronaut for
+Basically java devs who want to be able to search their code based on certain metadata in their code, and have code snippets locally without having to go online to retrieve them.
+</br> To set up ASTronaut locally view [**setup.md**](setup.md)
+</br> ASTronaut will also be hosted on the cloud later on
 
-**Authentication:** JWT token (set as cookie on login/register)  
-**Authorization:** Requires `APP_USER` or `APP_ADMIN` role
+
+## Architecture
+
+### High-Level Components
+
+This section basically includes the basic structure of the web app
+
+**Backend:**
+The backend basically consists of the normal spring layering pattern: 
+- Controllers -> Services -> Repository
+- Also, some utility classes to reduce boilerplate in the service classes.
+- And certain special services which use java parser to extract the needed metadata and diff-utils to get the diffs between two snippets
+
+**Frontend:**
+The frontend consists of five pages:
+- Landing page -> Basically everything you'll see on a landing page
+- Auth page -> Login/Register page, nothing too fancy here
+- Dashboard page -> Here you can create a snippet, view your snippets, search through them and also navigate to the settings page or just click a snippet to perform some more actions on it
+- Snippet-detail page -> Here you can perform CRUD operations on a snippet and also compare it with other snippets. Also has syntax highlighting for code and markdown formatting for extra notes(added these just to make it fancy yk)
+- Settings page -> Here you can update your info and toggle fuzzy search
 
 ---
 
-## Error Responses
+## Database Schema
 
-All endpoints may return error responses in this format:
+The DB schema is very simple. Just an app user entity which has a one to may relationship with the snippet entity.
+
+### AppUser Entity
+This stores the app user's info.
+
+```java
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "app_user_id")
+    private Long id;
+
+    @Column(name = "username", nullable = false, length = 30)
+    private String username;
+
+    @Column(name = "email", unique = true, nullable = false, length = 70)
+    private String email;
+
+    @Column(name = "password", nullable = false, length = 100)
+    private String password;
+
+    @Column(name = "role", nullable = false)
+    private AppUserRole role;
+
+    @Column(name = "isDeleted")
+    private Boolean isDeleted;
+
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Snippet> snippet = new ArrayList<>();
+
+    @Column(name = "createdAt", nullable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "enableFuzzySearch")
+    private Boolean enableFuzzySearch;
+```
+
+
+### Snippet Entity
+
+Stores code snippets and their extracted metadata, also mapped to a user.
+
+**Columns:**
+```java
+@Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long id;
+
+
+    @Column(name = "name", length = 50, nullable = false)
+    private String name;
+
+    @Column(name = "draft")
+    private boolean isDraft = true;
+
+    @Column(name = "language", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private SnippetLanguage language;
+
+    @Column(name = "content", length = 10000)
+    private String content = "";
+
+    @Column(name = "extra_notes", length = 500)
+    private String extraNotes = "";
+
+    @ElementCollection
+    private Set<String> tags = new HashSet<>();
+
+    @ElementCollection
+    private Set<String> classNames = new HashSet<>();
+
+    @ElementCollection
+    private Set<String> classAnnotations = new HashSet<>();
+
+    @ElementCollection
+    private Set<String> classFields = new HashSet<>();
+
+    @ElementCollection
+    private Set<String> classFieldAnnotations = new HashSet<>();
+
+    @ElementCollection
+    private Set<String> methodReturnTypes = new HashSet<>();
+
+    @ElementCollection
+    private Set<String> methodAnnotations = new HashSet<>();
+
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at", nullable = false)
+    private LocalDateTime updatedAt;
+
+    @Column(name = "metaDataAvailable")
+    private Boolean metaDataAvailable;
+```
+#### Some details on this
+- The metadata available flag was actually added a while back for debugging, but I forgot to remove it and now its there I guess
+- The isDraft flag is also pretty useless too I'll definitely remove it later, but it's honestly harmless rn
+- The metadata collected from the snippet content is pretty barebones, it works for me though
+
+---
+
+## Authentication & Authorization
+
+### User Roles
+
+The two user roles are **APP_USER** and **APP_ADMIN**, they're pretty identical right now. The admin role is just there in case I actually add functionality for it later.
+
+### Authentication Flow & Authorization
+The authentication flow is pretty simple. You can either log in or register. Simple as that
+</br> JWT tokens is the auth token for this app. The current expiry time if you're using this locally should be around 300 million milliseconds/83 hours. When I deploy it, it will be around 10 minutes for a token
+</br> Basic user metadata is cached after login/registration and on each subsequent request, the authenticated user object `UserPrincipal` is rebuilt from the cached metadata. I did this basically to prevent subsequent db hits on each request. I'm honestly not sure if this is a valid approach. It does work for me though
+</br> All endpoints except `/auth/register`, `/auth/login` and some frontend pages are authenticated.
+
+---
+## Rate Limiting
+
+### Implementation
+
+Rate limiting was implemented using redis and a sliding window algorithm to track requests.
+
+**RateLimitFilter** - This is my custom filter that ensures a user hasn't exceeded their rate limits. This filter was placed before my JwtFilter, just because I believe if you've exceeded your rate limits you shouldn't be authenticated
+</br> Also, the default requests per minute per IP in my `application.yml` is 60 requests. You can edit it as you please
+
+---
+
+## Some more details on Snippets
+
+### Metadata Extraction (Async)
+After a snippet is updated, if the language is **JAVA**, the parsing is offloaded to a virtual thread, to prevent blocking the main thread. Also, I'm not too sure if parsing is CPU intensive work, else I might need to disable virtual threads for that
+
+**How is this metadata extracted?**
+</br>Honestly, the java parser library does all the heavy lifting, I just use visitors, to extract the metadata from the snippet and save it to the DB.
+</br>If the snippet parsing fails, I usually rewrap in a dummy class, just to reparse, in case the user only posted a method or field. This wrapper class isn't included as metadata
+</br>All my visitors inherit from `VoidVisitorAdapter<Set<String>>` and are orchestrated by `VisitorOrchestrator`.
+
+
+---
+
+## Search & Filtering
+This is honestly where the most learning occurred for me in this project. I haven't handled dynamic search queries with different criteria before so this was definitely new territory for me to step into.
+</br>For the dynamic search queries, I used spring data specifications. This was honestly very unintuitive to use especially with element collections + the lack of detailed docs was definitely something else
+</br>I did implement two search modes direct(exact search matches) and fuzzy search matches using wildcards `LIKE` keywords. My implementations definitely weren't the best, and I'm sure there are some N + 1 queries hiding in there, but it works at least for now lol. 
+</br>So on the frontend, users can enable fuzzy searches, they are disabled by default. Fuzzy searches combine the snippets of direct searches AND those found with wildcards.
+
+```java
+// Direct: exact match for tag "spring"
+root.join("tags").in("spring");
+
+// Fuzzy: partial match for tag containing "spr"
+root.join("tags").like("%spr%");
+```
+
+
+## Diff Comparison
+
+This was mainly added just for fun it honestly serves no concrete purpose in this project like my other features but it seemed fun to add, so I added it.
+
+### What this does
+It basically allows you to compare you to compare changes/diffs between two snippets i.e. comparing(the snippet we're comparing), comparingTo(the snippet we're comparing against). 
+**QUICK NOTE** : Comparing is basically the original snippet. Comparing to is like the updated snippet. Both snippets don't need to be related to be compared but hopefully this explanation is understandable lol
+</br>These unified diffs are generated by `java-diff-utils`. No need to reinvent the wheel honestly
+</br>Each line is marked as one of:
+- **UNCHANGED** — Line exists identically in both snippets
+- **ADDED** — Line present in "comparingTo" snippet but not "comparing"
+- **REMOVED** — Line present in "comparing" snippet but not "comparingTo"
+
+### How I normalized the diffs
+The raw unified diff output is parsed by iterating through lines and checking each character
+- `' '` (space) → UNCHANGED -> Both comparing and comparing to lines are incremented
+- `'+'` → ADDED -> Only comparing to lines is incremented
+- `'-'` → REMOVED -> Only comparing lines is incremented
+
+Patch headers (@@) and file markers (---, +++) are skipped. 
+
+
+## Error Handling
+The exception hierarchy here is very simple and straight forward
+### Exception Hierarchy
+
+**AppUserAlreadyExistsException** (409 Conflict) — Email already registered during signup
+**NoSuchAppUserException** (404 Not Found) — User not found by ID
+**NoSuchSnippetException** (404 Not Found) — Snippet not found by ID or doesn't belong to user
+**AppUserPersistenceException** (500 Internal Server Error) — Database error during user operations
+**SnippetPersistenceException** (500 Internal Server Error) — Database error during snippet operations
+**SnippetParseException** (500 Internal Server Error) — JavaParser failed to parse snippet even after wrapping
+**InvalidCredentialsException** (401 Unauthorized) — Wrong password or email during login
+**JwtException** (500 Internal Server Error) — JWT token validation/generation failed
+**RateLimitException** (429 Too Many Requests) — Rate limit exceeded for IP address
+
+### GlobalExceptionHandler
+Spring's `@RestControllerAdvice` catches exceptions and returns an `ApiError` response
 
 ```json
 {
   "status": 400,
-  "message": "Human readable error message",
+  "message": "Error msg",
   "thrownAt": "2024-10-20T15:30:00Z"
 }
 ```
 
-Common status codes across all endpoints:
-- **401** — User is not authenticated
-- **404** — Resource not found
-- **500** — An unexpected error occurred
+## Configuration
 
----
+### Application Properties (application.yml)
 
-## Authentication
+```yaml
+rate-limit:
+  req-per-minute: 60  # Configurable rate limit per IP
 
-### Register a New User
-**POST** `/auth/register`
-
-Creates a new user account.
-
-**Request Body:**
-```json
-{
-  "username": "john_doe",
-  "email": "john@example.com",
-  "password": "SecurePass123",
-  "confirmPassword": "SecurePass123"
-}
+spring:
+  data:
+    redis:
+      host: localhost
+      port: 6379
 ```
 
-**Validation:**
-- `username` — Required, minimum 1 character
-- `email` — Required, valid email format, minimum 1 character
-- `password` — Required, 6-100 characters
-- `confirmPassword` — Required, must match password
+## Development Setup
 
-**Response (201 Created):**
-```json
-{
-  "id": 1,
-  "username": "john_doe",
-  "email": "john@example.com"
-}
-```
+### Prerequisites
+**These are the prerequisites to run this locally**
+- Java 17+
+- Spring Boot 3.x
+- PostgresSQL (or configured database)
+- Redis (Or you can use the docker-compose file provided to spin up your own redis instance locally)
+- Maven
 
-**Possible Responses:**
-- **201 Created** — User registered, JWT cookie set
-- **400 Bad Request** — Passwords don't match
-- **409 Conflict** — Email already exists
-- **500 Internal Server Error** — Registration error
+### Running Locally
+1. Configure database and Redis connection(or just use the docker-compose file to spin up your own redis instance locally) in `application.yml`
+2. Run `mvn spring-boot:run`
+3. Access frontend at `http://localhost:80/`
+4. API documentation at `http://localhost:80/swagger-ui.html`
 
----
 
-### Log In a User
-**POST** `/auth/login`
+## Hopeful Future Enhancements
+- Support for additional languages (Python, JavaScript, Go, etc.) with language-specific parsers
+- Full-text search on content using database features(Apache Lucene? Probably tbh)
+- Snippet templates and boilerplate management
 
-Authenticates a user and returns JWT token.
 
-**Request Body:**
-```json
-{
-  "email": "john@example.com",
-  "password": "SecurePass123"
-}
-```
 
-**Validation:**
-- `email` — Required, valid email format
-- `password` — Required, 6-100 characters
-
-**Response (200 OK):**
-```json
-{
-  "id": 1,
-  "username": "john_doe",
-  "email": "john@example.com"
-}
-```
-
-**Possible Responses:**
-- **200 OK** — User authenticated, JWT cookie set
-- **401 Unauthorized** — Invalid email or password
-- **500 Internal Server Error** — Login error
-
----
-
-## User Management
-
-### Get All Snippets (for current user)
-**GET** `/snippets`
-
-Retrieves paginated snippets for authenticated user.
-
-**Query Parameters:**
-- `page` — Zero-based page index (default: 0)
-- `size` — Page size (default: 20, minimum: 1)
-- `sort` — Sorting criteria, format: `property,(asc|desc)` (default: `createdAt,DESC`)
-
-**Response (200 OK):**
-```json
-{
-  "content": [
-    {
-      "id": 1,
-      "name": "Spring Bean Configuration",
-      "language": "JAVA",
-      "tags": ["spring", "beans"],
-      "createdAt": "2024-10-20T10:00:00Z"
-    }
-  ],
-  "page": {
-    "size": 20,
-    "number": 0,
-    "totalElements": 150,
-    "totalPages": 8
-  }
-}
-```
-
-**Possible Responses:**
-- **200 OK** — Snippets retrieved successfully
-- **401 Unauthorized** — User not authenticated
-- **500 Internal Server Error** — Retrieval error
-
----
-
-### Get a Snippet by ID
-**GET** `/snippets/{id}`
-
-Retrieves a specific snippet.
-
-**Path Parameters:**
-- `id` — Snippet ID (required)
-
-**Response (200 OK):**
-```json
-{
-  "id": 1,
-  "name": "Spring Bean Configuration",
-  "content": "public class AppConfig { ... }",
-  "language": "JAVA",
-  "tags": ["spring", "beans"],
-  "extraNotes": "Used for autowiring setup",
-  "isDraft": false,
-  "createdAt": "2024-10-20T10:00:00Z",
-  "lastUpdated": "2024-10-20T12:00:00Z"
-}
-```
-
-**Possible Responses:**
-- **200 OK** — Snippet found
-- **404 Not Found** — Snippet not found
-- **401 Unauthorized** — User not authenticated
-- **500 Internal Server Error** — Retrieval error
-
----
-
-### Create a Snippet
-**POST** `/snippets`
-
-Creates a new code snippet.
-
-**Request Body:**
-```json
-{
-  "snippetName": "Spring Bean Configuration",
-  "language": "JAVA",
-  "tags": ["spring", "beans"]
-}
-```
-
-**Validation:**
-- `snippetName` — Required, minimum 1 character
-- `language` — Optional, enum: `JAVA`, `OTHER`
-- `tags` — Optional, array of unique strings
-
-**Response (201 Created):**
-```json
-{
-  "id": 1,
-  "name": "Spring Bean Configuration",
-  "language": "JAVA",
-  "tags": ["spring", "beans"],
-  "isDraft": true,
-  "createdAt": "2024-10-20T10:00:00Z",
-  "lastUpdated": "2024-10-20T10:00:00Z"
-}
-```
-
-**Possible Responses:**
-- **201 Created** — Snippet created successfully
-- **401 Unauthorized** — User not authenticated
-- **500 Internal Server Error** — Creation error
-
----
-
-### Update a Snippet
-**PUT** `/snippets/{id}`
-
-Updates snippet metadata and content.
-
-**Path Parameters:**
-- `id` — Snippet ID (required)
-
-**Request Body:**
-```json
-{
-  "snippetName": "Updated Name",
-  "language": "JAVA",
-  "content": "updated code content",
-  "tags": ["spring", "updated"],
-  "extraNotes": "Updated notes"
-}
-```
-
-**Validation:**
-- `snippetName` — Required, minimum 1 character
-- `tags` — Required, array of unique strings
-- `language` — Optional, enum: `JAVA`, `OTHER`
-- `content` — Optional, string
-- `extraNotes` — Optional, string
-
-**Response (200 OK):**
-```json
-{
-  "id": 1,
-  "name": "Updated Name",
-  "content": "updated code content",
-  "language": "JAVA",
-  "tags": ["spring", "updated"],
-  "extraNotes": "Updated notes",
-  "isDraft": false,
-  "createdAt": "2024-10-20T10:00:00Z",
-  "lastUpdated": "2024-10-20T14:00:00Z"
-}
-```
-
-**Possible Responses:**
-- **200 OK** — Snippet updated successfully
-- **404 Not Found** — Snippet not found
-- **401 Unauthorized** — User not authenticated
-- **500 Internal Server Error** — Update error
-
----
-
-### Delete a Snippet
-**DELETE** `/snippets/{id}`
-
-Deletes a snippet permanently.
-
-**Path Parameters:**
-- `id` — Snippet ID (required)
-
-**Response:**
-- **204 No Content** — Snippet deleted successfully
-
-**Possible Responses:**
-- **204 No Content** — Snippet deleted
-- **404 Not Found** — Snippet not found
-- **401 Unauthorized** — User not authenticated
-- **500 Internal Server Error** — Deletion error
-
----
-
-## Snippet Analytics
-
-### Filter Snippets
-**POST** `/snippets/filter`
-
-Searches and filters snippets based on criteria.
-
-**Query Parameters:**
-- `page` — Zero-based page index (default: 0)
-- `size` — Page size (default: 20, minimum: 1)
-- `sort` — Sorting criteria (default: `createdAt,DESC`)
-
-**Request Body:**
-```json
-{
-  "languages": ["JAVA"],
-  "tagsOrNames": ["spring", "beans"],
-  "classAnnotations": ["Component", "Service"],
-  "classNames": ["AppConfig"],
-  "classFields": ["applicationContext"],
-  "classFieldAnnotations": ["Autowired"],
-  "methodReturnTypes": ["void", "String"],
-  "methodAnnotations": ["Override", "PostConstruct"]
-}
-```
-
-All fields are optional and accept arrays of unique strings. Each represents a search criterion.
-
-**Response (200 OK):**
-```json
-{
-  "content": [
-    {
-      "id": 1,
-      "name": "Spring Bean Configuration",
-      "language": "JAVA",
-      "tags": ["spring", "beans"],
-      "createdAt": "2024-10-20T10:00:00Z"
-    }
-  ],
-  "page": {
-    "size": 20,
-    "number": 0,
-    "totalElements": 50,
-    "totalPages": 3
-  }
-}
-```
-
-**Possible Responses:**
-- **200 OK** — Snippets filtered successfully
-- **401 Unauthorized** — User not authenticated
-- **500 Internal Server Error** — Filter error
-
----
-
-### Compare Two Snippets
-**GET** `/snippets/{id}/compare/{comparingToId}`
-
-Generates a diff between two snippets.
-
-**Path Parameters:**
-- `id` — First snippet ID (required)
-- `comparingToId` — Second snippet ID (required)
-
-**Response (200 OK):**
-```json
-{
-  "comparing": {
-    "snippetName": "Spring Bean Configuration",
-    "lines": [
-      {
-        "lineNum": 1,
-        "lineContent": "public class AppConfig {",
-        "lineType": "UNCHANGED"
-      },
-      {
-        "lineNum": 2,
-        "lineContent": "  @Bean",
-        "lineType": "REMOVED"
-      }
-    ]
-  },
-  "comparingTo": {
-    "snippetName": "Spring Bean Configuration v2",
-    "lines": [
-      {
-        "lineNum": 1,
-        "lineContent": "public class AppConfig {",
-        "lineType": "UNCHANGED"
-      },
-      {
-        "lineNum": 2,
-        "lineContent": "  @Component",
-        "lineType": "ADDED"
-      }
-    ]
-  }
-}
-```
-
-**Line Types:**
-- `UNCHANGED` — Line exists in both snippets
-- `ADDED` — Line added in comparingTo
-- `REMOVED` — Line removed from comparing
-
-**Possible Responses:**
-- **200 OK** — Snippets compared successfully
-- **404 Not Found** — One or both snippets not found
-- **401 Unauthorized** — User not authenticated
-- **500 Internal Server Error** — Comparison error
-
----
-
-### Update User Preferences
-**PUT** `/users/preferences`
-
-Updates user preferences like fuzzy search toggle.
-
-**Request Body:**
-```json
-{
-  "enableFuzzySearch": true
-}
-```
-
-**Response (200 OK):**
-```json
-{
-  "isFuzzySearchEnabled": true
-}
-```
-
-**Possible Responses:**
-- **200 OK** — Preferences updated
-- **401 Unauthorized** — User not authenticated
-- **404 Not Found** — User not found
-- **500 Internal Server Error** — Update error
-
----
-
-### Update Username or Email
-**PUT** `/users/me`
-
-Updates username or email for authenticated user.
-
-**Request Body:**
-```json
-{
-  "username": "new_username",
-  "email": "newemail@example.com"
-}
-```
-
-**Validation:**
-- `username` — Required, minimum 1 character
-- `email` — Required, valid email format, minimum 1 character
-
-**Response:**
-- **200 OK** — User details updated
-
-**Possible Responses:**
-- **200 OK** — Details updated successfully
-- **409 Conflict** — Email already exists
-- **401 Unauthorized** — User not authenticated
-- **404 Not Found** — User not found
-- **500 Internal Server Error** — Update error
-
----
-
-### Update Password
-**PUT** `/users/me/password`
-
-Updates the authenticated user's password.
-
-**Request Body:**
-```json
-{
-  "currentPassword": "CurrentPass123",
-  "newPassword": "NewPass456",
-  "confirmNewPassword": "NewPass456"
-}
-```
-
-**Validation:**
-- All fields required
-- Passwords must be 6-100 characters
-- `confirmNewPassword` must match `newPassword`
-
-**Response:**
-- **200 OK** — Password updated
-
-**Possible Responses:**
-- **200 OK** — Password updated successfully
-- **400 Bad Request** — Invalid current password or passwords don't match
-- **401 Unauthorized** — User not authenticated
-- **404 Not Found** — User not found
-- **500 Internal Server Error** — Update error
-
----
-
-### Log Out Current User
-**DELETE** `/users/logout`
-
-Logs out the authenticated user.
-
-**Response:**
-- **204 No Content** — User logged out
-
-**Possible Responses:**
-- **204 No Content** — Logged out successfully
-- **401 Unauthorized** — User not authenticated
-- **404 Not Found** — User not found
-- **500 Internal Server Error** — Logout error
-
----
-
-### Delete User Account
-**DELETE** `/users`
-
-Permanently deletes the authenticated user's account.
-
-**Request Body:**
-```json
-{
-  "password": "CurrentPassword123",
-  "confirmPassword": "CurrentPassword123"
-}
-```
-
-**Response:**
-- **204 No Content** — Account deleted
-
-**Possible Responses:**
-- **204 No Content** — Account deleted successfully
-- **400 Bad Request** — Password confirmation doesn't match
-- **401 Unauthorized** — User not authenticated
-- **404 Not Found** — User not found
-- **500 Internal Server Error** — Deletion error
-
----
-
-## Notes
-
-- All endpoints require authentication except `/auth/register` and `/auth/login`
-- Authenticated endpoints require valid JWT token (automatic via cookie after login/register)
-- Pagination defaults to 20 items per page sorted by creation date (newest first)
-- Tags are case-sensitive and must be unique within a request
-- Snippet content and extra notes are optional and can be empty strings
+## Project Timeline
+**Total Development Time:** 10 days
+**Key Things I learnt:** JPA and Specifications. Honestly I didn't learn much from this past specifications. It was a relatively simple project      

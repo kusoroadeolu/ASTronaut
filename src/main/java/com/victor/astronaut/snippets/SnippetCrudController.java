@@ -108,7 +108,7 @@ public class SnippetCrudController {
     public ResponseEntity<Page<SnippetPreview>> findSnippetsByUser(
             @AuthenticationPrincipal AppUserPrincipal principal,
             @ParameterObject
-            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC)
+            @PageableDefault(size = 20, sort = "updatedAt", direction = Sort.Direction.DESC)
             Pageable pageable
     ){
         Page<SnippetPreview> responses = this.snippetCrudService.findSnippetsByUser(principal.getId(), pageable);

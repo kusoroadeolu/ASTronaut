@@ -1,5 +1,35 @@
+version: '3.8'
+
 services:
-  redis:
-    image: redis:7.4.2
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: astronaut_db
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
     ports:
-      - '6379:6379'
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  app:
+    build: .
+    ports:
+      - "80:80"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/astronaut_db
+      SPRING_DATASOURCE_USERNAME: user
+      SPRING_DATASOURCE_PASSWORD: password
+      SPRING_REDIS_HOST: redis
+      SPRING_REDIS_PORT: 6379
+    depends_on:
+      - postgres
+      - redis
+
+volumes:
+  postgres_data:

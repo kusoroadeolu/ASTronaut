@@ -11,7 +11,9 @@ import java.util.List;
 
 @Setter
 @Getter
-@Table
+@Table(uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"email", "isDeleted"})
+})
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -26,7 +28,7 @@ public class AppUser {
     @Column(name = "username", nullable = false, length = 30)
     private String username;
 
-    @Column(name = "email", unique = true, nullable = false, length = 70)
+    @Column(name = "email", nullable = false, length = 70)
     private String email;
 
     @Column(name = "password", nullable = false, length = 100)

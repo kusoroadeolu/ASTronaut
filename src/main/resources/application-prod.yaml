@@ -1,0 +1,64 @@
+spring:
+  application:
+    name: ASTronaut
+
+  threads:
+    virtual:
+      enabled: true
+
+  data:
+    redis:
+      port: 6379 #TODO update my redis cache and postgres db to use cloud instances
+      host: localhost
+    web:
+      pageable:
+        serialization-mode: via_dto
+  h2:
+    console:
+      enabled: true
+
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/ASTronaut?currentSchema=public
+    username: postgres
+    password: password
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        show_sql: true
+        format_sql: true
+    show-sql: true
+
+
+jwt:
+  secret: ${JWT_SECRET} #Your JWT Secret
+  ttl: 600_000 #10 minutes
+  refresh-before: 60000
+  cookie-name: JWT_TOKEN
+  cookie-max-age: 60 # 60 minutes
+  cookie-http-only: true
+  cookie-secure: true
+  cookie-path: /
+
+
+cache:
+  principal:
+    name: principalCache
+    ttl: 30
+
+rate-limit:
+  req-per-minute: 60
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+  api-docs:
+    path: /v3/api-docs
+
+
+server:
+  port: 80

@@ -62,7 +62,7 @@ public class AppUserServiceImpl implements AppUserService {
     public AppUserAuthResponse loginAppUser(@NonNull AppUserLoginRequest loginRequest){
         log.info("Attempting to login app user with email: {}", loginRequest.email());
         final AppUser savedAppUser = this.appUserRepository
-                .findAppUserByEmail(loginRequest.email())
+                .findAppUserByEmailAndIsDeletedFalse(loginRequest.email())
                 .orElseThrow(() -> new InvalidCredentialsException("Invalid credentials. Please re-check your email or password"));
 
 
@@ -158,7 +158,7 @@ public class AppUserServiceImpl implements AppUserService {
     @Async
     public void deleteUser(AppUser user){
          try{
-             this.appUserRepository.delete(user);
+             this.appUserRepository.deleteAppUsersById(user.getId());
              log.info("Successfully deleted user: {}", user.getUsername());
          }catch (Exception e){
              log.info("Failed to delete user due to an exception: {}", user.getUsername() ,e);
