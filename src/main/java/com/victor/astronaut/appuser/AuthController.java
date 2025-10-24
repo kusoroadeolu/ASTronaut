@@ -39,7 +39,7 @@ public final class AuthController {
             @ApiResponse(responseCode = "500", description = "An unexpected error occurred during registration", content = @Content(schema = @Schema(implementation = ApiError.class)))
     })
     public ResponseEntity<AppUserAuthResponse> registerUser(@Valid @RequestBody AppUserRegisterRequest registerRequest, HttpServletResponse response){
-        AppUserAuthResponse loginResponse = this.appUserService.registerAppUser(registerRequest);
+        final AppUserAuthResponse loginResponse = this.appUserService.registerAppUser(registerRequest);
         response.addCookie(cookieUtils.createJwtCookie(loginResponse.jwtToken()));
         return new ResponseEntity<>(loginResponse, HttpStatus.CREATED);
     }
@@ -53,7 +53,7 @@ public final class AuthController {
             @ApiResponse(responseCode = "500", description = "An unexpected error occurred during login", content = @Content(schema = @Schema(implementation = ApiError.class)))
     })
     public ResponseEntity<AppUserAuthResponse> loginUser(@Valid @RequestBody AppUserLoginRequest loginRequest, HttpServletResponse response){
-        AppUserAuthResponse loginResponse = this.appUserService.loginAppUser(loginRequest);
+       final AppUserAuthResponse loginResponse = this.appUserService.loginAppUser(loginRequest);
         response.addCookie(cookieUtils.createJwtCookie(loginResponse.jwtToken()));
         return new ResponseEntity<>(loginResponse, HttpStatus.OK);
     }

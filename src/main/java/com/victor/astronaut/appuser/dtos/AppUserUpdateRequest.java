@@ -10,4 +10,10 @@ public record AppUserUpdateRequest(
         @Email(message = "User email must be an email")
         String email
 ) {
+
+    public AppUserUpdateRequest{
+        username = username.trim();
+        email = email.trim();
+    }
+
 }

@@ -13,7 +13,7 @@ public final class ClassAnnotationVisitor extends VoidVisitorAdapter<Set<String>
     @Override
     public void visit(ClassOrInterfaceDeclaration n, Set<String> arg) {
         super.visit(n, arg);
-        Set<String> annotations = n.getAnnotations().stream().map(a -> a.getName().asString().toLowerCase()).collect(Collectors.toSet());
+        final Set<String> annotations = n.getAnnotations().stream().map(a -> a.getName().asString().toLowerCase()).collect(Collectors.toSet());
         arg.addAll(annotations);
     }
 }

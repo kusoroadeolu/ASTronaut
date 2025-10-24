@@ -13,12 +13,12 @@ public interface AppUserService {
 
     UpdatePreferencesResponse updateAppUserPreferences(long userId, UpdatePreferencesRequest request);
 
-    //Updates a user's email or username
-    @Transactional
     void updateUsernameOrEmail(long userId, AppUserUpdateRequest request);
 
-    @Transactional
     void updatePassword(long userId, UpdatePasswordRequest request);
 
     void logoutUser(Long id);
+
+    @Transactional(readOnly = true)
+    UpdatePreferencesResponse getUserPreferences(long userId);
 }

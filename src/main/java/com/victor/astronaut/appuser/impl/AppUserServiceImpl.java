@@ -48,7 +48,7 @@ public class AppUserServiceImpl implements AppUserService {
             final AppUser appUser = this.appUserMapper.toAppUser(registerRequest, encodedPassword);
             final AppUser savedAppUser = this.appUserRepository.save(appUser);
             final String jwtToken = this.cachePrincipalAndGenerateJwtToken(appUser);
-            return this.appUserMapper.toResponse(savedAppUser, jwtToken);
+            return this.appUserMapper.toPreferencesResponse(savedAppUser, jwtToken);
         });
     }
 
@@ -72,7 +72,7 @@ public class AppUserServiceImpl implements AppUserService {
         }
 
         final String jwtToken = this.cachePrincipalAndGenerateJwtToken(savedAppUser);
-        return this.appUserMapper.toResponse(savedAppUser, jwtToken);
+        return this.appUserMapper.toPreferencesResponse(savedAppUser, jwtToken);
     }
 
     /**
@@ -105,7 +105,7 @@ public class AppUserServiceImpl implements AppUserService {
             user.setEnableFuzzySearch(request.enableFuzzySearch());
             this.appUserRepository.save(user);
             log.info("Successfully updated user preferences");
-            return this.appUserMapper.toResponse(request);
+            return this.appUserMapper.toPreferencesResponse(user);
         });
     }
 
@@ -116,6 +116,13 @@ public class AppUserServiceImpl implements AppUserService {
         final AppUser user = this.appUserQueryService.findById(userId);
         final boolean isPrevUsername = user.getUsername().equals(request.username());
         final boolean isPrevEmail = user.getEmail().equals(request.email());
+
+        //Check if the email and username are the same as before
+        if(isPrevEmail && isPrevUsername){
+            log.error("User submitted same email and username as before");
+            return;
+        }
+
         if(!isPrevUsername){
             user.setUsername(request.username());
         }
@@ -125,10 +132,7 @@ public class AppUserServiceImpl implements AppUserService {
             user.setEmail(request.email());
         }
 
-        //Check if the email and username are the same as before
-        if(isPrevEmail && isPrevUsername){
-            return;
-        }
+
 
         handleWithException("update", user.getUsername(), () -> {
             return this.appUserRepository.save(user);
@@ -141,12 +145,12 @@ public class AppUserServiceImpl implements AppUserService {
     public void updatePassword(long userId, @NonNull UpdatePasswordRequest request){
         final AppUser user = this.appUserQueryService.findById(userId);
         if(!passwordEncoder.matches(request.currentPassword(), user.getPassword())){
-            log.info("Failed to update user password due to invalid password");
+            log.error("Failed to update user password due to invalid password");
             throw new InvalidCredentialsException("Invalid credentials. Please re-check your password");
         }
 
         if(!request.newPassword().equals(request.confirmNewPassword())){
-            log.info("App user submitted mismatched passwords during password update");
+            log.error("App user submitted mismatched passwords during password update");
             throw new InvalidCredentialsException("Password and confirm password fields must match");
         }
 
@@ -161,7 +165,7 @@ public class AppUserServiceImpl implements AppUserService {
              this.appUserRepository.deleteAppUsersById(user.getId());
              log.info("Successfully deleted user: {}", user.getUsername());
          }catch (Exception e){
-             log.info("Failed to delete user due to an exception: {}", user.getUsername() ,e);
+             log.error("Failed to delete user due to an exception: {}", user.getUsername() ,e);
              user.setIsDeleted(true);
              this.appUserRepository.save(user);
              log.info("Successfully marked user as deleted");
@@ -174,10 +178,17 @@ public class AppUserServiceImpl implements AppUserService {
         try{
             this.cacheService.evictPrincipal(id);
         }catch (Exception e){
-            log.info("Failed to remove user principal dto from the cache", e); //Dont throw an exception because its not a sensitive issue
+            log.error("Failed to remove user principal dto from the cache", e); //Dont throw an exception because its not a sensitive issue
             return;
         }
         log.info("Successfully logged out user with ID: {}", id);
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public UpdatePreferencesResponse getUserPreferences(long userId){
+        final AppUser user = this.appUserQueryService.findById(userId);
+        return this.appUserMapper.toPreferencesResponse(user);
     }
 
     //Generates a jwt token for the app user, caches the user principal.

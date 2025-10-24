@@ -13,7 +13,7 @@ public final class ClassFieldAnnotationVisitor extends VoidVisitorAdapter<Set<St
     @Override
     public void visit(ClassOrInterfaceDeclaration n, Set<String> arg) {
         super.visit(n, arg);
-        Set<String> fieldAnnotations = n
+        final Set<String> fieldAnnotations = n
                 .getFields()
                 .stream()
                 .flatMap(a -> a.getAnnotations().stream())

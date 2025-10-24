@@ -420,6 +420,23 @@ Updates user preferences like fuzzy search toggle.
 
 ---
 
+**GET** `/users/preferences`
+
+Retrieves user preferences like fuzzy search toggle.
+
+**Response (200 OK):**
+```json
+{
+  "isFuzzySearchEnabled": false
+}
+```
+
+**Possible Responses:**
+- **200 OK** — Preferences retrieved successfully
+- **401 Unauthorized** — User not authenticated
+- **404 Not Found** — User not found
+- **500 Internal Server Error** — Retrieval error
+
 ### Update Username or Email
 **PUT** `/users/me`
 
@@ -508,6 +525,11 @@ Permanently deletes the authenticated user's account.
   "confirmPassword": "CurrentPassword123"
 }
 ```
+
+**Validation:**
+- All fields required
+- Passwords must be 6-100 characters
+- `password` must match `confirmPassword`
 
 **Response:**
 - **204 No Content** — Account deleted

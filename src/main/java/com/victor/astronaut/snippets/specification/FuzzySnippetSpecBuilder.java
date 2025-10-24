@@ -35,7 +35,7 @@ public class FuzzySnippetSpecBuilder implements SnippetSpecBuilder {
      * */
     @Override
     public FuzzySnippetSpecBuilder hasUser(AppUser a){
-        Specification<Snippet> spec = (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("appUser"), a);
+        final Specification<Snippet> spec = (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("appUser"), a);
         this.specifications.add(spec);
         return this;
     }
@@ -48,7 +48,7 @@ public class FuzzySnippetSpecBuilder implements SnippetSpecBuilder {
     @Override
     public FuzzySnippetSpecBuilder hasAnyLanguage(Set<SnippetLanguage> expectedLangs){
         if(!expectedLangs.isEmpty()){
-            Specification<Snippet> spec = this.hasLanguageInSet(LANGUAGE, expectedLangs);
+            final Specification<Snippet> spec = this.hasLanguageInSet(LANGUAGE, expectedLangs);
             this.specifications.add(spec);
         }
         return this;
@@ -64,7 +64,7 @@ public class FuzzySnippetSpecBuilder implements SnippetSpecBuilder {
     @Override
     public FuzzySnippetSpecBuilder hasValFromElementCollection(String fieldName, Set<String> expectedVals){
         if(!fieldName.isEmpty() && !expectedVals.isEmpty()){
-            Specification<Snippet> spec = this.hasValFromElementCollectionInSet(fieldName, expectedVals);
+            final Specification<Snippet> spec = this.hasValFromElementCollectionInSet(fieldName, expectedVals);
             this.specifications.add(spec);
         }
         return this;
@@ -74,9 +74,9 @@ public class FuzzySnippetSpecBuilder implements SnippetSpecBuilder {
     @Override
     public FuzzySnippetSpecBuilder hasTagOrName(Set<String> expectedTagsOrNames){
         if (!expectedTagsOrNames.isEmpty()){
-            Specification<Snippet> hasTags = this.hasValFromElementCollectionInSet(TAGS, expectedTagsOrNames);
-            Specification<Snippet> hasNames = this.hasNameInSet(NAME, expectedTagsOrNames);
-            Specification<Snippet> spec = Specification.anyOf(hasNames, hasTags);
+            final Specification<Snippet> hasTags = this.hasValFromElementCollectionInSet(TAGS, expectedTagsOrNames);
+            final Specification<Snippet> hasNames = this.hasNameInSet(NAME, expectedTagsOrNames);
+            final Specification<Snippet> spec = Specification.anyOf(hasNames, hasTags);
             this.specifications.add(spec);
         }
         return this;
@@ -91,8 +91,8 @@ public class FuzzySnippetSpecBuilder implements SnippetSpecBuilder {
     //Checks if an entity in the DB has a value in their set(element collection) that fuzzily matches the values in this set
     private Specification<Snippet> hasValFromElementCollectionInSet(String fieldName, Set<String> set){
         return (root, query, cb) -> {
-            Join<Snippet, String> j = root.join(fieldName);
-            Predicate[] predicates = set.stream()
+            final Join<Snippet, String> j = root.join(fieldName);
+            final Predicate[] predicates = set.stream()
                     .map(s -> cb.like(j.as(String.class), WILDCARD + s.toLowerCase() + WILDCARD))
                     .toArray(Predicate[]::new);
             return cb.or(predicates);
@@ -103,8 +103,8 @@ public class FuzzySnippetSpecBuilder implements SnippetSpecBuilder {
     //Checks if an entity has a name that exists fuzzily in the expected names set
     private Specification<Snippet> hasNameInSet(String fieldName, Set<String> expectedNames){
         return  (root, query, cb) -> {
-            Expression<String> p = cb.lower(root.get(fieldName));
-            Predicate[] predicates = expectedNames.stream()
+            final Expression<String> p = cb.lower(root.get(fieldName));
+            final Predicate[] predicates = expectedNames.stream()
                     .map(s -> cb.like(p.as(String.class), WILDCARD + s.toLowerCase() + WILDCARD))
                     .toArray(Predicate[]::new);
             return cb.or(predicates);

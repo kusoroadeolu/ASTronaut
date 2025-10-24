@@ -14,7 +14,6 @@ import org.springframework.stereotype.Service;
 
 /**
  * Parses Java code snippets and extracts structural metadata using JavaParser.
- *
  * </br>Attempts to parse the snippet content directly. If parsing fails, wraps the content
  * in a class to handle code fragments. Extracted metadata (annotations, methods, fields, etc.)
  * is stored with the snippet for structural searching.
@@ -35,7 +34,7 @@ public class SnippetParser {
 
     /**
      * Parses the snippet content and extracts available metadata.
-     * </br>First attempts to parse the code as-is. If that fails,
+     * </br>First attempts to parse the code as is. If that fails,
      * wraps it in a class and tries again. Sets the metaDataAvailable flag based on
      * whether parsing succeeded, then saves the snippet.
      *
@@ -57,7 +56,6 @@ public class SnippetParser {
 
     /**
      * Wraps the snippet content in a class and retries parsing.
-     *
      * </br>Used when initial parsing fails. Wraps the code fragment in a public class
      * to make it valid Java syntax. If successful, removes the wrapper class name
      * from the extracted metadata. If this also fails, marks metadata as unavailable.
@@ -67,8 +65,8 @@ public class SnippetParser {
      */
     private void wrapAndRetry(Snippet snippet) throws SnippetParseException{
         try{
-            String wrappedContent = this.wrapContent(snippet.getContent());
-            var unit = StaticJavaParser.parse(wrappedContent);
+            final String wrappedContent = this.wrapContent(snippet.getContent());
+            final var unit = StaticJavaParser.parse(wrappedContent);
             this.extractMetaData(snippet, unit);
             snippet.getClassNames().remove(WRAPPER); //Remove the wrapper class from the snippet names
             log.info("Successfully wrapped snippet content and extracted meta data");
@@ -97,7 +95,6 @@ public class SnippetParser {
 
     /**
      * Wraps code content in a valid Java class structure.
-     *
      * </br>Used for parsing code fragments that aren't complete compilation units.
      *
      * @param content the code content to wrap

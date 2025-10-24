@@ -51,7 +51,11 @@ cache:
     ttl: 30
 
 rate-limit:
-  req-per-minute: 60
+  requests-per-minute: 60
+  default-key-expiration: 5 # In minutes
+  excluded-ips:
+    - "0:0:0:0:0:0:0:1"
+    - "127.0.0.1"
 
 springdoc:
   swagger-ui:
@@ -62,3 +66,28 @@ springdoc:
 
 server:
   port: 80
+
+ # Note that some of the excluded paths might feel redundant.
+# They're not because custom filters don't support wildcards
+security:
+  excluded-paths:
+    - "/"
+    - "/index.html"
+    - "/swagger-ui/**"
+    - "/v3/api-docs/**"
+    - "/api-docs"
+    - "/swagger-ui.html"
+    - "/css/header.css"
+    - "/js/header.js"
+    - "/css/toast.css"
+    - "/js/toast.js"
+    - "/auth.html"
+    - "/auth/register"
+    - "/auth/login"
+    - "/auth/**"
+    - "/swagger"
+    - "/v3/api-docs"
+  logout-url: "/users/logout"
+  redirect-url: "/"
+  clearAuth: true
+  encodingStrength: 12

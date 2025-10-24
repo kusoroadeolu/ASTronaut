@@ -10,8 +10,6 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.Ordered;
-import org.springframework.core.annotation.Order;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -27,18 +25,14 @@ import java.util.Set;
 public class RateLimitFilter extends OncePerRequestFilter {
 
     private final RedisTemplate<String, Object> redisTemplate;
+    private final RateLimitConfigProperties rateLimitConfigProperties;
 
-    @Value("${rate-limit.req-per-minute}")
-    private  int reqPerMinute;
-
-    private final static int DEFAULT_KEY_EXPIRATION_IN_MINUTES = 5;
-    private final static Set<String> excludedIps = Set.of("127.0.0.1", "0:0:0:0:0:0:0:1");
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {
         String ip = request.getRemoteAddr();
+        if(!this.rateLimitConfigProperties.getExcludedIps().contains(ip)){
 
-        if(!excludedIps.contains(ip)){
             try{
                 this.handleRateLimit(ip, request);
             }catch (RateLimitException | IllegalArgumentException e){
@@ -47,6 +41,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
                 return;
             }
         }
+
         filterChain.doFilter(request, response);
     }
 
@@ -67,13 +62,13 @@ public class RateLimitFilter extends OncePerRequestFilter {
                     + ((60 - elapsedSeconds) * requestLastMinute)) / 60.0; //Get the average request of requests made this minute and last minute
 
             //If the avg request is greater than the allowed requests, throw
-            if(avgRequest > this.reqPerMinute){
+            if(avgRequest > this.rateLimitConfigProperties.getRequestsPerMinute()){
                 log.info("Rate limit for user with IP: {} exceeded", ip);
                 throw new RateLimitException();
             }
         }
 
-        redisTemplate.expire(currentMinuteKey, Duration.ofMinutes(DEFAULT_KEY_EXPIRATION_IN_MINUTES));
+        redisTemplate.expire(currentMinuteKey, Duration.ofMinutes(this.rateLimitConfigProperties.getDefaultKeyExpiration()));
     }
 
     //Builds the value to store in the redis template

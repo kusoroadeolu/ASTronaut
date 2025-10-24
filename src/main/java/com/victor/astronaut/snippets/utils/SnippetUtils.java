@@ -18,7 +18,7 @@ public class SnippetUtils{
     public static <T> T executeWithException(String operation, Object resourceId, SupplierWithException<T> supplier) {
         try {
             log.info("Attempting to {} snippet: {}", operation, resourceId);
-            T result = supplier.supply();
+            final T result = supplier.supply();
             log.info("Successfully {}d snippet: {}", operation, resourceId);
             return result;
         } catch (DataIntegrityViolationException e) {

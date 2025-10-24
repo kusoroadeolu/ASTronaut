@@ -20,11 +20,11 @@ public class AppUserMapper {
                 .build();
     }
 
-    public AppUserAuthResponse toResponse(AppUser appUser, String jwtToken){
+    public AppUserAuthResponse toPreferencesResponse(AppUser appUser, String jwtToken){
         return new AppUserAuthResponse(appUser.getId(), appUser.getUsername(), appUser.getEmail(), jwtToken);
     }
 
-    public UpdatePreferencesResponse toResponse(UpdatePreferencesRequest request){
-        return new UpdatePreferencesResponse(request.enableFuzzySearch());
+    public UpdatePreferencesResponse toPreferencesResponse(AppUser appUser){
+        return new UpdatePreferencesResponse(appUser.getEnableFuzzySearch());
     }
 }

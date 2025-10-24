@@ -26,7 +26,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
     properties:
       hibernate:
         show_sql: true
@@ -44,14 +44,17 @@ jwt:
   cookie-secure: false
   cookie-path: /
 
-
 cache:
   principal:
     name: principalCache
     ttl: 30
 
 rate-limit:
-  req-per-minute: 60
+  requests-per-minute: 500
+  default-key-expiration: 100 # In minutes
+  excluded-ips:
+    - "0:0:0:0:0:0:0:1"
+    - "127.0.0.1"
 
 springdoc:
   swagger-ui:
@@ -59,6 +62,31 @@ springdoc:
   api-docs:
     path: /v3/api-docs
 
-
 server:
   port: 80
+
+# Note that some of the excluded paths might feel redundant.
+# They're not because custom filters don't support wildcards
+security:
+  excluded-paths:
+    - "/"
+    - "/index.html"
+    - "/swagger-ui/**"
+    - "/v3/api-docs/**"
+    - "/api-docs"
+    - "/swagger-ui.html"
+    - "/css/header.css"
+    - "/js/header.js"
+    - "/css/toast.css"
+    - "/js/toast.js"
+    - "/auth.html"
+    - "/auth/register"
+    - "/auth/login"
+    - "/auth/**"
+    - "/swagger"
+    - "/v3/api-docs"
+  logout-url: "/users/logout"
+  redirect-url: "/"
+  clearAuth: true
+  encodingStrength: 12
+

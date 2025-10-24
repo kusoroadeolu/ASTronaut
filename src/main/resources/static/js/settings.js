@@ -64,6 +64,9 @@ async function initPage() {
 
         document.getElementById('username-display').textContent = currentUsername;
         document.getElementById('email-display').textContent = currentEmail;
+
+        // Fetch and set fuzzy search preference
+        await fetchFuzzySearchPreference();
     } else {
         showToast('error', 'Session Expired', 'Please log in again');
         setTimeout(() => {
@@ -318,6 +321,35 @@ async function toggleFuzzySearch() {
         console.error('Error updating preferences:', error);
         toggle.classList.toggle('active');
         showToast('error', 'Update Failed', 'Failed to update preferences');
+    }
+}
+
+// Fetch fuzzy search preference
+async function fetchFuzzySearchPreference() {
+    try {
+        const response = await fetch(`${API_BASE}/users/preferences`, {
+            method: 'GET',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            const toggle = document.getElementById('fuzzy-search-toggle');
+
+            // Set toggle state based on server response, default to false
+            if (data.isFuzzySearchEnabled === true) {
+                toggle.classList.add('active');
+            } else {
+                toggle.classList.remove('active');
+            }
+        }
+    } catch (error) {
+        console.error('Error fetching fuzzy search preference:', error);
+        // Default to disabled on error
+        document.getElementById('fuzzy-search-toggle').classList.remove('active');
     }
 }
 

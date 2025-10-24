@@ -5,6 +5,7 @@ import com.victor.astronaut.security.jwt.JwtConfigProperties;
 import com.victor.astronaut.security.jwt.JwtFilter;
 import com.victor.astronaut.security.ratelimits.RateLimitFilter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -22,6 +23,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import java.util.Set;
+
 @Configuration
 @RequiredArgsConstructor
 @EnableWebSecurity
@@ -32,37 +35,33 @@ public class WebConfig {
     private final JwtFilter jwtFilter;
     private final RateLimitFilter rateLimitFilter;
     private final JwtConfigProperties jwtConfigProperties;
+    private final SecurityConfigProperties securityConfigProperties;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity security) throws Exception {
+        int arrSize = this.securityConfigProperties.getExcludedPaths().size();
+        String[] excludedPaths = this.securityConfigProperties.getExcludedPaths().toArray(new String[arrSize]);
         return security
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> {
-                    auth.requestMatchers("/").permitAll();
-                    auth.requestMatchers("/index.html").permitAll();
-                    auth.requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/api-docs", "/swagger-ui.html").permitAll();
-                    auth.requestMatchers("/css/header.css", "/js/header.js").permitAll();
-                    auth.requestMatchers("/css/toast.css", "/js/toast.js").permitAll();
-                    auth.requestMatchers("/auth.html", "/auth.js").permitAll();
-                    auth.requestMatchers("/api-docs").permitAll();
-                    auth.requestMatchers("/auth/**").permitAll();
+                    auth.requestMatchers(excludedPaths).permitAll();
                     auth.anyRequest().authenticated();
                 })
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .logout(l ->  {
-                    l.logoutUrl("/users/logout");
-                    l.deleteCookies(jwtConfigProperties.getCookieName());
-                    l.logoutSuccessUrl("/index.html");
-                    l.clearAuthentication(true);
+                    l.logoutUrl(this.securityConfigProperties.getLogoutUrl());
+                    l.deleteCookies(this.jwtConfigProperties.getCookieName());
+                    l.logoutSuccessUrl(this.securityConfigProperties.getRedirectUrl());
+                    l.clearAuthentication(this.securityConfigProperties.isClearAuth());
                 })
-                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(rateLimitFilter, JwtFilter.class)
+                .addFilterBefore(this.jwtFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(this.rateLimitFilter, JwtFilter.class)
                 .build();
     }
 
     @Bean
     public AuthenticationProvider authenticationProvider(PasswordEncoder passwordEncoder){
-        DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider(appUserDetailsService);
+        DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider(this.appUserDetailsService);
         authenticationProvider.setPasswordEncoder(passwordEncoder);
         return authenticationProvider;
     }
@@ -74,7 +73,7 @@ public class WebConfig {
 
     @Bean
     public PasswordEncoder passwordEncoder(){
-        return new BCryptPasswordEncoder(12);
+        return new BCryptPasswordEncoder(this.securityConfigProperties.getEncodingStrength());
     }
 
 

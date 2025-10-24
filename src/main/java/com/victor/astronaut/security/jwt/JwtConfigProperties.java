@@ -5,6 +5,8 @@ import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
+import java.util.Set;
+
 @Component
 @ConfigurationProperties("jwt")
 @Setter
@@ -17,5 +19,5 @@ public class JwtConfigProperties {
     private String cookiePath;
     private int cookieMaxAge;
     private boolean cookieSecure;
-    public boolean cookieHttpOnly;
+    private boolean cookieHttpOnly;
 }

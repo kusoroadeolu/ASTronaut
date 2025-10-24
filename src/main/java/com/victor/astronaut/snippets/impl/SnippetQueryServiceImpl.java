@@ -44,7 +44,7 @@ public class SnippetQueryServiceImpl implements SnippetQueryService {
         final Specification<Snippet> directSpecs = this.buildSpec(a, criteria, SnippetSpecBuilder.SpecType.DIRECT);
         if(a.getEnableFuzzySearch() != null && a.getEnableFuzzySearch()){
             log.info("Fuzzy search enabled");
-            Specification<Snippet> fuzzySpecs = this.buildSpec(a, criteria, SnippetSpecBuilder.SpecType.FUZZY);
+            final Specification<Snippet> fuzzySpecs = this.buildSpec(a, criteria, SnippetSpecBuilder.SpecType.FUZZY);
             //A specification which is any of the direct specs and the fuzzy specs. Basically OR not AND
             root = Specification.anyOf(directSpecs, fuzzySpecs);
         }else {

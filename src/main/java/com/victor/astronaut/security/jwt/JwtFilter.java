@@ -5,6 +5,7 @@ import com.victor.astronaut.appuser.AppUserPrincipal;
 import com.victor.astronaut.appuser.AppUserPrincipalDto;
 import com.victor.astronaut.security.CookieUtils;
 import com.victor.astronaut.security.JwtService;
+import com.victor.astronaut.security.SecurityConfigProperties;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -13,6 +14,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -21,6 +23,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.util.WebUtils;
 
 import java.io.IOException;
+import java.util.Set;
 
 @Component
 @RequiredArgsConstructor
@@ -28,18 +31,21 @@ import java.io.IOException;
 public class JwtFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
+    private final SecurityConfigProperties securityConfigProperties;
     private final JwtConfigProperties jwtConfigProperties;
     private final AppUserDetailsService appUserDetailsService;
     private final CookieUtils cookieUtils;
     private AppUserPrincipal principal;
 
 
+
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {
-        log.info("Authenticating user");
         this.shouldNotFilter(request);
-        final Cookie jwtCookie = WebUtils.getCookie(request, this.jwtConfigProperties.getCookieName());
 
+        log.info("Authenticating user");
+
+        final Cookie jwtCookie = WebUtils.getCookie(request, this.jwtConfigProperties.getCookieName());
         if(jwtCookie == null){
             log.info("JWT Cookie is null");
             filterChain.doFilter(request, response);
@@ -90,7 +96,6 @@ public class JwtFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(@NonNull HttpServletRequest request) {
-        String requestURI = request.getRequestURI();
-        return requestURI.startsWith("/auth") || requestURI.startsWith("/swagger") || requestURI.startsWith("/v3/api-docs");
+        return this.securityConfigProperties.getExcludedPaths().contains(request.getRequestURI().toLowerCase());
     }
 }

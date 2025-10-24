@@ -31,7 +31,7 @@ public class DirectSnippetSpecBuilder implements SnippetSpecBuilder {
      * */
     @Override
     public DirectSnippetSpecBuilder hasUser(AppUser a){
-        Specification<Snippet> spec = (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("appUser"), a);
+        final Specification<Snippet> spec = (root, query, criteriaBuilder) -> criteriaBuilder.equal(root.get("appUser"), a);
         this.specifications.add(spec);
         return this;
     }
@@ -44,7 +44,7 @@ public class DirectSnippetSpecBuilder implements SnippetSpecBuilder {
     @Override
     public DirectSnippetSpecBuilder hasAnyLanguage(Set<SnippetLanguage> expectedLangs){
         if(!expectedLangs.isEmpty()){
-            Specification<Snippet> spec = this.hasLanguageInSet(LANGUAGE, expectedLangs);
+            final Specification<Snippet> spec = this.hasLanguageInSet(LANGUAGE, expectedLangs);
             this.specifications.add(spec);
         }
         return this;
@@ -60,7 +60,7 @@ public class DirectSnippetSpecBuilder implements SnippetSpecBuilder {
     @Override
     public DirectSnippetSpecBuilder hasValFromElementCollection(String fieldName, Set<String> expectedVals){
         if(!fieldName.isEmpty() && !expectedVals.isEmpty()){
-            Specification<Snippet> spec = this.hasValFromElementCollectionInSet(fieldName, expectedVals);
+            final Specification<Snippet> spec = this.hasValFromElementCollectionInSet(fieldName, expectedVals);
             this.specifications.add(spec);
         }
         return this;
@@ -71,9 +71,9 @@ public class DirectSnippetSpecBuilder implements SnippetSpecBuilder {
     @Override
     public DirectSnippetSpecBuilder hasTagOrName(Set<String> expectedTagsOrNames){
         if (!expectedTagsOrNames.isEmpty()){
-            Specification<Snippet> hasTags = this.hasValFromElementCollectionInSet(TAGS, expectedTagsOrNames);
-            Specification<Snippet> hasNames = this.hasNameInSet(NAME, expectedTagsOrNames);
-            Specification<Snippet> spec = Specification.anyOf(hasNames, hasTags);
+            final Specification<Snippet> hasTags = this.hasValFromElementCollectionInSet(TAGS, expectedTagsOrNames);
+            final Specification<Snippet> hasNames = this.hasNameInSet(NAME, expectedTagsOrNames);
+            final Specification<Snippet> spec = Specification.anyOf(hasNames, hasTags);
             this.specifications.add(spec);
         }
         return this;
@@ -87,14 +87,14 @@ public class DirectSnippetSpecBuilder implements SnippetSpecBuilder {
 
     //Checks if an entity in the DB has a value in their set(element collection) that matches the values in this set
     private Specification<Snippet> hasValFromElementCollectionInSet(String fieldName, Set<String> set){
-        Set<String> lowerSet = set.stream().map(String::toLowerCase).collect(Collectors.toSet());
+        final Set<String> lowerSet = set.stream().map(String::toLowerCase).collect(Collectors.toSet());
         return (root, query, cb) -> root.join(fieldName).in(lowerSet);
     }
 
 
     //Checks if an entity has a name that exists in the expected names set
     private Specification<Snippet> hasNameInSet(String fieldName, Set<String> set){
-        Set<String> lowerSet = set.stream().map(String::toLowerCase).collect(Collectors.toSet());
+        final Set<String> lowerSet = set.stream().map(String::toLowerCase).collect(Collectors.toSet());
         return  (root, query, cb) -> cb.lower(root.get(fieldName)).in(lowerSet);
     }
 

@@ -41,7 +41,7 @@ public class AppUser {
     private Boolean isDeleted;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Snippet> snippet = new ArrayList<>();
+    private List<Snippet> snippets = new ArrayList<>();
 
     @Column(name = "createdAt", nullable = false)
     private LocalDateTime createdAt;

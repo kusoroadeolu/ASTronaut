@@ -30,7 +30,7 @@ public class AppUserQueryServiceImpl implements AppUserQueryService {
     @Override
     public void validateEmail(@NonNull String email){
         if (this.appUserRepository.existsAppUsersByEmailAndIsDeletedFalse(email)){
-            log.info("Found user with similar email address.");
+            log.error("Found user with similar email address.");
             throw new AppUserAlreadyExistsException("This email address is already taken. Please use a different email");
         }
     }

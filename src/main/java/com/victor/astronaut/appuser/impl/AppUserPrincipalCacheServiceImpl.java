@@ -18,7 +18,7 @@ public class AppUserPrincipalCacheServiceImpl implements AppUserPrincipalCacheSe
 
     private final AppUserRepository appUserRepository;
 
-    //Cache's the needed details to build the app principal
+    //Caches the needed details to build the app principal
     @CachePut(key = "#id", cacheNames = "principalCache")
     @Override
     public AppUserPrincipalDto cachePrincipal(long id, @NonNull AppUserPrincipalDto principal){

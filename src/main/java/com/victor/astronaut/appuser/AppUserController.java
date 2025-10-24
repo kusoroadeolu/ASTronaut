@@ -55,6 +55,17 @@ public class AppUserController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
+    @GetMapping("/preferences")
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "Gets user preferences", description = "Gets user preferences (e.g., fuzzy search toggle)")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Preferences gotten successfully", content = @Content(schema = @Schema(implementation = UpdatePreferencesResponse.class)))
+    })
+    public ResponseEntity<UpdatePreferencesResponse> getUserPreferences(@AuthenticationPrincipal AppUserPrincipal principal){
+        final var response = this.appUserService.getUserPreferences(principal.getId());
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
     @PutMapping("/preferences")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Update user preferences", description = "Updates user preferences (e.g., fuzzy search toggle)")
@@ -62,7 +73,7 @@ public class AppUserController {
             @ApiResponse(responseCode = "200", description = "Preferences updated successfully", content = @Content(schema = @Schema(implementation = UpdatePreferencesResponse.class)))
     })
     public ResponseEntity<UpdatePreferencesResponse> updateUserPreferences(@AuthenticationPrincipal AppUserPrincipal principal, @Valid @RequestBody UpdatePreferencesRequest request){
-        var response = this.appUserService.updateAppUserPreferences(principal.getId(), request);
+        final var response = this.appUserService.updateAppUserPreferences(principal.getId(), request);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
