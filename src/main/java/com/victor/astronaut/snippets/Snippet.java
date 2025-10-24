@@ -11,7 +11,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Entity
-@Table
+@Table(indexes = {
+        @Index(name = "name_idx", columnList = "name")
+})
 @AllArgsConstructor
 @NoArgsConstructor
 @Slf4j
@@ -42,6 +44,9 @@ public class Snippet {
     private String extraNotes = "";
 
     @ElementCollection
+    @CollectionTable(
+            indexes = @Index(name = "tags_idx", columnList = "tags")
+    )
     private Set<String> tags = new HashSet<>();
 
     @ElementCollection

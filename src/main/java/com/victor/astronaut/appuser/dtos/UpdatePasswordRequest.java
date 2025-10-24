@@ -13,4 +13,10 @@ public record UpdatePasswordRequest(
         @Size(min = 6, max = 100, message = "Password must be at least 6 characters")
         @NotNull(message = "Confirm password cannot be null")
         String confirmNewPassword
-) {}
+) {
+    public UpdatePasswordRequest{
+        currentPassword = currentPassword.trim();
+        newPassword = newPassword.trim();
+        confirmNewPassword = confirmNewPassword.trim();
+    }
+}

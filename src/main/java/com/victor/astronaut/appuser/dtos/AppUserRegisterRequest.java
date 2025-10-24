@@ -24,4 +24,10 @@ public record AppUserRegisterRequest(
         @NotNull(message = "Password cannot be null")
         String confirmPassword
 ) {
+    public AppUserRegisterRequest{
+        username = username.trim();
+        email = email.trim();
+        password = password.trim();
+        confirmPassword = confirmPassword.trim();
+    }
 }

@@ -11,7 +11,7 @@ import com.victor.astronaut.snippets.dto.SnippetUpdateRequest;
 import com.victor.astronaut.snippets.enums.SnippetLanguage;
 import com.victor.astronaut.snippets.projections.SnippetPreview;
 import com.victor.astronaut.snippets.repos.SnippetRepository;
-import com.victor.astronaut.snippets.snippetparser.SnippetParser;
+import com.victor.astronaut.snippets.snippetparser.SnippetParsingService;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,7 +35,7 @@ public class SnippetCrudServiceImpl implements SnippetCrudService {
     private final AppUserQueryService appUserQueryService;
     private final SnippetRepository snippetRepository;
     private final SnippetMapper snippetMapper;
-    private final SnippetParser snippetParser;
+    private final SnippetParsingService snippetParsingService;
 
     /**
      * Creates a new snippet for the specified user.
@@ -99,7 +99,7 @@ public class SnippetCrudServiceImpl implements SnippetCrudService {
 
                     //Extract the metadata from the snippet, offloads to a separate thread to avoid blocking the main thread
                     if(found.getLanguage().equals(SnippetLanguage.JAVA)){
-                        this.snippetParser.parseSnippetContent(saved);
+                        this.snippetParsingService.parseSnippetContent(saved);
                     }
 
                     return this.snippetMapper.toResponse(saved);

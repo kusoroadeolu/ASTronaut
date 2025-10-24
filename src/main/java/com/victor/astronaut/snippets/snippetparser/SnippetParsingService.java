@@ -21,7 +21,7 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class SnippetParser {
+public class SnippetParsingService {
 
     private final SnippetRepository snippetRepository;
     private final VisitorOrchestrator visitorOrchestrator;

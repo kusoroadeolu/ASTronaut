@@ -14,7 +14,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 @SpringBootTest
-class SnippetParserTest {
+class SnippetParsingServiceTest {
     @MockitoBean
     private SnippetRepository snippetRepository;
 
@@ -22,7 +22,7 @@ class SnippetParserTest {
     private VisitorOrchestrator visitorOrchestrator;
 
     @Autowired
-    private SnippetParser parser;
+    private SnippetParsingService parser;
 
     //This test will only pass with the async annotation commented out on the actual method
     @Test

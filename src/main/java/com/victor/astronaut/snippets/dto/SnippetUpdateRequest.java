@@ -1,12 +1,15 @@
 package com.victor.astronaut.snippets.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.victor.astronaut.snippets.dto.utils.DtoUtils;
 import com.victor.astronaut.snippets.enums.SnippetLanguage;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 
 import java.util.Set;
+
+import static com.victor.astronaut.snippets.dto.utils.DtoUtils.normalizeSet;
 
 @Builder
 public record SnippetUpdateRequest(
@@ -25,6 +28,7 @@ public record SnippetUpdateRequest(
 ) {
 
     public SnippetUpdateRequest{
+        tags = normalizeSet(tags);
         content = content.trim();
         extraNotes = extraNotes.trim();
     }

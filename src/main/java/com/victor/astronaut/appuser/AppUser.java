@@ -13,7 +13,10 @@ import java.util.List;
 @Getter
 @Table(uniqueConstraints = {
         @UniqueConstraint(columnNames = {"email", "isDeleted"})
-})
+}, indexes = {
+        @Index(name = "email_idx", columnList = "email"),
+        }
+)
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor

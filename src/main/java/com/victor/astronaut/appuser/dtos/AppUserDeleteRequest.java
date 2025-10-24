@@ -11,4 +11,8 @@ public record AppUserDeleteRequest(
         @NotNull(message = "Password cannot be null")
         String confirmPassword
 ) {
+    public AppUserDeleteRequest{
+        password = password.trim();
+        confirmPassword = confirmPassword.trim();
+    }
 }

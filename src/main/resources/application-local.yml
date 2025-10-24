@@ -88,5 +88,5 @@ security:
   logout-url: "/users/logout"
   redirect-url: "/"
   clearAuth: true
-  encodingStrength: 12
+  encodingStrength: 12 # password encoding strength
 

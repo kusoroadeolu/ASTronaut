@@ -4,8 +4,9 @@
 ASTronaut(emphasis on the AST) was basically built by me to organize my java snippets without needing to go to GitHub everytime. Yes, there are probably better snippet organizers out there, with better UI and better features, but basically I just needed something that could allow me to search my java snippets based on certain metadata and compare two snippets 
 
 ## Who is ASTronaut for
-Basically java devs who want to be able to search their code based on certain metadata in their code, and have code snippets locally without having to go online to retrieve them.
-</br> To set up ASTronaut locally view [**setup.md**](setup.md)
+Java devs who want to be able to search their code based on certain metadata in their code, and have code snippets locally without having to go online to retrieve them(ironically this is a webapp lol that's made to be run locally).
+</br> ASTronaut is also for anyone who just wants to play around with the tool as well
+</br> To set up ASTronaut locally which I recommend view 👉 [**SETUP.md**](SETUP.md)
 </br> ASTronaut will also be hosted on the cloud later on
 
 
@@ -33,10 +34,10 @@ The frontend consists of five pages:
 
 ## Database Schema
 
-The DB schema is very simple. Just an app user entity which has a one to may relationship with the snippet entity.
+The DB schema is very simple. Just an app user entity which has a one-to-many relationship with the snippet entity.
 
 ### AppUser Entity
-This stores the app user's info.
+This stores the app user's info. There's an index on the user's email field. Just to speed things up when you initially log in
 
 ```java
     @Id
@@ -69,10 +70,9 @@ This stores the app user's info.
     private Boolean enableFuzzySearch;
 ```
 
-
 ### Snippet Entity
 
-Stores code snippets and their extracted metadata, also mapped to a user.
+Stores code snippets and their extracted metadata, also mapped to a user. There are indexes on the snippet name field and the tag field because that's probably going to be the search criteria 90% of the time. 
 
 **Columns:**
 ```java
@@ -129,9 +129,8 @@ Stores code snippets and their extracted metadata, also mapped to a user.
 ```
 #### Some details on this
 - The metadata available flag was actually added a while back for debugging, but I forgot to remove it and now its there I guess
-- The isDraft flag is also pretty useless too I'll definitely remove it later, but it's honestly harmless rn
+- - The isDraft flag is also pretty useless right now, but it was initially added to make unfinished snippets less prominent on the UI view
 - The metadata collected from the snippet content is pretty barebones, it works for me though
-
 ---
 
 ## Authentication & Authorization
@@ -164,7 +163,7 @@ Rate limiting was implemented using redis and a sliding window algorithm to trac
 After a snippet is updated, if the language is **JAVA**, the parsing is offloaded to a virtual thread, to prevent blocking the main thread. Also, I'm not too sure if parsing is CPU intensive work, else I might need to disable virtual threads for that
 
 **How is this metadata extracted?**
-</br>Honestly, the java parser library does all the heavy lifting, I just use visitors, to extract the metadata from the snippet and save it to the DB.
+</br>The java parser library actually does all the heavy lifting, I just use visitors, to extract the metadata from the snippet and save it to the DB.
 </br>If the snippet parsing fails, I usually rewrap in a dummy class, just to reparse, in case the user only posted a method or field. This wrapper class isn't included as metadata
 </br>All my visitors inherit from `VoidVisitorAdapter<Set<String>>` and are orchestrated by `VisitorOrchestrator`.
 
@@ -188,7 +187,7 @@ root.join("tags").like("%spr%");
 
 ## Diff Comparison
 
-This was mainly added just for fun it honestly serves no concrete purpose in this project like my other features but it seemed fun to add, so I added it.
+This was mainly added just for fun it honestly serves no concrete purpose in this project. It seemed fun to add without scope creep, so I added it.
 
 ### What this does
 It basically allows you to compare you to compare changes/diffs between two snippets i.e. comparing(the snippet we're comparing), comparingTo(the snippet we're comparing against). 
@@ -233,20 +232,57 @@ Spring's `@RestControllerAdvice` catches exceptions and returns an `ApiError` re
 }
 ```
 
+## Testing
+
+### Unit Tests
+There are brief but useful unit tests for `SnippetDiffService`, `SnippetCrudService` and `SnippetParsingService`
+
+### Integration Tests
+I've tested all of ASTronaut's endpoints using Postman and also tested the UX flow for the frontend
+
+
 ## Configuration
 
-### Application Properties (application.yml)
+### Application Properties (application-local.yml)
 
 ```yaml
+jwt:
+  secret: ${JWT_SECRET} #Your JWT Secret
+  ttl: 1_000_000_000 #11 DAYS lol
+  refresh-before: 60000
+  
 rate-limit:
-  req-per-minute: 60  # Configurable rate limit per IP
-
+  requests-per-minute: 500 # Configurable rate limit per IP
+  default-key-expiration: 100 # In minutes
+  excluded-ips:
+    - "0:0:0:0:0:0:0:1"
+    - "127.0.0.1"  
+  
 spring:
   data:
     redis:
       host: localhost
       port: 6379
+
+security:
+  excluded-paths:
+    - "/"
+    - "/index.html"
+    - "/swagger-ui/**"
+    - "/v3/api-docs/**"
+    - "/etc, etc" # You can decide to configure more paths here
+  logout-url: "/users/logout"
+  redirect-url: "/"
+  clearAuth: true
+  encodingStrength: 12
 ```
+
+## Frontend Quirks
+This section doesn't go deep into the frontend design, just some nice quirks to know.
+- You can toggle fuzzy search in the settings page(disabled by default)
+- Syntax highlighting is present in both the diff viewer and snippet read view
+- MD formatting is present in the extra notes read view
+- The advanced search filter on the dashboard page(just in case you missed it earlier)
 
 ## Development Setup
 
@@ -263,15 +299,17 @@ spring:
 2. Run `mvn spring-boot:run`
 3. Access frontend at `http://localhost:80/`
 4. API documentation at `http://localhost:80/swagger-ui.html`
+**NOTE**: You can change the port if you already have another app running their, but you'll have to update the compose file too
 
 
 ## Hopeful Future Enhancements
-- Support for additional languages (Python, JavaScript, Go, etc.) with language-specific parsers
+- Support for additional languages (Python, JavaScript, Go, etc.) with ANTLR
 - Full-text search on content using database features(Apache Lucene? Probably tbh)
 - Snippet templates and boilerplate management
 
 
 
-## Project Timeline
+## Project Timeline And Conclusion
 **Total Development Time:** 10 days
-**Key Things I learnt:** JPA and Specifications. Honestly I didn't learn much from this past specifications. It was a relatively simple project      
+**Key Things I learnt:** JPA and Specifications. Didn't learn much from this past specifications. It was a relatively simple project      
+</br> If you've made it this far, thanks for reading all this and don't be afraid to reach out to me if you run into any bugs or issues. Thankss.

@@ -1,9 +1,13 @@
 package com.victor.astronaut.snippets.dto;
 
+import com.victor.astronaut.snippets.dto.utils.DtoUtils;
 import com.victor.astronaut.snippets.enums.SnippetLanguage;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
+
+import static com.victor.astronaut.snippets.dto.utils.DtoUtils.normalizeSet;
 
 public record SearchCriteria(
         Set<SnippetLanguage> languages,
@@ -17,12 +21,14 @@ public record SearchCriteria(
 ) {
     public SearchCriteria {
         languages = languages == null ? new HashSet<>() : languages;
-        tagsOrNames = tagsOrNames == null ? new HashSet<>() : tagsOrNames;
-        classNames = classNames == null ? new HashSet<>() : classNames;
-        classAnnotations = classAnnotations == null ? new HashSet<>() : classAnnotations;
-        classFields = classFields == null ? new HashSet<>() : classFields;
-        classFieldAnnotations = classFieldAnnotations == null ? new HashSet<>() : classFieldAnnotations;
-        methodReturnTypes = methodReturnTypes == null ? new HashSet<>() : methodReturnTypes;
-        methodAnnotations = methodAnnotations == null ? new HashSet<>() : methodAnnotations;
+        tagsOrNames = normalizeSet(tagsOrNames);
+        classNames = normalizeSet(classNames);
+        classAnnotations = normalizeSet(classAnnotations);
+        classFields = normalizeSet(classFields);
+        classFieldAnnotations =  normalizeSet(classFieldAnnotations);
+        methodReturnTypes = normalizeSet(methodReturnTypes);
+        methodAnnotations = normalizeSet(methodAnnotations);
     }
+
+
 }

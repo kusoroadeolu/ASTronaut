@@ -87,15 +87,13 @@ public class DirectSnippetSpecBuilder implements SnippetSpecBuilder {
 
     //Checks if an entity in the DB has a value in their set(element collection) that matches the values in this set
     private Specification<Snippet> hasValFromElementCollectionInSet(String fieldName, Set<String> set){
-        final Set<String> lowerSet = set.stream().map(String::toLowerCase).collect(Collectors.toSet());
-        return (root, query, cb) -> root.join(fieldName).in(lowerSet);
+        return (root, query, cb) -> root.join(fieldName).in(set);
     }
 
 
     //Checks if an entity has a name that exists in the expected names set
     private Specification<Snippet> hasNameInSet(String fieldName, Set<String> set){
-        final Set<String> lowerSet = set.stream().map(String::toLowerCase).collect(Collectors.toSet());
-        return  (root, query, cb) -> cb.lower(root.get(fieldName)).in(lowerSet);
+        return  (root, query, cb) -> cb.lower(root.get(fieldName)).in(set);
     }
 
     //Checks if an entity has a name that exists in the expected language set

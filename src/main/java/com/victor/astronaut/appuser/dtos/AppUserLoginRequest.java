@@ -17,4 +17,8 @@ public record AppUserLoginRequest(
         @NotNull(message = "Email cannot be null")
         String password
 ) {
+    public AppUserLoginRequest{
+        email = email.trim();
+        password = password.trim();
+    }
 }

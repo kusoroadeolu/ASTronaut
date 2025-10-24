@@ -93,7 +93,7 @@ public class FuzzySnippetSpecBuilder implements SnippetSpecBuilder {
         return (root, query, cb) -> {
             final Join<Snippet, String> j = root.join(fieldName);
             final Predicate[] predicates = set.stream()
-                    .map(s -> cb.like(j.as(String.class), WILDCARD + s.toLowerCase() + WILDCARD))
+                    .map(s -> cb.like(j.as(String.class), WILDCARD + s + WILDCARD))
                     .toArray(Predicate[]::new);
             return cb.or(predicates);
         };
@@ -105,7 +105,7 @@ public class FuzzySnippetSpecBuilder implements SnippetSpecBuilder {
         return  (root, query, cb) -> {
             final Expression<String> p = cb.lower(root.get(fieldName));
             final Predicate[] predicates = expectedNames.stream()
-                    .map(s -> cb.like(p.as(String.class), WILDCARD + s.toLowerCase() + WILDCARD))
+                    .map(s -> cb.like(p.as(String.class), WILDCARD + s + WILDCARD))
                     .toArray(Predicate[]::new);
             return cb.or(predicates);
         };

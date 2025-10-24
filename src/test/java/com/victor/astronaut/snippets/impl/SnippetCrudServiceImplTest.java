@@ -11,7 +11,7 @@ import com.victor.astronaut.snippets.dto.SnippetCreationRequest;
 import com.victor.astronaut.snippets.dto.SnippetResponse;
 import com.victor.astronaut.snippets.dto.SnippetUpdateRequest;
 import com.victor.astronaut.snippets.projections.SnippetPreview;
-import com.victor.astronaut.snippets.snippetparser.SnippetParser;
+import com.victor.astronaut.snippets.snippetparser.SnippetParsingService;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -42,7 +42,7 @@ class SnippetCrudServiceImplTest {
     @Mock
     private SnippetMapper snippetMapper;
     @Mock
-    private SnippetParser snippetParser;
+    private SnippetParsingService snippetParsingService;
 
     @InjectMocks
     private SnippetCrudServiceImpl snippetCrudService;
@@ -216,7 +216,7 @@ class SnippetCrudServiceImplTest {
         assertNotNull(response);
         assertEquals(this.snippet.getContent(), response.content());
         assertEquals(this.snippet.getExtraNotes(), response.extraNotes());
-        verify(this.snippetParser, times(1)).parseSnippetContent(this.snippet);
+        verify(this.snippetParsingService, times(1)).parseSnippetContent(this.snippet);
     }
 
     @Test
@@ -251,7 +251,7 @@ class SnippetCrudServiceImplTest {
            this.snippetCrudService.updateSnippet(snippetId, userId, updateRequest);
         });
         //Ensure java parser isnt called
-        verify(this.snippetParser, times(0)).parseSnippetContent(this.snippet);
+        verify(this.snippetParsingService, times(0)).parseSnippetContent(this.snippet);
 
     }
 
@@ -301,7 +301,7 @@ class SnippetCrudServiceImplTest {
         assertNotNull(response);
         assertEquals(otherLanguageSnippet.getContent(), response.content());
         assertEquals(otherLanguageSnippet.getExtraNotes(), response.extraNotes());
-        verify(this.snippetParser, times(0)).parseSnippetContent(this.snippet);
+        verify(this.snippetParsingService, times(0)).parseSnippetContent(this.snippet);
     }
 
     @Test
