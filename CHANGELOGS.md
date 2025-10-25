@@ -70,3 +70,4 @@
 - Fixed an issue where you couldn't create snippets if you didn't pick a language. Now it just defaults to `SnippetLanguage.OTHER`
 - Fixed an issue where JavaParser didn't parse Java based snippets above JAVA 8
 - Switched the column definition for snippet content to TEXT
+- Fixed an issue that caused jwt cookies to expire early

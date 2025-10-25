@@ -37,11 +37,11 @@ spring:
 
 
 jwt:
-  secret: ${JWT_SECRET} #Your JWT Secret
+  secret: yKRpc+EU8tUF4Vzn1jZlSe1Mi9Rtaa6S1JSb/sYNWJdIfEqvDfiqMFEosAWulCGz # ${JWT_SECRET} #Your JWT Secret
   ttl: 1_000_000_000 #11 DAYS
   refresh-before: 60000
   cookie-name: JWT_TOKEN
-  cookie-max-age: 60 # 60 minutes
+  cookie-max-age: 1_000_000_000 # ??? days
   cookie-http-only: true
   cookie-secure: false
   cookie-path: /
