@@ -24,7 +24,9 @@ spring:
     password: password
     driver-class-name: org.postgresql.Driver
 
+
   jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: update
     properties:
@@ -63,7 +65,7 @@ springdoc:
     path: /v3/api-docs
 
 server:
-  port: 80
+  port: 9093
 
 # Note that some of the excluded paths might feel redundant.
 # They're not because custom filters don't support wildcards

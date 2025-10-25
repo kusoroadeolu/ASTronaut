@@ -36,5 +36,14 @@ This setup requires maven
 
 
 ### How to access ASTronaut
-After you've completed the setup, you can access ASTronaut from your browser at localhost:80 
+After you've completed the setup, you can access ASTronaut from your browser at localhost:9093 
+**NOTE:** If you want to be able to access ASTronaut easily anytime your PC restarts, you can use **QuickStart**(another tool I made specially for docker) @ https://github.com/kusoroadeolu/QuickStart
+- After you set up Quickstart, you can follow these commands.
+```bash
+    qs init 
+    qs create <profile-name>  #i.e astronaut 
+    qs import <profile-name> -f compose.yaml
+    qs up <profile-name> # Now you can access ASTronaut easily without having to load up this repo to run the file
+```
+
 

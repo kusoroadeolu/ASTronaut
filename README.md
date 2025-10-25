@@ -129,7 +129,7 @@ Stores code snippets and their extracted metadata, also mapped to a user. There 
 ```
 #### Some details on this
 - The metadata available flag was actually added a while back for debugging, but I forgot to remove it and now its there I guess
-- - The isDraft flag is also pretty useless right now, but it was initially added to make unfinished snippets less prominent on the UI view
+- The isDraft flag is also pretty useless right now, but it was initially added to make unfinished snippets less prominent on the UI view
 - The metadata collected from the snippet content is pretty barebones, it works for me though
 ---
 
@@ -247,7 +247,7 @@ I've tested all of ASTronaut's endpoints using Postman and also tested the UX fl
 
 ```yaml
 jwt:
-  secret: ${JWT_SECRET} #Your JWT Secret
+  secret: ${JWT_SECRET} #Your JWT Secret. You can get one from https://jwtsecrets.com/
   ttl: 1_000_000_000 #11 DAYS lol
   refresh-before: 60000
   
@@ -297,8 +297,8 @@ This section doesn't go deep into the frontend design, just some nice quirks to 
 ### Running Locally
 1. Configure database and Redis connection(or just use the docker-compose file to spin up your own redis instance locally) in `application.yml`
 2. Run `mvn spring-boot:run`
-3. Access frontend at `http://localhost:80/`
-4. API documentation at `http://localhost:80/swagger-ui.html`
+3. Access frontend at `http://localhost:9093/`
+4. API documentation at `http://localhost:9093/swagger-ui.html`
 **NOTE**: You can change the port if you already have another app running their, but you'll have to update the compose file too
 
 
