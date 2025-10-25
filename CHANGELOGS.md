@@ -54,7 +54,7 @@
 - - Improved user registration flow with password confirmation validation
 - Strengthened deletion flow with better security checks
 
-### Technical Details
+### More Details
 - Switched from `javaparser-symbol-solver-core` to just `javaparser-core`
 - Redis + Spring Cache for caching principals
 - Virtual threads doing the async work
@@ -62,3 +62,11 @@
 - DB schema updates: `enableFuzzySearch` added to users, tweaked `tags` and `metaDataAvailable` types
 - Integrated java-diff-utils for robust diff algorithm implementation
 - UnifiedDiffUtils for parsing and generating standardized diff format
+
+## [Released]
+### 10/25/2025
+- Fixed an issue that caused a class cast exception when fetching data from redis
+- Fixed a front end issue where the advanced search filter sent values to the wrong search criteria fields
+- Fixed an issue where you couldn't create snippets if you didn't pick a language. Now it just defaults to `SnippetLanguage.OTHER`
+- Fixed an issue where JavaParser didn't parse Java based snippets above JAVA 8
+- Switched the column definition for snippet content to TEXT

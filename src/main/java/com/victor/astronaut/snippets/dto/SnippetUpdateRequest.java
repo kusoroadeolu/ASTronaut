@@ -17,7 +17,6 @@ public record SnippetUpdateRequest(
         @NotNull(message = "Snippet name cannot be null")
         String snippetName,
 
-        @JsonProperty(defaultValue = "OTHER")
         SnippetLanguage language,
 
         @NotNull(message = "Tags cannot be null")
@@ -28,6 +27,7 @@ public record SnippetUpdateRequest(
 ) {
 
     public SnippetUpdateRequest{
+        language = language == null ? SnippetLanguage.OTHER : language;
         tags = normalizeSet(tags);
         content = content.trim();
         extraNotes = extraNotes.trim();

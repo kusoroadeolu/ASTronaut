@@ -7,7 +7,11 @@ import java.util.stream.Collectors;
 public class DtoUtils {
 
     public static Set<String> normalizeSet(Set<String> set){
-        return set == null ? new HashSet<>() : set.stream().map(String::trim)
+        if(set != null)
+          set.forEach(e -> System.out.println("Passed value: " + set));
+
+        return set == null ? new HashSet<>() : set.stream()
+                .map(String::trim)
                 .map(String::toLowerCase)
                 .collect(Collectors.toSet());
     }

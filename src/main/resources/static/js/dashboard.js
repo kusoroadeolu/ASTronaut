@@ -165,12 +165,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Get all search field elements
     const searchBar = document.querySelector('.search-bar');
-    const classNamesInput = document.querySelector('.search-field input[placeholder*="UserService"]');
-    const classAnnotationsInput = document.querySelector('.search-field input[placeholder*="Service"]');
-    const classFieldsInput = document.querySelector('.search-field input[placeholder*="String, int"]');
-    const classFieldAnnotationsInput = document.querySelector('.search-field input[placeholder*="Column"]');
-    const methodReturnTypesInput = document.querySelector('.search-field input[placeholder*="String, void"]');
-    const methodAnnotationsInput = document.querySelector('.search-field input[placeholder*="RabbitListener"]');
+    const classNamesInput = document.getElementById('classNames');
+    const classAnnotationsInput = document.getElementById('classAnnotations');
+    const classFieldsInput = document.getElementById('classFields');
+    const classFieldAnnotationsInput = document.getElementById('classFieldAnnotations');
+    const methodReturnTypesInput = document.getElementById('methodReturnTypes');
+    const methodAnnotationsInput = document.getElementById('methodAnnotations');
     const languageFilter = document.getElementById('languageFilter');
 
 // Track if we're in filter mode

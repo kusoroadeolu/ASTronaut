@@ -91,10 +91,10 @@ Stores code snippets and their extracted metadata, also mapped to a user. There 
     @Enumerated(EnumType.STRING)
     private SnippetLanguage language;
 
-    @Column(name = "content", length = 10000)
+    @Column(name = "content", columnDefinition = "TEXT")
     private String content = "";
-
-    @Column(name = "extra_notes", length = 500)
+    
+    @Column(name = "extra_notes", columnDefinition = "TEXT")
     private String extraNotes = "";
 
     @ElementCollection

@@ -1,7 +1,6 @@
 package com.victor.astronaut.snippets.snippetparser;
 
-import com.github.javaparser.ParseProblemException;
-import com.github.javaparser.StaticJavaParser;
+import com.github.javaparser.*;
 import com.github.javaparser.ast.CompilationUnit;
 import com.victor.astronaut.exceptions.SnippetParseException;
 import com.victor.astronaut.snippets.Snippet;
@@ -10,6 +9,7 @@ import com.victor.astronaut.snippets.snippetparser.visitors.VisitorOrchestrator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 
 /**
@@ -39,18 +39,29 @@ public class SnippetParsingService {
      * whether parsing succeeded, then saves the snippet.
      *
      * @param snippet the snippet to parse and process
+     * @throws SnippetParseException if there is no content from the parse
      */
     @Async
     public void parseSnippetContent(Snippet snippet) throws SnippetParseException{
+        final ParserConfiguration configuration = new ParserConfiguration();
+        configuration.setLanguageLevel(ParserConfiguration.LanguageLevel.JAVA_21);
+        final JavaParser parser = new JavaParser(configuration);
+        final ParseResult<CompilationUnit> result = parser.parse(snippet.getContent());
+
+
+
         try{
-            CompilationUnit unit;
+            if(result.getResult().isEmpty()){
+                throw new SnippetParseException();
+            }
+
+            CompilationUnit unit = result.getResult().get();
             log.info("Attempting to parse snippet: {}", snippet.getName());
-            unit = StaticJavaParser.parse(snippet.getContent());
             this.extractMetaData(snippet, unit);
             log.info("Successfully parsed snippet: {}", snippet.getName());
-        }catch (ParseProblemException e){
+        }catch (ParseProblemException | SnippetParseException e){
             log.warn("Parse failed for snippet: {}, error: {}", snippet.getName(), e.getMessage());
-            this.wrapAndRetry(snippet);
+            this.wrapAndRetry(snippet, parser);
         }
     }
 
@@ -63,18 +74,22 @@ public class SnippetParsingService {
      * @param snippet the snippet to wrap and parse
      * @throws SnippetParseException If the reparse fails
      */
-    private void wrapAndRetry(Snippet snippet) throws SnippetParseException{
+    private void wrapAndRetry(Snippet snippet, JavaParser parser) throws SnippetParseException{
         try{
             final String wrappedContent = this.wrapContent(snippet.getContent());
-            final var unit = StaticJavaParser.parse(wrappedContent);
-            this.extractMetaData(snippet, unit);
+            final ParseResult<CompilationUnit> result = parser.parse(wrappedContent);
+
+            if(result.getResult().isEmpty()){
+                throw new SnippetParseException();
+            }
+
+            this.extractMetaData(snippet, result.getResult().get());
             snippet.getClassNames().remove(WRAPPER); //Remove the wrapper class from the snippet names
             log.info("Successfully wrapped snippet content and extracted meta data");
-        }catch (ParseProblemException e){
+        }catch (ParseProblemException | SnippetParseException e){
             log.info("Failed to parse snippet: {} after wrapping it in a class", snippet.getName() ,e);
             snippet.setMetaDataAvailable(false);
             snippetRepository.save(snippet);
-            throw new SnippetParseException("Failed to parse snippet: %s. Please re-check the snippet content".formatted(snippet.getName()));
         }
     }
 

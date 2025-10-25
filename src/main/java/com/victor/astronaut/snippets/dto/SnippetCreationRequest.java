@@ -16,12 +16,13 @@ public record SnippetCreationRequest(
     @NotBlank(message = "Snippet name cannot be blank")
     String snippetName,
     Set<String> tags,
-    @JsonProperty(defaultValue = "OTHER")
     SnippetLanguage language
 ) {
     public SnippetCreationRequest{
         tags = normalizeSet(tags);
         snippetName = snippetName.trim();
+        language = language == null ? SnippetLanguage.OTHER : language;
+
     }
 
 }

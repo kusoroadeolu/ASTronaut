@@ -54,10 +54,11 @@ public class RateLimitFilter extends OncePerRequestFilter {
         final int lastMinute = currentMinute == 0 ? 59 : currentMinute - 1; //Check if the current minute is 0, if so the last minute was 59
 
         final String currentMinuteKey = this.constructKey(ip, currentMinute);
-        final Long requestThisMinute = redisTemplate.opsForValue().increment(currentMinuteKey, 1); //Increment the request made this minute
-        final Long requestLastMinute = (Long) redisTemplate.opsForValue().get(this.constructKey(ip, lastMinute));
+        final Long requestThisMinute = this.redisTemplate.opsForValue().increment(currentMinuteKey, 1L); //Increment the request made this minute
+        final Object value = this.redisTemplate.opsForValue().get(this.constructKey(ip, lastMinute));
+        final long requestLastMinute = value != null ? ((Number) value).longValue() : 0L;
 
-        if(requestThisMinute != null && requestLastMinute != null){
+        if(requestThisMinute != null){
             double avgRequest = ((elapsedSeconds * requestThisMinute)
                     + ((60 - elapsedSeconds) * requestLastMinute)) / 60.0; //Get the average request of requests made this minute and last minute
 
@@ -68,7 +69,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
             }
         }
 
-        redisTemplate.expire(currentMinuteKey, Duration.ofMinutes(this.rateLimitConfigProperties.getDefaultKeyExpiration()));
+        this.redisTemplate.expire(currentMinuteKey, Duration.ofMinutes(this.rateLimitConfigProperties.getDefaultKeyExpiration()));
     }
 
     //Builds the value to store in the redis template
