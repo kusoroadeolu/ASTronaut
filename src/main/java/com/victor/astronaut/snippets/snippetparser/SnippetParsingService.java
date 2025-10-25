@@ -1,6 +1,9 @@
 package com.victor.astronaut.snippets.snippetparser;
 
-import com.github.javaparser.*;
+import com.github.javaparser.JavaParser;
+import com.github.javaparser.ParseProblemException;
+import com.github.javaparser.ParseResult;
+import com.github.javaparser.ParserConfiguration;
 import com.github.javaparser.ast.CompilationUnit;
 import com.victor.astronaut.exceptions.SnippetParseException;
 import com.victor.astronaut.snippets.Snippet;
@@ -9,7 +12,6 @@ import com.victor.astronaut.snippets.snippetparser.visitors.VisitorOrchestrator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 
 /**
@@ -26,71 +28,59 @@ public class SnippetParsingService {
     private final SnippetRepository snippetRepository;
     private final VisitorOrchestrator visitorOrchestrator;
     private final static String WRAPPER = "Wrapper";
-    private final static String WRAPPER_CLASS = """
-                public class Wrapper{
-                    %s
+    private final static String CLASS_WRAPPER = """
+                public class %s{
+                    %s   \s
                 }
-            """;
+           \s""";
 
     /**
-     * Parses the snippet content and extracts available metadata.
-     * </br>First attempts to parse the code as is. If that fails,
-     * wraps it in a class and tries again. Sets the metaDataAvailable flag based on
-     * whether parsing succeeded, then saves the snippet.
-     *
+     * Parses the snippet content and extracts available metadata, then saves the snippet.
      * @param snippet the snippet to parse and process
-     * @throws SnippetParseException if there is no content from the parse
      */
-    @Async
+    //@Async
     public void parseSnippetContent(Snippet snippet) throws SnippetParseException{
+        ParseResult<CompilationUnit> result = this.parseContent(snippet.getContent());
+
+        if(result.getResult().isEmpty()){
+            log.info("Parse failed for snippet: {}", snippet.getName());
+            return;
+        }
+
+        CompilationUnit unit = result.getResult().get();
+        log.info("Attempting to parse snippet: {}", snippet.getName());
+        this.extractMetaData(snippet, unit);
+
+        //Check if there's a class for this snippet. If not, the snippet didn't parse properly and no metadata was extracted
+        if(snippet.getClassNames().isEmpty()){
+            log.info("Attempting to reparse snippet: {}", snippet.getName());
+            String tempContent = CLASS_WRAPPER.formatted(WRAPPER, snippet.getContent());
+            result = this.parseContent(tempContent);
+
+            if(result.getResult().isEmpty()){
+                log.info("Reparse failed for snippet: {}", snippet.getName());
+                return;
+            }
+
+            unit = result.getResult().get();
+
+            this.extractMetaData(snippet, unit);
+
+            //Remove the wrapper class attr
+            snippet.getClassNames().remove(WRAPPER.toLowerCase()); //Remove the value as lower case cuz the visitors transform the name to lowercase
+            log.info("Successfully reparsed snippet: {}", snippet.getName());
+        }
+
+        snippetRepository.save(snippet);
+        log.info("Successfully parsed snippet: {}", snippet.getName());
+    }
+
+    //A helper method to build the AST of a content
+    private ParseResult<CompilationUnit> parseContent(String content){
         final ParserConfiguration configuration = new ParserConfiguration();
         configuration.setLanguageLevel(ParserConfiguration.LanguageLevel.JAVA_21);
         final JavaParser parser = new JavaParser(configuration);
-        final ParseResult<CompilationUnit> result = parser.parse(snippet.getContent());
-
-
-
-        try{
-            if(result.getResult().isEmpty()){
-                throw new SnippetParseException();
-            }
-
-            CompilationUnit unit = result.getResult().get();
-            log.info("Attempting to parse snippet: {}", snippet.getName());
-            this.extractMetaData(snippet, unit);
-            log.info("Successfully parsed snippet: {}", snippet.getName());
-        }catch (ParseProblemException | SnippetParseException e){
-            log.warn("Parse failed for snippet: {}, error: {}", snippet.getName(), e.getMessage());
-            this.wrapAndRetry(snippet, parser);
-        }
-    }
-
-    /**
-     * Wraps the snippet content in a class and retries parsing.
-     * </br>Used when initial parsing fails. Wraps the code fragment in a public class
-     * to make it valid Java syntax. If successful, removes the wrapper class name
-     * from the extracted metadata. If this also fails, marks metadata as unavailable.
-     *
-     * @param snippet the snippet to wrap and parse
-     * @throws SnippetParseException If the reparse fails
-     */
-    private void wrapAndRetry(Snippet snippet, JavaParser parser) throws SnippetParseException{
-        try{
-            final String wrappedContent = this.wrapContent(snippet.getContent());
-            final ParseResult<CompilationUnit> result = parser.parse(wrappedContent);
-
-            if(result.getResult().isEmpty()){
-                throw new SnippetParseException();
-            }
-
-            this.extractMetaData(snippet, result.getResult().get());
-            snippet.getClassNames().remove(WRAPPER); //Remove the wrapper class from the snippet names
-            log.info("Successfully wrapped snippet content and extracted meta data");
-        }catch (ParseProblemException | SnippetParseException e){
-            log.info("Failed to parse snippet: {} after wrapping it in a class", snippet.getName() ,e);
-            snippet.setMetaDataAvailable(false);
-            snippetRepository.save(snippet);
-        }
+        return parser.parse(content);
     }
 
     /**
@@ -104,20 +94,9 @@ public class SnippetParsingService {
     private void extractMetaData(Snippet snippet, CompilationUnit unit){
         visitorOrchestrator.visitAllVisitors(unit, snippet);
         snippet.setMetaDataAvailable(true);
-        log.info("Successfully extracted available meta data from snippet: {}", snippet.getName());
-        snippetRepository.save(snippet);
+
     }
 
-    /**
-     * Wraps code content in a valid Java class structure.
-     * </br>Used for parsing code fragments that aren't complete compilation units.
-     *
-     * @param content the code content to wrap
-     * @return the wrapped code as a valid Java class
-     */
-    private String wrapContent(String content){
-        return WRAPPER_CLASS.formatted(content);
-    }
 
 
 }

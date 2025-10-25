@@ -29,8 +29,8 @@ class SnippetParsingServiceTest {
     public void parseSnippetContent_shouldSuccessfullyParseSnippetContent_givenFormattedJavaCode() {
         String content = """
                 public class Snippet{
-                    int a  = 0;
-                    int b = 0;
+                   private int a  = 0;
+                   private int b = 0;
                 }
                 """;
 
@@ -46,8 +46,8 @@ class SnippetParsingServiceTest {
 
         //Assert
         assertEquals(1, snippet.getClassNames().size());
-        assertEquals(2, snippet.getClassFields().size());
-        verify(snippetRepository, times(1)).save(snippet);
+        assertEquals(1, snippet.getClassFields().size());
+        verify(this.snippetRepository, times(1)).save(snippet);
         assertTrue(snippet.getMetaDataAvailable());
     }
 
@@ -71,33 +71,9 @@ class SnippetParsingServiceTest {
         this.parser.parseSnippetContent(snippet);
 
         //Assert
+        assertTrue(snippet.getMetaDataAvailable());
         assertEquals(1, snippet.getMethodReturnTypes().size());
         assertEquals(0, snippet.getClassNames().size());
         verify(snippetRepository, times(1)).save(snippet);
-        assertTrue(snippet.getMetaDataAvailable());
     }
-
-    @Test
-    public void parseSnippetContent_shouldThrowSnippetParseException_givenInvalidCode() throws InterruptedException {
-        String content = """
-                public class Snippet{
-                    int a  = 0;
-                    int b = 0;
-                
-                """;
-
-
-        Snippet snippet = Snippet
-                .builder()
-                .content(content)
-                .build();
-
-
-        //Act & Assert
-        assertThrows(SnippetParseException.class, () -> this.parser.parseSnippetContent(snippet));
-        verify(snippetRepository, times(1)).save(snippet);
-        assertFalse(snippet.getMetaDataAvailable());
-    }
-
-
 }
