@@ -6,9 +6,12 @@ ASTronaut(emphasis on the AST) was basically built by me to organize my java sni
 ## Who is ASTronaut for
 Java devs who want to be able to search their code based on certain metadata in their code, and have code snippets locally without having to go online to retrieve them(ironically this is a webapp lol that's made to be run locally).
 </br> ASTronaut is also for anyone who just wants to play around with the tool as well
-</br> To set up ASTronaut locally which I recommend view 👉 [**SETUP.md**](SETUP.md)
+</br> To set up ASTronaut locally which I recommend, view 👉 [**SETUP.md**](SETUP.md)
 </br> ASTronaut will also be hosted on the cloud later on
 
+
+## Security Note
+ASTronaut uses a default JWT secret for convenience of setup. This is fine for local use, but if you plan to expose the application publicly, generate your own secret @ **https://jwtsecrets.com/**
 
 ## Architecture
 
@@ -247,7 +250,7 @@ I've tested all of ASTronaut's endpoints using Postman and also tested the UX fl
 
 ```yaml
 jwt:
-  secret: ${JWT_SECRET} #Your JWT Secret. You can get one from https://jwtsecrets.com/
+  secret: ${JWT_SECRET:yKRpc+EU8tUF4Vzn1jZlSe1Mi9Rtaa6S1JSb/sYNWJdIfEqvDfiqMFEosAWulCGz} #Your JWT Secret. You can get one from https://jwtsecrets.com/
   ttl: 1_000_000_000 #11 DAYS lol
   refresh-before: 60000
   
@@ -287,29 +290,24 @@ This section doesn't go deep into the frontend design, just some nice quirks to 
 ## Development Setup
 
 ### Prerequisites
-**These are the prerequisites to run this locally**
-- Java 17+
+**These are the prerequisites to run this locally with Maven**
+- Java 21+
 - Spring Boot 3.x
 - PostgresSQL (or configured database)
-- Redis (Or you can use the docker-compose file provided to spin up your own redis instance locally)
+- Redis
 - Maven
 
-### Running Locally
-1. Configure database and Redis connection(or just use the docker-compose file to spin up your own redis instance locally) in `application.yml`
-2. Run `mvn spring-boot:run`
-3. Access frontend at `http://localhost:9093/`
-4. API documentation at `http://localhost:9093/swagger-ui.html`
-**NOTE**: You can change the port if you already have another app running their, but you'll have to update the compose file too
+### Running Locally without Maven
+To set up ASTronaut locally which I recommend, view 👉 [**SETUP.md**](SETUP.md)
 
 
 ## Hopeful Future Enhancements
-- Support for additional languages (Python, JavaScript, Go, etc.) with ANTLR
+- Support for additional languages (Python, JavaScript, Go, etc.) with ANTLR probably?
 - Full-text search on content using database features(Apache Lucene? Probably tbh)
 - Snippet templates and boilerplate management
 
 
-
 ## Project Timeline And Conclusion
-**Total Development Time:** 10 days
-**Key Things I learnt:** JPA and Specifications. Didn't learn much from this past specifications. It was a relatively simple project      
+**Total Development Time:** 12 days
+**Key Things I learnt:** JPA and Specifications. Pushing to docker hub I guess . Didn't learn much from this past specifications. It was a relatively straightforward project      
 </br> If you've made it this far, thanks for reading all this and don't be afraid to reach out to me if you run into any bugs or issues. Thankss.

@@ -16,8 +16,7 @@ services:
       - "6379:6379"
 
   app:
-    build: .
-    image: astronaut-app:latest
+    image: kushade/astronaut:latest
     ports:
       - "9093:9093"
     environment:
