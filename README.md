@@ -144,7 +144,7 @@ The two user roles are **APP_USER** and **APP_ADMIN**, they're pretty identical 
 
 ### Authentication Flow & Authorization
 The authentication flow is pretty simple. You can either log in or register. Simple as that
-</br> JWT tokens is the auth token for this app. The current expiry time if you're using this locally should be around 300 million milliseconds/83 hours. When I deploy it, it will be around 10 minutes for a token
+</br> JWT tokens is the auth token for this app. The current expiry time if you're using this locally should be around 1 billion milliseconds/11.5 days. When I deploy it, it will be around 10 minutes for a token
 </br> Basic user metadata is cached after login/registration and on each subsequent request, the authenticated user object `UserPrincipal` is rebuilt from the cached metadata. I did this basically to prevent subsequent db hits on each request. I'm honestly not sure if this is a valid approach. It does work for me though
 </br> All endpoints except `/auth/register`, `/auth/login` and some frontend pages are authenticated.
 
@@ -156,7 +156,7 @@ The authentication flow is pretty simple. You can either log in or register. Sim
 Rate limiting was implemented using redis and a sliding window algorithm to track requests.
 
 **RateLimitFilter** - This is my custom filter that ensures a user hasn't exceeded their rate limits. This filter was placed before my JwtFilter, just because I believe if you've exceeded your rate limits you shouldn't be authenticated
-</br> Also, the default requests per minute per IP in my `application.yml` is 60 requests. You can edit it as you please
+</br> Also, the default requests per minute per IP in my `application.yml` is 500 requests(locally). You can edit it as you please
 
 ---
 

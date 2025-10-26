@@ -38,7 +38,7 @@ public class SnippetParsingService {
      * Parses the snippet content and extracts available metadata, then saves the snippet.
      * @param snippet the snippet to parse and process
      */
-    //@Async
+    @Async
     public void parseSnippetContent(Snippet snippet) throws SnippetParseException{
         ParseResult<CompilationUnit> result = this.parseContent(snippet.getContent());
 
