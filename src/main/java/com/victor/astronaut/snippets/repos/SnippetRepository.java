@@ -1,7 +1,7 @@
 package com.victor.astronaut.snippets.repos;
 
-import com.victor.astronaut.appuser.AppUser;
-import com.victor.astronaut.snippets.Snippet;
+import com.victor.astronaut.appuser.entites.AppUser;
+import com.victor.astronaut.snippets.entities.Snippet;
 import com.victor.astronaut.snippets.projections.SnippetPreview;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

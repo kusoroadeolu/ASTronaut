@@ -1,6 +1,6 @@
 package com.victor.astronaut.appuser.repositories;
 
-import com.victor.astronaut.appuser.AppUser;
+import com.victor.astronaut.appuser.entites.AppUser;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 

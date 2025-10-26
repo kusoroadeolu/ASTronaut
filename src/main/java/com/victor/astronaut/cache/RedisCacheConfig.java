@@ -1,6 +1,6 @@
 package com.victor.astronaut.cache;
 
-import com.victor.astronaut.appuser.AppUserPrincipalDto;
+import com.victor.astronaut.appuser.dtos.AppUserPrincipalDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.cache.RedisCacheManagerBuilderCustomizer;
 import org.springframework.cache.annotation.EnableCaching;

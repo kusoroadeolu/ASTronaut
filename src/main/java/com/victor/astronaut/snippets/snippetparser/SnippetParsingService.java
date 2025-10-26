@@ -1,12 +1,11 @@
 package com.victor.astronaut.snippets.snippetparser;
 
 import com.github.javaparser.JavaParser;
-import com.github.javaparser.ParseProblemException;
 import com.github.javaparser.ParseResult;
 import com.github.javaparser.ParserConfiguration;
 import com.github.javaparser.ast.CompilationUnit;
 import com.victor.astronaut.exceptions.SnippetParseException;
-import com.victor.astronaut.snippets.Snippet;
+import com.victor.astronaut.snippets.entities.Snippet;
 import com.victor.astronaut.snippets.repos.SnippetRepository;
 import com.victor.astronaut.snippets.snippetparser.visitors.VisitorOrchestrator;
 import lombok.RequiredArgsConstructor;

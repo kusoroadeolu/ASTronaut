@@ -1,9 +1,8 @@
 package com.victor.astronaut.snippets.snippetparser.visitors;
 
 import com.github.javaparser.ast.CompilationUnit;
-import com.victor.astronaut.snippets.Snippet;
+import com.victor.astronaut.snippets.entities.Snippet;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;

@@ -1,16 +1,18 @@
 package com.victor.astronaut.snippets.impl;
 
-import com.victor.astronaut.appuser.AppUser;
-import com.victor.astronaut.appuser.AppUserQueryService;
+import com.victor.astronaut.appuser.entites.AppUser;
+import com.victor.astronaut.appuser.services.AppUserQueryService;
 import com.victor.astronaut.exceptions.NoSuchSnippetException;
 import com.victor.astronaut.exceptions.SnippetPersistenceException;
-import com.victor.astronaut.snippets.Snippet;
+import com.victor.astronaut.snippets.entities.Snippet;
 import com.victor.astronaut.snippets.enums.SnippetLanguage;
 import com.victor.astronaut.snippets.repos.SnippetRepository;
-import com.victor.astronaut.snippets.dto.SnippetCreationRequest;
-import com.victor.astronaut.snippets.dto.SnippetResponse;
-import com.victor.astronaut.snippets.dto.SnippetUpdateRequest;
+import com.victor.astronaut.snippets.dtos.SnippetCreationRequest;
+import com.victor.astronaut.snippets.dtos.SnippetResponse;
+import com.victor.astronaut.snippets.dtos.SnippetUpdateRequest;
 import com.victor.astronaut.snippets.projections.SnippetPreview;
+import com.victor.astronaut.snippets.services.impl.SnippetCrudServiceImpl;
+import com.victor.astronaut.snippets.services.impl.SnippetMapper;
 import com.victor.astronaut.snippets.snippetparser.SnippetParsingService;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;

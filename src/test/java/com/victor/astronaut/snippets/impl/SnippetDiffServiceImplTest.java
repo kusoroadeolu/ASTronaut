@@ -1,20 +1,18 @@
 package com.victor.astronaut.snippets.impl;
 
-import com.victor.astronaut.snippets.Snippet;
-import com.victor.astronaut.snippets.SnippetCrudService;
-import com.victor.astronaut.snippets.dto.diffs.ChangeType;
-import com.victor.astronaut.snippets.dto.diffs.DiffLine;
-import com.victor.astronaut.snippets.dto.diffs.SnippetDiff;
-import com.victor.astronaut.snippets.dto.diffs.SnippetDiffPair;
+import com.victor.astronaut.snippets.entities.Snippet;
+import com.victor.astronaut.snippets.services.SnippetCrudService;
+import com.victor.astronaut.snippets.dtos.diffs.ChangeType;
+import com.victor.astronaut.snippets.dtos.diffs.DiffLine;
+import com.victor.astronaut.snippets.dtos.diffs.SnippetDiff;
+import com.victor.astronaut.snippets.dtos.diffs.SnippetDiffPair;
+import com.victor.astronaut.snippets.services.impl.SnippetDiffServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
