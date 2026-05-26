@@ -1,313 +1,181 @@
-# ASTronaut - README
+# ASTronaut Revamp — Planning Doc
 
-## Overview
-ASTronaut(emphasis on the AST) was basically built by me to organize my java snippets without needing to go to GitHub everytime. Yes, there are probably better snippet organizers out there, with better UI and better features, but basically I just needed something that could allow me to search my java snippets based on certain metadata and compare two snippets 
+## The Problem With The Old Version
+- Auth was a blocker just to use your own local tool
+- UI was ugly and missing features that actually mattered
+- Too much infrastructure for what is essentially a personal snippet organizer (PostgreSQL, Redis, Spring Security, JWT, user management)
+- High memory usage running in the background
 
-## Who is ASTronaut for
-Java devs who want to be able to search their code based on certain metadata in their code, and have code snippets locally without having to go online to retrieve them(ironically this is a webapp lol that's made to be run locally).
-</br> ASTronaut is also for anyone who just wants to play around with the tool as well
-</br> To set up ASTronaut locally which I recommend, view 👉 [**SETUP.md**](SETUP.md)
-</br> ASTronaut will also be hosted on the cloud later on
+---
 
+## The Goal
+> *"ASTronaut but it actually works the way I want it to"*
 
-## Security Note
-ASTronaut uses a default JWT secret for convenience of setup. This is fine for local use, but if you plan to expose the application publicly, generate your own secret @ **https://jwtsecrets.com/**
+A lightweight, local-first Java snippet organizer that uses GitHub Gists as storage and UIGen for the UI. No login screen, no DB, no Redis — just open it and it works.
+
+---
+
+## Core Appeals
+- **No auth blocker** — GitHub PAT in `.env`, that's it
+- **Way better UI** — UIGen on top of the OpenAPI spec
+- **Local feel** — instant, snappy, runs quietly in the background
+- **Low memory** — no PostgreSQL, no Redis, no Spring Security
+- **Gists as storage** — snippets live on GitHub too, accessible anywhere
+- **Proper search** — by language, tags, metadata (stuff GitHub Gists can't do natively)
+- **Features you'll actually use** — no bloat
+
+---
+
+## What's Being Removed
+- Auth system (JWT, Spring Security, login/register flow)
+- `AuthController` and `AppUserController` entirely
+- User management (update email, password, delete account)
+- PostgreSQL + JPA
+- Redis + rate limiting
+- Draft flag (useless)
+- Admin role (pointless solo)
+- Deep metadata extraction (field annotations, class field details — overkill)
+
+---
+
+## What's Being Kept
+- Spring Boot backend (reworked service layer)
+- Java parser for metadata extraction (simplified)
+- Diff comparison between two snippets
+- Fuzzy search toggle (reimplemented in-memory — no longer DB dependent)
+- Async parsing on snippet create/update
+
+---
+
+## What's Being Added
+- GitHub Gists as storage backend
+- Use count / last used timestamp (tracked in index)
+- UIGen for the frontend
+
+---
 
 ## Architecture
 
-### High-Level Components
+### Storage: GitHub Gists API
+- One Gist per snippet
+- Each Gist contains:
+    - `file-name.java` — the actual code
+- Gist description = snippet name (readable on GitHub.com directly)
+- Auth via GitHub PAT in `.env` — **not OAuth**
+    - OAuth is for multi-user apps where other people log in with their GitHub account
+    - PAT is simpler and correct here since it's just you
+    - Generate a PAT on GitHub with `gist` scope, add `GITHUB_TOKEN=ghp_xxxxx` to `.env`
+    - Spring passes it as `Authorization: Bearer ghp_xxxxx` on every Gists API call
+    - No callback URLs, no token refresh, no auth flow
 
-This section basically includes the basic structure of the web app
+### The Index File
+A single dedicated local file (identified by description `"index.json"`) acts as a metadata index. This avoids fetching every Gist on every search.
 
-**Backend:**
-The backend basically consists of the normal spring layering pattern: 
-- Controllers -> Services -> Repository
-- Also, some utility classes to reduce boilerplate in the service classes.
-- And certain special services which use java parser to extract the needed metadata and diff-utils to get the diffs between two snippets
-
-**Frontend:**
-The frontend consists of five pages:
-- Landing page -> Basically everything you'll see on a landing page
-- Auth page -> Login/Register page, nothing too fancy here
-- Dashboard page -> Here you can create a snippet, view your snippets, search through them and also navigate to the settings page or just click a snippet to perform some more actions on it
-- Snippet-detail page -> Here you can perform CRUD operations on a snippet and also compare it with other snippets. Also has syntax highlighting for code and markdown formatting for extra notes(added these just to make it fancy yk)
-- Settings page -> Here you can update your info and toggle fuzzy search
-
----
-
-## Database Schema
-
-The DB schema is very simple. Just an app user entity which has a one-to-many relationship with the snippet entity.
-
-### AppUser Entity
-This stores the app user's info. There's an index on the user's email field. Just to speed things up when you initially log in
-
-```java
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "app_user_id")
-    private Long id;
-
-    @Column(name = "username", nullable = false, length = 30)
-    private String username;
-
-    @Column(name = "email", unique = true, nullable = false, length = 70)
-    private String email;
-
-    @Column(name = "password", nullable = false, length = 100)
-    private String password;
-
-    @Column(name = "role", nullable = false)
-    private AppUserRole role;
-
-    @Column(name = "isDeleted")
-    private Boolean isDeleted;
-
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Snippet> snippet = new ArrayList<>();
-
-    @Column(name = "createdAt", nullable = false)
-    private LocalDateTime createdAt;
-
-    @Column(name = "enableFuzzySearch")
-    private Boolean enableFuzzySearch;
-```
-
-### Snippet Entity
-
-Stores code snippets and their extracted metadata, also mapped to a user. There are indexes on the snippet name field and the tag field because that's probably going to be the search criteria 90% of the time. 
-
-**Columns:**
-```java
-@Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long id;
-
-
-    @Column(name = "name", length = 50, nullable = false)
-    private String name;
-
-    @Column(name = "draft")
-    private boolean isDraft = true;
-
-    @Column(name = "language", nullable = false)
-    @Enumerated(EnumType.STRING)
-    private SnippetLanguage language;
-
-    @Column(name = "content", columnDefinition = "TEXT")
-    private String content = "";
-    
-    @Column(name = "extra_notes", columnDefinition = "TEXT")
-    private String extraNotes = "";
-
-    @ElementCollection
-    private Set<String> tags = new HashSet<>();
-
-    @ElementCollection
-    private Set<String> classNames = new HashSet<>();
-
-    @ElementCollection
-    private Set<String> classAnnotations = new HashSet<>();
-
-    @ElementCollection
-    private Set<String> classFields = new HashSet<>();
-
-    @ElementCollection
-    private Set<String> classFieldAnnotations = new HashSet<>();
-
-    @ElementCollection
-    private Set<String> methodReturnTypes = new HashSet<>();
-
-    @ElementCollection
-    private Set<String> methodAnnotations = new HashSet<>();
-
-    @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt;
-
-    @Column(name = "updated_at", nullable = false)
-    private LocalDateTime updatedAt;
-
-    @Column(name = "metaDataAvailable")
-    private Boolean metaDataAvailable;
-```
-#### Some details on this
-- The metadata available flag was actually added a while back for debugging, but I forgot to remove it and now its there I guess
-- The isDraft flag is also pretty useless right now, but it was initially added to make unfinished snippets less prominent on the UI view
-- The metadata collected from the snippet content is pretty barebones, it works for me though
----
-
-## Authentication & Authorization
-
-### User Roles
-
-The two user roles are **APP_USER** and **APP_ADMIN**, they're pretty identical right now. The admin role is just there in case I actually add functionality for it later.
-
-### Authentication Flow & Authorization
-The authentication flow is pretty simple. You can either log in or register. Simple as that
-</br> JWT tokens is the auth token for this app. The current expiry time if you're using this locally should be around 1 billion milliseconds/11.5 days. When I deploy it, it will be around 10 minutes for a token
-</br> Basic user metadata is cached after login/registration and on each subsequent request, the authenticated user object `UserPrincipal` is rebuilt from the cached metadata. I did this basically to prevent subsequent db hits on each request. I'm honestly not sure if this is a valid approach. It does work for me though
-</br> All endpoints except `/auth/register`, `/auth/login` and some frontend pages are authenticated.
-
----
-## Rate Limiting
-
-### Implementation
-
-Rate limiting was implemented using redis and a sliding window algorithm to track requests.
-
-**RateLimitFilter** - This is my custom filter that ensures a user hasn't exceeded their rate limits. This filter was placed before my JwtFilter, just because I believe if you've exceeded your rate limits you shouldn't be authenticated
-</br> Also, the default requests per minute per IP in my `application.yml` is 500 requests(locally). You can edit it as you please
-
----
-
-## Some more details on Snippets
-
-### Metadata Extraction (Async)
-After a snippet is updated, if the language is **JAVA**, the parsing is offloaded to a virtual thread, to prevent blocking the main thread. Also, I'm not too sure if parsing is CPU intensive work, else I might need to disable virtual threads for that
-
-**How is this metadata extracted?**
-</br>The java parser library actually does all the heavy lifting, I just use visitors, to extract the metadata from the snippet and save it to the DB.
-</br>If the snippet parsing fails, I usually rewrap in a dummy class, just to reparse, in case the user only posted a method or field. This wrapper class isn't included as metadata
-</br>All my visitors inherit from `VoidVisitorAdapter<Set<String>>` and are orchestrated by `VisitorOrchestrator`.
-
-
----
-
-## Search & Filtering
-This is honestly where the most learning occurred for me in this project. I haven't handled dynamic search queries with different criteria before so this was definitely new territory for me to step into.
-</br>For the dynamic search queries, I used spring data specifications. This was honestly very unintuitive to use especially with element collections + the lack of detailed docs was definitely something else
-</br>I did implement two search modes direct(exact search matches) and fuzzy search matches using wildcards `LIKE` keywords. My implementations definitely weren't the best, and I'm sure there are some N + 1 queries hiding in there, but it works at least for now lol. 
-</br>So on the frontend, users can enable fuzzy searches, they are disabled by default. Fuzzy searches combine the snippets of direct searches AND those found with wildcards.
-
-```java
-// Direct: exact match for tag "spring"
-root.join("tags").in("spring");
-
-// Fuzzy: partial match for tag containing "spr"
-root.join("tags").like("%spr%");
-```
-
-
-## Diff Comparison
-
-This was mainly added just for fun it honestly serves no concrete purpose in this project. It seemed fun to add without scope creep, so I added it.
-
-### What this does
-It basically allows you to compare you to compare changes/diffs between two snippets i.e. comparing(the snippet we're comparing), comparingTo(the snippet we're comparing against). 
-**QUICK NOTE** : Comparing is basically the original snippet. Comparing to is like the updated snippet. Both snippets don't need to be related to be compared but hopefully this explanation is understandable lol
-</br>These unified diffs are generated by `java-diff-utils`. No need to reinvent the wheel honestly
-</br>Each line is marked as one of:
-- **UNCHANGED** — Line exists identically in both snippets
-- **ADDED** — Line present in "comparingTo" snippet but not "comparing"
-- **REMOVED** — Line present in "comparing" snippet but not "comparingTo"
-
-### How I normalized the diffs
-The raw unified diff output is parsed by iterating through lines and checking each character
-- `' '` (space) → UNCHANGED -> Both comparing and comparing to lines are incremented
-- `'+'` → ADDED -> Only comparing to lines is incremented
-- `'-'` → REMOVED -> Only comparing lines is incremented
-
-Patch headers (@@) and file markers (---, +++) are skipped. 
-
-
-## Error Handling
-The exception hierarchy here is very simple and straight forward
-### Exception Hierarchy
-
-**AppUserAlreadyExistsException** (409 Conflict) — Email already registered during signup
-**NoSuchAppUserException** (404 Not Found) — User not found by ID
-**NoSuchSnippetException** (404 Not Found) — Snippet not found by ID or doesn't belong to user
-**AppUserPersistenceException** (500 Internal Server Error) — Database error during user operations
-**SnippetPersistenceException** (500 Internal Server Error) — Database error during snippet operations
-**SnippetParseException** (500 Internal Server Error) — JavaParser failed to parse snippet even after wrapping
-**InvalidCredentialsException** (401 Unauthorized) — Wrong password or email during login
-**JwtException** (500 Internal Server Error) — JWT token validation/generation failed
-**RateLimitException** (429 Too Many Requests) — Rate limit exceeded for IP address
-
-### GlobalExceptionHandler
-Spring's `@RestControllerAdvice` catches exceptions and returns an `ApiError` response
-
+**Index structure:**
 ```json
 {
-  "status": 400,
-  "message": "Error msg",
-  "thrownAt": "2024-10-20T15:30:00Z"
+  "abc123": {
+    "gistId": "abc123",
+    "name": "Spring filter chain",
+    "language": "JAVA",
+    "tags": ["spring", "security"],
+    "methodNames": ["doFilter", "configure"],
+    "classNames": ["SecurityConfig"],
+    "createdAt": "2025-01-10T10:00:00",
+    "updatedAt": "2025-01-10T10:00:00",
+    "useCount": 3
+  }
 }
 ```
 
-## Testing
+### Index Lifecycle
+| Event | Action |
+|---|---|
+| App startup | Find index Gist by description, create it if missing |
+| Create snippet | Create Gist → run parser → add entry to index |
+| Update snippet | Patch Gist → re-run parser → update index entry |
+| Delete snippet | Delete Gist → remove entry from index |
+| Search | Fetch index → filter in memory → fetch only matched Gists |
+| Get all | Read index only, no need to fetch every Gist |
+| Get one | Fetch specific Gist by ID |
 
-### Unit Tests
-There are brief but useful unit tests for `SnippetDiffService`, `SnippetCrudService` and `SnippetParsingService`
+---
 
-### Integration Tests
-I've tested all of ASTronaut's endpoints using Postman and also tested the UX flow for the frontend
+## Search & Fuzzy Search
+Old fuzzy search used Spring Data Specifications with `LIKE` queries on the DB — that's gone. Since search now filters the in-memory index, it's reimplemented in Java:
 
+- **Exact/direct:** `equalsIgnoreCase()`, `tags.contains()`
+- **Fuzzy:** `toLowerCase().contains()`, `tags.stream().anyMatch(t -> t.contains(partial))`
 
-## Configuration
+Fuzzy toggle still exists, just switches between exact and `contains()` style matching instead of `=` vs `LIKE` in SQL. Likely faster than the old approach for personal use scale (hundreds of snippets, not thousands).
 
-### Application Properties (application-local.yml)
-
-```yaml
-jwt:
-  secret: ${JWT_SECRET:yKRpc+EU8tUF4Vzn1jZlSe1Mi9Rtaa6S1JSb/sYNWJdIfEqvDfiqMFEosAWulCGz} #Your JWT Secret. You can get one from https://jwtsecrets.com/
-  ttl: 1_000_000_000 #11 DAYS lol
-  refresh-before: 60000
-  
-rate-limit:
-  requests-per-minute: 500 # Configurable rate limit per IP
-  default-key-expiration: 100 # In minutes
-  excluded-ips:
-    - "0:0:0:0:0:0:0:1"
-    - "127.0.0.1"  
-  
-spring:
-  data:
-    redis:
-      host: localhost
-      port: 6379
-
-security:
-  excluded-paths:
-    - "/"
-    - "/index.html"
-    - "/swagger-ui/**"
-    - "/v3/api-docs/**"
-    - "/etc, etc" # You can decide to configure more paths here
-  logout-url: "/users/logout"
-  redirect-url: "/"
-  clearAuth: true
-  encodingStrength: 12
-```
-
-## Frontend Quirks
-This section doesn't go deep into the frontend design, just some nice quirks to know.
-- You can toggle fuzzy search in the settings page(disabled by default)
-- Syntax highlighting is present in both the diff viewer and snippet read view
-- MD formatting is present in the extra notes read view
-- The advanced search filter on the dashboard page(just in case you missed it earlier)
-
-## Development Setup
-
-### Prerequisites
-**These are the prerequisites to run this locally with Maven**
-- Java 21+
-- Spring Boot 3.x
-- PostgresSQL (or configured database)
-- Redis
-- Maven
-
-### Running Locally without Maven
-To set up ASTronaut locally which I recommend, view 👉 [**SETUP.md**](SETUP.md)
+---
 
 
-## Hopeful Future Enhancements
-- Support for additional languages (Python, JavaScript, Go, etc.) with ANTLR probably?
-- Full-text search on content using database features(Apache Lucene? Probably tbh)
-- Snippet templates and boilerplate management
+- Class names
+- Method names
+- Method annotations
+- Tags (user defined)
+- Language
+
+Everything else (field annotations, class fields, class annotations depth) — dropped.
+
+---
+
+## API Endpoints (New Spec)
+
+### Snippets
+| Method   | Path | Description |
+|----------|---|---|
+| `GET`    | `/snippets` | List all snippets (from index) |
+| `POST`   | `/snippets` | Create snippet (creates Gist + updates index) |
+| `GET`    | `/snippets/{id}` | Get snippet by Gist ID |
+| `PATCH`  | `/snippets/{id}` | Update snippet (patches Gist + updates index) |
+| `DELETE` | `/snippets/{id}` | Delete snippet (deletes Gist + removes from index) |
+| `POST`   | `/snippets/filter` | Search/filter snippets (in-memory on index) |
+| `GET`    | `/snippets/{id}/compare/{comparingToId}` | Diff two snippets |
 
 
-## Project Timeline And Conclusion
-**Total Development Time:** 12 days
-**Key Things I learnt:** JPA and Specifications. Pushing to docker hub I guess . Didn't learn much from this past specifications. It was a relatively straightforward project      
-</br> If you've made it this far, thanks for reading all this and don't be afraid to reach out to me if you run into any bugs or issues. Thankss.
+
+---
+
+## Features (What The UI Needs To Support)
+- View all snippets with previews
+- Create / edit / delete snippets
+- Copy snippet to clipboard
+- Syntax highlighting in view and diff viewer
+- Markdown formatting for extra notes
+- Search by name, tag, language, method name, class name
+- Fuzzy search toggle (disabled by default)
+- Diff comparison between any two snippets
+- Star / unstar snippets
+- Starred snippets view
+- Use count / last used display
+
+---
+
+## What's Not Needed In The UI
+- Login / register pages
+- Settings page (no user account to manage)
+- Admin anything
+
+---
+
+## Tech Stack
+| Layer | Tech |
+|---|---|
+| Backend | Spring Boot (reworked, no Security/Redis/JPA) |
+| Storage | GitHub Gists API |
+| Auth | GitHub PAT via `.env` (not OAuth — PAT is sufficient for personal local use) |
+| Metadata parsing | JavaParser (simplified visitors) |
+| Diff | java-diff-utils (unchanged) |
+| Frontend | UIGen (runtime rendering from OpenAPI spec) |
+
+---
+
+## Next Steps
+1. Write the new OpenAPI spec (drives everything else)
+2. Rework the Spring service layer (swap DB calls for GitHub API calls)
+3. Simplify the parser visitors (drop unused metadata)
+4. Configure UIGen on top of the spec
+5. Test end to end

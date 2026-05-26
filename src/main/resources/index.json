@@ -1,0 +1,41 @@
+[ {
+  "id" : "ec8021ad8dd1d00ddde54effaeef5c23",
+  "fileName" : "FlatCombiner.java",
+  "description" : "Flat Combiner",
+  "language" : "Java",
+  "tags" : [ ],
+  "classNames" : [ "node", "flatcombiner", "publicationqueue", "fclock" ],
+  "methodNames" : [ "castohead", "assertoursinqueue", "release", "spage", "spnext", "lpaction", "countdeadnodes", "lpage", "lpnext", "combine", "isapplied", "apply", "detacholdnodes", "canreachtail", "spitem", "soage", "lonext", "lpitem", "tryacquire", "isappliedplain", "soaction", "loage", "loaction", "lohead", "tostring", "deadnodecount" ],
+  "createdAt" : "2026-04-26T02:03:09Z",
+  "updatedAt" : "2026-05-19T22:12:35Z"
+}, {
+  "id" : "2780e7a44089d8fe91065f37f12be747",
+  "fileName" : "TreiberStack.java",
+  "description" : "Treiber Stack",
+  "language" : "Java",
+  "tags" : [ ],
+  "classNames" : [ "node", "treiberstack" ],
+  "methodNames" : [ "pop", "lohead", "spnext", "tostring", "push", "lpnext" ],
+  "createdAt" : "2026-05-18T21:56:05Z",
+  "updatedAt" : "2026-05-19T07:09:34Z"
+}, {
+  "id" : "fcf66de8e801388a10c2d870d6ae6c29",
+  "fileName" : "ArrayDESCStack.java",
+  "description" : "A DECS(Dynamic Elimination Combining Stack) which uses arrays instead of linked list for the combining list. It's actually quite index prone (for basically worse performance) and harder to understand than the linked list approach ",
+  "language" : "Java",
+  "tags" : [ ],
+  "classNames" : [ ],
+  "methodNames" : [ ],
+  "createdAt" : "2026-05-23T11:16:03Z",
+  "updatedAt" : "2026-05-23T11:16:04Z"
+}, {
+  "id" : "ca5b5f2c41dc371887a8afabd0d33ad4",
+  "fileName" : "HandOffCombiner.java",
+  "description" : "HandOff Combiner",
+  "language" : "Java",
+  "tags" : [ ],
+  "classNames" : [ "node", "handoffcombiner" ],
+  "methodNames" : [ "sonext", "sopnext", "lostatus", "sostatus", "spnotcombiner", "lonext", "combine" ],
+  "createdAt" : "2026-05-19T22:09:32Z",
+  "updatedAt" : "2026-05-19T22:11:08Z"
+} ]
