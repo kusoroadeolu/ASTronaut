@@ -1,6 +1,5 @@
 package io.github.kusoroadeolu.astronaut.controllers;
 
-import io.github.kusoroadeolu.astronaut.dtos.SearchCriteria;
 import io.github.kusoroadeolu.astronaut.dtos.SnippetResponse;
 import io.github.kusoroadeolu.astronaut.dtos.diffs.SnippetDiffPair;
 import io.github.kusoroadeolu.astronaut.exceptions.ApiError;
@@ -34,15 +33,13 @@ public class SnippetQueryController {
     private final SnippetQueryService queryService;
     private final SnippetDiffService diffService;
 
-    @PostMapping("/filter")
-    @Operation(summary = "Filter snippets", description = "Searches and filters snippets based on provided criteria")
+    @GetMapping("/search")
+    @Operation(summary = "Search snippets", description = "Searches snippets based on provided criteria")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Snippets filtered successfully")
     })
-    public ResponseEntity<List<SnippetResponse>> filterSnippets(
-            @RequestBody SearchCriteria searchCriteria
-    ){
-        return ResponseEntity.ok(queryService.searchBasedOnCriteria(searchCriteria));
+    public ResponseEntity<List<SnippetResponse>> filterSnippets(@RequestParam("query") String query){
+        return ResponseEntity.ok(queryService.searchBasedOnCriteria(query));
     }
 
     @GetMapping("/{id}/compare/{comparingToId}")

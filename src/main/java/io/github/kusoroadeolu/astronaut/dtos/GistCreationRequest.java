@@ -12,5 +12,10 @@ public record GistCreationRequest(
         boolean isPublic,
         Map<String, GistFileRequest> files
 ) {
-    public record GistFileRequest(String content) {}
+
+
+
+    public record GistFileRequest(String content) {
+
+    }
 }

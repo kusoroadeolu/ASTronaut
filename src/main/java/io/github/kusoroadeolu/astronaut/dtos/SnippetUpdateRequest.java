@@ -15,12 +15,9 @@ public record SnippetUpdateRequest(
 
         @NotNull(message = "Tags cannot be null")
         Set<String> tags,
-        @NotNull(message = "Previous Tags cannot be null")
-        Set<String> previousTags,
 
         @NotBlank(message = "Snippet content cannot be blank")
         String content,
-
 
         @NotBlank(message = "Previous snippet content cannot be blank")
         String previousContent

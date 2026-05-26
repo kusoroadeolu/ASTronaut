@@ -5,9 +5,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Map;
 
 public record GistFetchResponse(Map<String, GistFileResponse> files) {
-    public String fileName() {
-        return files.keySet().stream().findFirst().orElse("");
-    }
 
     public String content() {
         return files.values().stream().toList().getFirst().content();
