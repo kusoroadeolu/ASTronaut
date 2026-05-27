@@ -24,20 +24,22 @@ public class GistService {
                 .body(request)
                 .retrieve()
                 .onStatus(status -> status.value() == 403, (_, res)  -> {
+                    log.error("Failed to authorize user. Ensure you're using a valid PAT token. Err: {}", res.getStatusText());
                     throw new GithubAuthException("Failed to authorize user. Ensure you're using a valid PAT token. Err: %s".formatted(res.getStatusText()));
                 })
                 .onStatus(status -> status.value() == 422, (_, res) -> {
+                    log.error("Failed to create gist due to malformed request body. Please try again. Err: {}", res.getStatusText());
                     throw new GistPersistenceException("Failed to create gist due to malformed request body. Please try again. Err: %s".formatted(res.getStatusText()));
                 })
                 .body(GistCreationResponse.class);
     }
-
 
     public void deleteGist(@NonNull String gistId){
         client.delete()
                 .uri("/gists/%s".formatted(gistId))
                 .retrieve()
                 .onStatus(status -> status.value() == 403, (_, res)  -> {
+                    log.error("Failed to authorize user. Ensure you're using a valid PAT token. Err: {}", res.getStatusText());
                     throw new GithubAuthException("Failed to authorize user. Ensure you're using a valid PAT token. Err: %s".formatted(res.getStatusText()));
                 })
                 .onStatus(status -> status.value() == 404, (_, res)  -> {})
@@ -50,9 +52,11 @@ public class GistService {
                 .body(request)
                 .retrieve()
                 .onStatus(status -> status.value() == 404, (_, res)  -> {
+                    log.error("Failed to update gist due to the gist being non existent. Err: {}", res.getStatusText());
                     throw new GistPersistenceException("Failed to update gist due to the gist being non existent. Err: %s".formatted(res.getStatusText()));
                 })
                 .onStatus(status -> status.value() == 422, (_, res) -> {
+                    log.error("Failed to update gist due to malformed request body. Please try again. Err: {}", res.getStatusText());
                     throw new GistPersistenceException("Failed to update gist due to malformed request body. Please try again. Err: %s".formatted(res.getStatusText()));
                 })
                 .toBodilessEntity();
@@ -63,24 +67,28 @@ public class GistService {
                 .uri("/gists/%s".formatted(gistId))
                 .retrieve()
                 .onStatus(status -> status.value() == 404, (_, res)  -> {
+                    log.error("Failed to get gist due to the gist being non existent. Err: {}", res.getStatusText());
                     throw new GistPersistenceException("Failed to get gist due to the gist being non existent. Err: %s".formatted(res.getStatusText()));
                 })
                 .onStatus(status -> status.value() == 403, (_, res) -> {
+                    log.error("Failed to authorize user. Ensure you're using a valid PAT token. Err: {}", res.getStatusText());
                     throw new GithubAuthException("Failed to authorize user. Ensure you're using a valid PAT token. Err: %s".formatted(res.getStatusText()));
                 })
                 .body(GistFetchResponse.class);
     }
-
 
     public List<GistMultiFetchRequest> getAllGists() {
         var result = client.get()
                 .uri("/gists")
                 .retrieve()
                 .onStatus(status -> status.value() == 403, (_, res) -> {
+                    log.error("Failed to authorize user. Ensure you're using a valid PAT token. Err: {}", res.getStatusText());
                     throw new GithubAuthException("Failed to authorize user. Ensure you're using a valid PAT token. Err: %s".formatted(res.getStatusText()));
                 })
                 .body(GistMultiFetchRequest[].class);
         if (result == null || result.length == 0) return List.of();
         else return Arrays.stream(result).toList();
     }
+
+
 }

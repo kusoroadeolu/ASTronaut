@@ -1,7 +1,8 @@
-package io.github.kusoroadeolu.astronaut;
+package io.github.kusoroadeolu.astronaut.config;
 
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ParserConfiguration;
+import io.github.kusoroadeolu.astronaut.SnippetCache;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

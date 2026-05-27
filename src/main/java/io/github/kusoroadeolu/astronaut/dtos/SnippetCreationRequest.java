@@ -9,8 +9,8 @@ import static io.github.kusoroadeolu.astronaut.dtos.utils.DtoUtils.normalizeSet;
 
 @Builder
 public record SnippetCreationRequest(
+    @NotBlank(message = "Snippet file name cannot be blank")
     String fileName,
-    @NotBlank(message = "Snippet description cannot be blank")
     String description,
     @NotBlank(message = "Snippet content cannot be blank")
     String content,

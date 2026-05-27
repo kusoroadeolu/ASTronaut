@@ -36,6 +36,10 @@ public class SnippetIndex {
         return Objects.hashCode(id);
     }
 
+    public boolean isJavaSnippet() {
+        return language.equalsIgnoreCase("java");
+    }
+
     @Override
     public String toString() {
         return "SnippetIndex[" +

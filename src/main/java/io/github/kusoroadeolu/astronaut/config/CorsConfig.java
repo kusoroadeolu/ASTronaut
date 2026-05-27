@@ -1,5 +1,6 @@
-package io.github.kusoroadeolu.astronaut;
+package io.github.kusoroadeolu.astronaut.config;
 
+import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,10 +17,10 @@ public class CorsConfig {
     public WebMvcConfigurer corsConfigurer() {
         return new WebMvcConfigurer() {
             @Override
-            public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/snippets/**")
+            public void addCorsMappings(@NonNull CorsRegistry registry) {
+                registry.addMapping("/**")
                     .allowedOrigins(frontendUrl)
-                    .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                    .allowedMethods("GET", "POST", "PUT", "PATCH" ,"DELETE", "OPTIONS")
                     .allowedHeaders("*")
                     .allowCredentials(true)
                     .maxAge(3600);

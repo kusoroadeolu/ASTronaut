@@ -36,7 +36,7 @@ public class SnippetCrudService {
         GistCreationRequest gistCreationRequest = gistMapper.fromSnippetCreationRequest(request);
         GistCreationResponse response = gistService.createGist(gistCreationRequest);
         SnippetIndex snippetIndex = snippetMapper.toSnippetIndex(request, response);
-        snippetParsingService.parseSnippetContent(snippetIndex, request.content());
+        if (snippetIndex.isJavaSnippet()) snippetParsingService.parseSnippetContent(snippetIndex, request.content());
         cache.add(snippetIndex);
         indexFileService.writeToIndex();
         return snippetMapper.toSnippetResponse(snippetIndex);
@@ -54,20 +54,25 @@ public class SnippetCrudService {
         SnippetIndex snippetIndex = cache.get(gistId);
         if (snippetIndex == null) throw new NoSuchSnippetException("Failed to find a snippet with id: %s".formatted(gistId));
         log.info("Found snippet index: {}", snippetIndex);
-        updateIfNecessary(gistId, snippetIndex, updateRequest);
+        boolean updated = updateGist(gistId, snippetIndex, updateRequest);
         snippetIndex.setTags(updateRequest.tags());
+        if (updated && snippetIndex.isJavaSnippet()) snippetParsingService.parseSnippetContent(snippetIndex, updateRequest.content());
         if (!updateRequest.description().isBlank()) snippetIndex.setDescription(updateRequest.description());
         indexFileService.writeToIndex();
         log.info("Updated snippet index: {}", snippetIndex);
         return snippetMapper.toSnippetResponse(snippetIndex);
     }
 
-    void updateIfNecessary(String gistId, SnippetIndex snippetIndex,SnippetUpdateRequest updateRequest) {
+    boolean updateGist(String gistId, SnippetIndex snippetIndex, SnippetUpdateRequest updateRequest) {
         if (!updateRequest.content().equals(updateRequest.previousContent()) || !updateRequest.description().equals(snippetIndex.getDescription())){
             GistUpdateRequest gistUpdateRequest = gistMapper.fromSnippetUpdateRequest(snippetIndex.getFileName(), updateRequest);
             gistService.updateGist(gistId, gistUpdateRequest);
+            return true;
         }
+
+        return false;
     }
+
 
     public SnippetContentResponse findById(String gistId) {
         SnippetIndex snippetIndex = cache.get(gistId);

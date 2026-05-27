@@ -1,552 +1,113 @@
-# Astronaut API Documentation
+# Astronaut UI — Decisions & Notes
 
-## Overview
+## Tech Stack
 
-The Astronaut API provides comprehensive endpoints for user authentication, account management, and code snippet management with advanced search and comparison features.
-
-**Authentication:** JWT token (set as cookie on login/register)  
-**Authorization:** Requires `APP_USER` or `APP_ADMIN` role
-
----
-
-## Error Responses
-
-All endpoints may return error responses in this format:
-
-```json
-{
-  "status": 400,
-  "message": "Human readable error message",
-  "thrownAt": "2024-10-20T15:30:00Z"
-}
-```
-
-Common status codes across all endpoints:
-- **401** — User is not authenticated
-- **404** — Resource not found
-- **500** — An unexpected error occurred
+- **React (Vite)** — standalone app, separate from Spring Boot
+- **Tailwind CSS** — styling and dark mode
+- **shadcn/ui** — component library (sidebar, buttons, badges, dialogs etc.)
+- **CodeMirror 6** — syntax highlighting for code view and create/edit editor
+- **React Router** — navigation between views
+- **Environment** — `VITE_API_BASE_URL=http://localhost:9093` 
+- **Language** - Typescript and Tsx
 
 ---
 
-## Authentication
+## Layout
 
-### Register a New User
-**POST** `/auth/register`
+Three-column structure: a narrow sidebar for navigation and snippet listing, and a wide main panel for content. The sidebar is always visible; the main panel swaps between views depending on context.
 
-Creates a new user account.
+The snippet list column is dense and scannable — each item shows the file name, a language badge, and up to 2 tag pills with a "+N more" overflow. Clicking a snippet loads the content view in the main panel without any page reload or jarring transition.
 
-**Request Body:**
-```json
-{
-  "username": "john_doe",
-  "email": "john@example.com",
-  "password": "SecurePass123",
-  "confirmPassword": "SecurePass123"
-}
-```
-
-**Validation:**
-- `username` — Required, minimum 1 character
-- `email` — Required, valid email format, minimum 1 character
-- `password` — Required, 6-100 characters
-- `confirmPassword` — Required, must match password
-
-**Response (201 Created):**
-```json
-{
-  "id": 1,
-  "username": "john_doe",
-  "email": "john@example.com"
-}
-```
-
-**Possible Responses:**
-- **201 Created** — User registered, JWT cookie set
-- **400 Bad Request** — Passwords don't match
-- **409 Conflict** — Email already exists
-- **500 Internal Server Error** — Registration error
+The active snippet in the list gets a solid block highlight (not a border or underline) to make selection unambiguous at a glance.
 
 ---
 
-### Log In a User
-**POST** `/auth/login`
+## Sidebar
 
-Authenticates a user and returns JWT token.
-
-**Request Body:**
-```json
-{
-  "email": "john@example.com",
-  "password": "SecurePass123"
-}
-```
-
-**Validation:**
-- `email` — Required, valid email format
-- `password` — Required, 6-100 characters
-
-**Response (200 OK):**
-```json
-{
-  "id": 1,
-  "username": "john_doe",
-  "email": "john@example.com"
-}
-```
-
-**Possible Responses:**
-- **200 OK** — User authenticated, JWT cookie set
-- **401 Unauthorized** — Invalid email or password
-- **500 Internal Server Error** — Login error
+- App name/logo at top
+- "New snippet" button pinned at top
+- Search bar (always visible)
+- Sort control — `name`, `created_at`, `updated_at` (default)
+- Snippet list — each item shows:
+    - File name
+    - Language badge
+    - Up to 2 tag pills, "+N more" overflow for the rest
 
 ---
 
-## User Management
+## Search
 
-### Get All Snippets (for current user)
-**GET** `/snippets`
-
-Retrieves paginated snippets for authenticated user.
-
-**Query Parameters:**
-- `page` — Zero-based page index (default: 0)
-- `size` — Page size (default: 20, minimum: 1)
-- `sort` — Sorting criteria, format: `property,(asc|desc)` (default: `createdAt,DESC`)
-
-**Response (200 OK):**
-```json
-{
-  "content": [
-    {
-      "id": 1,
-      "name": "Spring Bean Configuration",
-      "language": "JAVA",
-      "tags": ["spring", "beans"],
-      "createdAt": "2024-10-20T10:00:00Z"
-    }
-  ],
-  "page": {
-    "size": 20,
-    "number": 0,
-    "totalElements": 150,
-    "totalPages": 8
-  }
-}
-```
-
-**Possible Responses:**
-- **200 OK** — Snippets retrieved successfully
-- **401 Unauthorized** — User not authenticated
-- **500 Internal Server Error** — Retrieval error
+- Single search bar, hits `GET /snippets/search?query=`
+- Supports structured syntax: `tag: utility; language: java; method-name: parse`
+- Bare terms (no keyword prefix) match across everything — name, tags, class names, method names
+- Keywords: `tag:`, `language:`, `name:`, `method-name:`, `class-name:`
+- Delimiter between keywords is `;`
 
 ---
 
-### Get a Snippet by ID
-**GET** `/snippets/{id}`
+## Refresh
+- A refresh button that supports the theme of the app
+- Not too sure where to put this yet
 
-Retrieves a specific snippet.
+## Main Panel Views
 
-**Path Parameters:**
-- `id` — Snippet ID (required)
+### Empty / Welcome State
+Shown when nothing is selected.
 
-**Response (200 OK):**
-```json
-{
-  "id": 1,
-  "name": "Spring Bean Configuration",
-  "content": "public class AppConfig { ... }",
-  "language": "JAVA",
-  "tags": ["spring", "beans"],
-  "extraNotes": "Used for autowiring setup",
-  "isDraft": false,
-  "createdAt": "2024-10-20T10:00:00Z",
-  "lastUpdated": "2024-10-20T12:00:00Z"
-}
-```
+### Snippet View
+- Code with syntax highlighting (CodeMirror, read-only), taking up the full panel width — no wasted space
+- Metadata — name, language, description, created/updated timestamps
+- Tag pills
+- Action buttons — edit, delete, compare
 
-**Possible Responses:**
-- **200 OK** — Snippet found
-- **404 Not Found** — Snippet not found
-- **401 Unauthorized** — User not authenticated
-- **500 Internal Server Error** — Retrieval error
+### Create / Edit Form
+- Fields: file name, description, content (CodeMirror editor), tags
+- Language is inferred by the backend — not a user input field
 
----
+### Diff View
+- Unified diff — single column with +/- markers and red/green line overlay
+- Backend returns parsed `DiffLine` objects (`ADDED`, `REMOVED`, `UNCHANGED`) — no frontend diff library needed, just render what the backend gives
 
-### Create a Snippet
-**POST** `/snippets`
-
-Creates a new code snippet.
-
-**Request Body:**
-```json
-{
-  "snippetName": "Spring Bean Configuration",
-  "language": "JAVA",
-  "tags": ["spring", "beans"]
-}
-```
-
-**Validation:**
-- `snippetName` — Required, minimum 1 character
-- `language` — Optional, enum: `JAVA`, `OTHER`
-- `tags` — Optional, array of unique strings
-
-**Response (201 Created):**
-```json
-{
-  "id": 1,
-  "name": "Spring Bean Configuration",
-  "language": "JAVA",
-  "tags": ["spring", "beans"],
-  "isDraft": true,
-  "createdAt": "2024-10-20T10:00:00Z",
-  "lastUpdated": "2024-10-20T10:00:00Z"
-}
-```
-
-**Possible Responses:**
-- **201 Created** — Snippet created successfully
-- **401 Unauthorized** — User not authenticated
-- **500 Internal Server Error** — Creation error
+### Compare Flow
+- Hit "compare" on any snippet
+- Command palette style modal opens
+- Search bar inside modal filters snippet list
+- Pick a snippet → diff view opens
 
 ---
 
-### Update a Snippet
-**PUT** `/snippets/{id}`
+## Visual Style
 
-Updates snippet metadata and content.
+Dark theme throughout. The overall aesthetic is tool-first: dense where it needs to be, minimal chrome, nothing decorative that doesn't earn its place.
 
-**Path Parameters:**
-- `id` — Snippet ID (required)
+### Typography
+Full monospace stack across the entire UI — not just in the code editor. A refined monospace font (e.g. Geist Mono or Commit Mono) applied to navigation, labels, metadata, and body text reinforces the "developer tool" character without feeling like a terminal. The app name at the top uses a contrasting serif display font for a single moment of visual personality.
 
-**Request Body:**
-```json
-{
-  "snippetName": "Updated Name",
-  "language": "JAVA",
-  "content": "updated code content",
-  "tags": ["spring", "updated"],
-  "extraNotes": "Updated notes"
-}
-```
+### Layout Character
+- The snippet list is intentionally compact, styled similarly to a file tree in a code editor — familiar to developers, fast to scan
+- The code viewer takes full width in the main panel; the snippet's metadata (name, description, tags, timestamps) is presented in a slim header above the code, not alongside it
+- No decorative sidebars, icon rails, or navigation chrome beyond what's functional
 
-**Validation:**
-- `snippetName` — Required, minimum 1 character
-- `tags` — Required, array of unique strings
-- `language` — Optional, enum: `JAVA`, `OTHER`
-- `content` — Optional, string
-- `extraNotes` — Optional, string
+### Color Scheme
 
-**Response (200 OK):**
-```json
-{
-  "id": 1,
-  "name": "Updated Name",
-  "content": "updated code content",
-  "language": "JAVA",
-  "tags": ["spring", "updated"],
-  "extraNotes": "Updated notes",
-  "isDraft": false,
-  "createdAt": "2024-10-20T10:00:00Z",
-  "lastUpdated": "2024-10-20T14:00:00Z"
-}
-```
+| Role | Value |
+|---|---|
+| Background | `#18181b` (zinc-900) — not pure black |
+| Code / editor surface | `#1c1c1e` — slightly distinct from background for visual layering |
+| Accent | Muted warm white or soft amber — used sparingly for active states and CTAs |
+| Primary text | White |
+| Secondary text | Mid-gray (descriptions, timestamps) |
+| Tertiary text | Darker gray (placeholders) |
 
-**Possible Responses:**
-- **200 OK** — Snippet updated successfully
-- **404 Not Found** — Snippet not found
-- **401 Unauthorized** — User not authenticated
-- **500 Internal Server Error** — Update error
+- **Active snippet highlight** — solid block, accent-colored, not a border or glow
+- **Badges / tags** — slightly lighter background than the surface they sit on, text in the same color family; no rainbow colors, understated
+- **Syntax highlighting** — VS Code "One Dark" or "GitHub Dark Default" via CodeMirror; readable without being loud
+- **General rule** — no gradients, no glows, no neon; clean and considered, not generated-looking
 
 ---
 
-### Delete a Snippet
-**DELETE** `/snippets/{id}`
+## Running Locally
 
-Deletes a snippet permanently.
-
-**Path Parameters:**
-- `id` — Snippet ID (required)
-
-**Response:**
-- **204 No Content** — Snippet deleted successfully
-
-**Possible Responses:**
-- **204 No Content** — Snippet deleted
-- **404 Not Found** — Snippet not found
-- **401 Unauthorized** — User not authenticated
-- **500 Internal Server Error** — Deletion error
-
----
-
-## Snippet Analytics
-
-### Filter Snippets
-**POST** `/snippets/filter`
-
-Searches and filters snippets based on criteria.
-
-**Query Parameters:**
-- `page` — Zero-based page index (default: 0)
-- `size` — Page size (default: 20, minimum: 1)
-- `sort` — Sorting criteria (default: `createdAt,DESC`)
-
-**Request Body:**
-```json
-{
-  "languages": ["JAVA"],
-  "tagsOrNames": ["spring", "beans"],
-  "classAnnotations": ["Component", "Service"],
-  "classNames": ["AppConfig"],
-  "classFields": ["applicationContext"],
-  "classFieldAnnotations": ["Autowired"],
-  "methodReturnTypes": ["void", "String"],
-  "methodAnnotations": ["Override", "PostConstruct"]
-}
-```
-
-All fields are optional and accept arrays of unique strings. Each represents a search criterion.
-
-**Response (200 OK):**
-```json
-{
-  "content": [
-    {
-      "id": 1,
-      "name": "Spring Bean Configuration",
-      "language": "JAVA",
-      "tags": ["spring", "beans"],
-      "createdAt": "2024-10-20T10:00:00Z"
-    }
-  ],
-  "page": {
-    "size": 20,
-    "number": 0,
-    "totalElements": 50,
-    "totalPages": 3
-  }
-}
-```
-
-**Possible Responses:**
-- **200 OK** — Snippets filtered successfully
-- **401 Unauthorized** — User not authenticated
-- **500 Internal Server Error** — Filter error
-
----
-
-### Compare Two Snippets
-**GET** `/snippets/{id}/compare/{comparingToId}`
-
-Generates a diff between two snippets.
-
-**Path Parameters:**
-- `id` — First snippet ID (required)
-- `comparingToId` — Second snippet ID (required)
-
-**Response (200 OK):**
-```json
-{
-  "comparing": {
-    "snippetName": "Spring Bean Configuration",
-    "lines": [
-      {
-        "lineNum": 1,
-        "lineContent": "public class AppConfig {",
-        "lineType": "UNCHANGED"
-      },
-      {
-        "lineNum": 2,
-        "lineContent": "  @Bean",
-        "lineType": "REMOVED"
-      }
-    ]
-  },
-  "comparingTo": {
-    "snippetName": "Spring Bean Configuration v2",
-    "lines": [
-      {
-        "lineNum": 1,
-        "lineContent": "public class AppConfig {",
-        "lineType": "UNCHANGED"
-      },
-      {
-        "lineNum": 2,
-        "lineContent": "  @Component",
-        "lineType": "ADDED"
-      }
-    ]
-  }
-}
-```
-
-**Line Types:**
-- `UNCHANGED` — Line exists in both snippets
-- `ADDED` — Line added in comparingTo
-- `REMOVED` — Line removed from comparing
-
-**Possible Responses:**
-- **200 OK** — Snippets compared successfully
-- **404 Not Found** — One or both snippets not found
-- **401 Unauthorized** — User not authenticated
-- **500 Internal Server Error** — Comparison error
-
----
-
-### Update User Preferences
-**PUT** `/users/preferences`
-
-Updates user preferences like fuzzy search toggle.
-
-**Request Body:**
-```json
-{
-  "enableFuzzySearch": true
-}
-```
-
-**Response (200 OK):**
-```json
-{
-  "isFuzzySearchEnabled": true
-}
-```
-
-**Possible Responses:**
-- **200 OK** — Preferences updated
-- **401 Unauthorized** — User not authenticated
-- **404 Not Found** — User not found
-- **500 Internal Server Error** — Update error
-
----
-
-**GET** `/users/preferences`
-
-Retrieves user preferences like fuzzy search toggle.
-
-**Response (200 OK):**
-```json
-{
-  "isFuzzySearchEnabled": false
-}
-```
-
-**Possible Responses:**
-- **200 OK** — Preferences retrieved successfully
-- **401 Unauthorized** — User not authenticated
-- **404 Not Found** — User not found
-- **500 Internal Server Error** — Retrieval error
-
-### Update Username or Email
-**PUT** `/users/me`
-
-Updates username or email for authenticated user.
-
-**Request Body:**
-```json
-{
-  "username": "new_username",
-  "email": "newemail@example.com"
-}
-```
-
-**Validation:**
-- `username` — Required, minimum 1 character
-- `email` — Required, valid email format, minimum 1 character
-
-**Response:**
-- **200 OK** — User details updated
-
-**Possible Responses:**
-- **200 OK** — Details updated successfully
-- **409 Conflict** — Email already exists
-- **401 Unauthorized** — User not authenticated
-- **404 Not Found** — User not found
-- **500 Internal Server Error** — Update error
-
----
-
-### Update Password
-**PUT** `/users/me/password`
-
-Updates the authenticated user's password.
-
-**Request Body:**
-```json
-{
-  "currentPassword": "CurrentPass123",
-  "newPassword": "NewPass456",
-  "confirmNewPassword": "NewPass456"
-}
-```
-
-**Validation:**
-- All fields required
-- Passwords must be 6-100 characters
-- `confirmNewPassword` must match `newPassword`
-
-**Response:**
-- **200 OK** — Password updated
-
-**Possible Responses:**
-- **200 OK** — Password updated successfully
-- **400 Bad Request** — Invalid current password or passwords don't match
-- **401 Unauthorized** — User not authenticated
-- **404 Not Found** — User not found
-- **500 Internal Server Error** — Update error
-
----
-
-### Log Out Current User
-**DELETE** `/users/logout`
-
-Logs out the authenticated user.
-
-**Response:**
-- **204 No Content** — User logged out
-
-**Possible Responses:**
-- **204 No Content** — Logged out successfully
-- **401 Unauthorized** — User not authenticated
-- **404 Not Found** — User not found
-- **500 Internal Server Error** — Logout error
-
----
-
-### Delete User Account
-**DELETE** `/users`
-
-Permanently deletes the authenticated user's account.
-
-**Request Body:**
-```json
-{
-  "password": "CurrentPassword123",
-  "confirmPassword": "CurrentPassword123"
-}
-```
-
-**Validation:**
-- All fields required
-- Passwords must be 6-100 characters
-- `password` must match `confirmPassword`
-
-**Response:**
-- **204 No Content** — Account deleted
-
-**Possible Responses:**
-- **204 No Content** — Account deleted successfully
-- **400 Bad Request** — Password confirmation doesn't match
-- **401 Unauthorized** — User not authenticated
-- **404 Not Found** — User not found
-- **500 Internal Server Error** — Deletion error
-
----
-
-## Notes
-
-- All endpoints require authentication except `/auth/register` and `/auth/login`
-- Authenticated endpoints require valid JWT token (automatic via cookie after login/register)
-- Pagination defaults to 20 items per page sorted by creation date (newest first)
-- Tags are case-sensitive and must be unique within a request
-- Snippet content and extra notes are optional and can be empty strings
+- Spring Boot: `./mvnw spring-boot:run`
+- React: `npm run dev`
+- Can be wrapped in a single `start.sh` script

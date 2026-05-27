@@ -39,7 +39,6 @@ public class SnippetParsingService {
         CompilationUnit unit = result.getResult().get();
         log.info("Attempting to parse snippet: {}", snippet.getFileName());
         extractMetaData(snippet, unit);
-        log.info("Compilation unit: {}", unit);
         log.info("Successfully parsed snippet: {}", snippet.getFileName());
     }
 
