@@ -1,10 +1,10 @@
 package io.github.kusoroadeolu.astronaut.controllers;
 
-import io.github.kusoroadeolu.astronaut.exceptions.ApiError;
+import io.github.kusoroadeolu.astronaut.dtos.SnippetContentResponse;
 import io.github.kusoroadeolu.astronaut.dtos.SnippetCreationRequest;
 import io.github.kusoroadeolu.astronaut.dtos.SnippetResponse;
 import io.github.kusoroadeolu.astronaut.dtos.SnippetUpdateRequest;
-import io.github.kusoroadeolu.astronaut.dtos.SnippetContentResponse;
+import io.github.kusoroadeolu.astronaut.exceptions.ApiError;
 import io.github.kusoroadeolu.astronaut.services.SnippetCrudService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -26,7 +26,6 @@ import java.util.List;
 @RequestMapping("/snippets")
 @Tag(name = "Snippet Management", description = "CRUD operations for snippets")
 @ApiResponses(value = {
-        @ApiResponse(responseCode = "401", description = "User is not authenticated", content = @Content(schema = @Schema(implementation = ApiError.class))),
         @ApiResponse(responseCode = "500", description = "An unexpected error occurred", content = @Content(schema = @Schema(implementation = ApiError.class)))
 })
 public class SnippetCrudController {
@@ -37,7 +36,8 @@ public class SnippetCrudController {
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Create a snippet", description = "Creates a new code snippet for the user")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Snippet created successfully", content = @Content(schema = @Schema(implementation = SnippetResponse.class)))
+            @ApiResponse(responseCode = "201", description = "Snippet created successfully", content = @Content(schema = @Schema(implementation = SnippetResponse.class))),
+            @ApiResponse(responseCode = "403", description = "Invalid github auth Token", content = @Content(schema = @Schema(implementation = ApiError.class)))
     })
     public ResponseEntity<SnippetResponse> createSnippet(
             @RequestBody @Valid SnippetCreationRequest request
@@ -50,8 +50,9 @@ public class SnippetCrudController {
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Update a snippet", description = "Updates an existing snippet's metadata")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "SnippetIndex updated successfully", content = @Content(schema = @Schema(implementation = SnippetResponse.class))),
-            @ApiResponse(responseCode = "404", description = "SnippetIndex not found", content = @Content(schema = @Schema(implementation = ApiError.class)))
+            @ApiResponse(responseCode = "200", description = "Snippet updated successfully", content = @Content(schema = @Schema(implementation = SnippetResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Snippet not found", content = @Content(schema = @Schema(implementation = ApiError.class))),
+            @ApiResponse(responseCode = "403", description = "Failed to authorize github user", content = @Content(schema = @Schema(implementation = ApiError.class)))
     })
     public ResponseEntity<SnippetResponse> updateSnippet(
             @Parameter(description = "Snippet Id", required = true) @PathVariable("id") String id,
@@ -65,8 +66,10 @@ public class SnippetCrudController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "Delete a snippet", description = "Deletes a snippet by ID")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "204", description = "SnippetIndex deleted successfully"),
-            @ApiResponse(responseCode = "404", description = "SnippetIndex not found", content = @Content(schema = @Schema(implementation = ApiError.class)))
+            @ApiResponse(responseCode = "204", description = "Snippet deleted successfully"),
+            @ApiResponse(responseCode = "404", description = "Snippet not found", content = @Content(schema = @Schema(implementation = ApiError.class))),
+            @ApiResponse(responseCode = "403", description = "Failed to authorize github user", content = @Content(schema = @Schema(implementation = ApiError.class)))
+
     })
     public ResponseEntity<Void> deleteSnippet(
             @Parameter(description = "SnippetIndex Id", required = true) @PathVariable("id") String id){
@@ -79,7 +82,9 @@ public class SnippetCrudController {
     @Operation(summary = "Get a snippet by ID", description = "Retrieves a specific snippet by its ID")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "SnippetIndex found", content = @Content(schema = @Schema(implementation = SnippetContentResponse.class))),
-            @ApiResponse(responseCode = "404", description = "SnippetIndex not found", content = @Content(schema = @Schema(implementation = ApiError.class)))
+            @ApiResponse(responseCode = "404", description = "Snippet not found", content = @Content(schema = @Schema(implementation = ApiError.class))),
+            @ApiResponse(responseCode = "403", description = "Failed to authorize github user", content = @Content(schema = @Schema(implementation = ApiError.class)))
+
     })
     public ResponseEntity<SnippetContentResponse> findSnippetById(
             @Parameter(description = "Snippet Id", required = true) @PathVariable("id") String id
@@ -88,26 +93,29 @@ public class SnippetCrudController {
         return new ResponseEntity<>(fileResponse, HttpStatus.OK);
     }
 
-    @GetMapping
+    @GetMapping("/refresh")
     @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "Get all snippets", description = "Retrieves paginated list of all snippets for the authenticated user")
+    @Operation(summary = "Refreshes all snippets from the user's gist page", description = "Retrieves a list of all snippets")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Snippets retrieved successfully")
+            @ApiResponse(responseCode = "200", description = "Snippets retrieved successfully"),
+            @ApiResponse(responseCode = "403", description = "Failed to authorize github user", content = @Content(schema = @Schema(implementation = ApiError.class)))
+
     })
-    public ResponseEntity<List<SnippetResponse>> findSnippetsByUser(
-    ){
-        List<SnippetResponse> responses = this.snippetCrudService.getSnippets();
+    public ResponseEntity<List<SnippetResponse>> refreshGists(){
+        List<SnippetResponse> responses = this.snippetCrudService.refreshGists();
         return new ResponseEntity<>(responses, HttpStatus.OK);
     }
 
-    @GetMapping("/refresh")
+    @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    @Operation(summary = "Get all snippets", description = "Retrieves paginated list of all snippets for the authenticated user")
+    @Operation(summary = "Get all snippets", description = "Retrieves a list of all snippets")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Snippets retrieved successfully")
     })
-    public ResponseEntity<List<SnippetResponse>> refresh(){
-        List<SnippetResponse> responses = this.snippetCrudService.refreshFromGithub();
+    public ResponseEntity<List<SnippetResponse>> getAllSnippets(@RequestParam(value = "order_by", defaultValue = "updated_at") String order){
+        List<SnippetResponse> responses = this.snippetCrudService.getSnippets(order);
         return new ResponseEntity<>(responses, HttpStatus.OK);
     }
+
+
 }

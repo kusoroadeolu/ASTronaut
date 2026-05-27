@@ -4,7 +4,10 @@ import io.github.kusoroadeolu.astronaut.entities.SnippetIndex;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -22,10 +25,6 @@ public class SnippetCache {
 
     public SnippetIndex get(String id) {
         return snippets.get(id);
-    }
-
-    public boolean contains(String id) {
-        return snippets.containsKey(id);
     }
 
     public boolean remove(String id) {

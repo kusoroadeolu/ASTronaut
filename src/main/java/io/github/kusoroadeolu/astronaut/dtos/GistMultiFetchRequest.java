@@ -19,8 +19,8 @@ public record GistMultiFetchRequest(
     ) {
 
         public GistMultiFetchFile {
-            filename = filename.trim().toLowerCase();
-            language = language.trim().toLowerCase();
+            filename = filename.trim();
+            language = language.trim();
         }
 
     }

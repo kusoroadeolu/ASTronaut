@@ -8,8 +8,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static io.github.kusoroadeolu.astronaut.dtos.utils.DtoUtils.normalizeSet;
-
 @Getter
 @Setter
 public class SearchCriteria {

@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -46,7 +47,7 @@ public class SnippetCrudService {
         if (removed) {
             gistService.deleteGist(gistId);
             indexFileService.writeToIndex();
-        }
+        } else throw new NoSuchSnippetException("Failed to find snippet with ID: %s".formatted(gistId));
     }
 
     public SnippetResponse updateSnippet(String gistId, SnippetUpdateRequest updateRequest) {
@@ -76,11 +77,17 @@ public class SnippetCrudService {
         return new SnippetContentResponse(snippetResponse, fetchResponse.content());
     }
 
-    public List<SnippetResponse> getSnippets() {
-       return cache.values().stream().map(snippetMapper::toSnippetResponse).toList();
+    public List<SnippetResponse> getSnippets(String order) {
+        var stream = cache.values().stream().map(snippetMapper::toSnippetResponse);
+        return switch (order) {
+            case "created_at" -> stream.sorted(Comparator.comparing(SnippetResponse::createdAt).reversed()).toList();
+            case "updated_at" -> stream.sorted(Comparator.comparing(SnippetResponse::updatedAt).reversed()).toList();
+            case "name" -> stream.sorted(Comparator.comparing(SnippetResponse::name)).toList();
+            default -> stream.toList();
+        };
     }
 
-    public List<SnippetResponse> refreshFromGithub() {
+    public List<SnippetResponse> refreshGists() {
         var results = gistService.getAllGists();
         Set<SnippetIndex> set = ConcurrentHashMap.newKeySet();
         try (var taskScope = StructuredTaskScope.open()) {

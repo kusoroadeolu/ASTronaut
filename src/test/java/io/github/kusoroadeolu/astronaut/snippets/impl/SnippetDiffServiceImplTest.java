@@ -1,12 +1,12 @@
 package io.github.kusoroadeolu.astronaut.snippets.impl;
 
+import com.victor.astronaut.snippets.services.impl.SnippetDiffServiceImpl;
 import io.github.kusoroadeolu.astronaut.dtos.diffs.ChangeType;
 import io.github.kusoroadeolu.astronaut.dtos.diffs.DiffLine;
 import io.github.kusoroadeolu.astronaut.dtos.diffs.SnippetDiff;
 import io.github.kusoroadeolu.astronaut.dtos.diffs.SnippetDiffPair;
 import io.github.kusoroadeolu.astronaut.entities.SnippetIndex;
 import io.github.kusoroadeolu.astronaut.services.SnippetCrudService;
-import com.victor.astronaut.snippets.services.impl.SnippetDiffServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

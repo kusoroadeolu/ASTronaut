@@ -67,7 +67,8 @@ public class SnippetQueryService {
     }
 
     void splitAndAdd(Set<String> set, String str) {
-        set.addAll(List.of(str.split(" ")));
+        var ls = Arrays.stream(str.split(" ")).map(String::toLowerCase).toList();
+        set.addAll(ls);
     }
 
     String replaceWithBlank(String original, String replace) {
@@ -76,7 +77,7 @@ public class SnippetQueryService {
 
     private boolean matchesLanguage(SnippetIndex s, SearchCriteria criteria) {
         if (criteria.getLanguages().isEmpty()) return false;
-        return criteria.getLanguages().contains(s.getLanguage());
+        return criteria.getLanguages().contains(s.getLanguage().toLowerCase());
     }
 
     private boolean matchesTags(SnippetIndex s, SearchCriteria criteria) {
@@ -87,7 +88,7 @@ public class SnippetQueryService {
     private boolean matchesFileNames(SnippetIndex s, SearchCriteria criteria) {
         if (criteria.getFileNames().isEmpty()) return false;
         for (String fileName : criteria.getFileNames()) {
-            if (s.getFileName().contains(fileName)) return true;
+            if (s.getFileName().toLowerCase().contains(fileName)) return true;
         }
 
         return false;

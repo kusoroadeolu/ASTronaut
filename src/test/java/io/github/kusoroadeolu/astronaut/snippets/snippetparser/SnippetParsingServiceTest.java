@@ -1,7 +1,7 @@
 package io.github.kusoroadeolu.astronaut.snippets.snippetparser;
 
-import io.github.kusoroadeolu.astronaut.entities.SnippetIndex;
 import com.victor.astronaut.snippets.repos.SnippetRepository;
+import io.github.kusoroadeolu.astronaut.entities.SnippetIndex;
 import io.github.kusoroadeolu.astronaut.services.SnippetParsingService;
 import io.github.kusoroadeolu.astronaut.visitors.VisitorOrchestrator;
 import org.junit.jupiter.api.Test;
