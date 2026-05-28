@@ -22,6 +22,8 @@ public class SnippetIndex {
     private Set<String> methodNames;
     private String createdAt;
     private String updatedAt;
+    private String content; //Compressed
+    private String contentHash;
 
     @Override
     public boolean equals(Object o) {

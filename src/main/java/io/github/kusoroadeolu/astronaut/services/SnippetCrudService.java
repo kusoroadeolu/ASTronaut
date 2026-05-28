@@ -1,5 +1,6 @@
 package io.github.kusoroadeolu.astronaut.services;
 
+import io.github.kusoroadeolu.astronaut.CompressionUtils;
 import io.github.kusoroadeolu.astronaut.SnippetCache;
 import io.github.kusoroadeolu.astronaut.dtos.*;
 import io.github.kusoroadeolu.astronaut.entities.SnippetIndex;
@@ -15,6 +16,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.StructuredTaskScope;
+
+import static io.github.kusoroadeolu.astronaut.CompressionUtils.compressToBase64;
+import static io.github.kusoroadeolu.astronaut.CompressionUtils.hash;
 
 /**
  * Service implementation for managing code snippet CRUD operations.
@@ -36,7 +40,10 @@ public class SnippetCrudService {
         GistCreationRequest gistCreationRequest = gistMapper.fromSnippetCreationRequest(request);
         GistCreationResponse response = gistService.createGist(gistCreationRequest);
         SnippetIndex snippetIndex = snippetMapper.toSnippetIndex(request, response);
-        if (snippetIndex.isJavaSnippet()) snippetParsingService.parseSnippetContent(snippetIndex, request.content());
+
+        if (snippetIndex.isJavaSnippet())
+            snippetParsingService.parseSnippetContent(snippetIndex, request.content());
+
         cache.add(snippetIndex);
         indexFileService.writeToIndex();
         return snippetMapper.toSnippetResponse(snippetIndex);
@@ -54,19 +61,33 @@ public class SnippetCrudService {
         SnippetIndex snippetIndex = cache.get(gistId);
         if (snippetIndex == null) throw new NoSuchSnippetException("Failed to find a snippet with id: %s".formatted(gistId));
         log.info("Found snippet index: {}", snippetIndex);
-        boolean updated = updateGist(gistId, snippetIndex, updateRequest);
+        String hash = hash(updateRequest.content());
+        boolean updated = updateGist(gistId, hash ,snippetIndex, updateRequest);
 
-        if (!snippetIndex.getTags().equals(updateRequest.tags())) snippetIndex.setTags(updateRequest.tags());
-        if (updated && snippetIndex.isJavaSnippet()) snippetParsingService.parseSnippetContent(snippetIndex, updateRequest.content());
-        if (!updateRequest.description().isBlank()) snippetIndex.setDescription(updateRequest.description());
+
+        if (!snippetIndex.getTags().equals(updateRequest.tags()))
+            snippetIndex.setTags(updateRequest.tags());
+
+        if (updated) {
+            snippetIndex.setContent(compressToBase64(updateRequest.content()));
+            snippetIndex.setContentHash(hash);
+            if (!updateRequest.description().isBlank())
+                snippetIndex.setDescription(updateRequest.description());
+
+            if (snippetIndex.isJavaSnippet())
+                snippetParsingService.parseSnippetContent(snippetIndex, updateRequest.content());
+        }
+
+
 
         indexFileService.writeToIndex();
         log.info("Updated snippet index: {}", snippetIndex);
         return snippetMapper.toSnippetResponse(snippetIndex);
     }
 
-    boolean updateGist(String gistId, SnippetIndex snippetIndex, SnippetUpdateRequest updateRequest) {
-        if (!updateRequest.content().equals(updateRequest.previousContent()) || !updateRequest.description().equals(snippetIndex.getDescription())){
+    boolean updateGist(String gistId, String newHash ,SnippetIndex snippetIndex, SnippetUpdateRequest updateRequest) {
+        boolean shouldUpdateDescription = !updateRequest.description().equals(snippetIndex.getDescription()) && !updateRequest.description().isBlank();
+        if (!newHash.equals(snippetIndex.getContentHash()) || shouldUpdateDescription){
             GistUpdateRequest gistUpdateRequest = gistMapper.fromSnippetUpdateRequest(snippetIndex.getFileName(), updateRequest);
             gistService.updateGist(gistId, gistUpdateRequest);
             return true;
@@ -79,9 +100,8 @@ public class SnippetCrudService {
     public SnippetContentResponse findById(String gistId) {
         SnippetIndex snippetIndex = cache.get(gistId);
         if (snippetIndex == null) throw new NoSuchSnippetException("Failed to find a snippet with id: %s".formatted(gistId));
-        GistFetchResponse fetchResponse = gistService.getGist(gistId);
         SnippetResponse snippetResponse = snippetMapper.toSnippetResponse(snippetIndex);
-        return new SnippetContentResponse(snippetResponse, fetchResponse.content());
+        return new SnippetContentResponse(snippetResponse, CompressionUtils.decompressFromBase64(snippetIndex.getContent()));
     }
 
     public List<SnippetResponse> getSnippets(String order) {
@@ -106,7 +126,7 @@ public class SnippetCrudService {
                    GistFetchResponse response = gistService.getGist(request.id());
                    SnippetIndex index = cache.get(request.id());
                    if (index == null) {
-                       index = snippetMapper.fromMultiFetchRequest(request);
+                       index = snippetMapper.fromMultiFetchRequest(request, response.content());
                        isNew = true;
                    }
 

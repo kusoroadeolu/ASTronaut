@@ -1,5 +1,6 @@
 package io.github.kusoroadeolu.astronaut.services;
 
+import io.github.kusoroadeolu.astronaut.CompressionUtils;
 import io.github.kusoroadeolu.astronaut.dtos.GistCreationResponse;
 import io.github.kusoroadeolu.astronaut.dtos.GistMultiFetchRequest;
 import io.github.kusoroadeolu.astronaut.dtos.SnippetCreationRequest;
@@ -12,6 +13,9 @@ import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
+
+import static io.github.kusoroadeolu.astronaut.CompressionUtils.compressToBase64;
+import static io.github.kusoroadeolu.astronaut.CompressionUtils.hash;
 
 @Slf4j
 @Service
@@ -26,12 +30,14 @@ public class SnippetMapper {
                 .description(request.description())
                 .tags(request.tags())
                 .language(val.getFirst().language())
+                .content(compressToBase64(request.content()))
+                .contentHash(hash(request.content()))
                 .createdAt(response.createdAt())
                 .updatedAt(response.createdAt())
                 .build();
     }
 
-    public SnippetIndex fromMultiFetchRequest(GistMultiFetchRequest request){
+    public SnippetIndex fromMultiFetchRequest(GistMultiFetchRequest request, String content){
         log.info("Multi fetch request: {}", request);
         var val = request.files().values().stream().toList();
         return SnippetIndex
@@ -43,6 +49,8 @@ public class SnippetMapper {
                 .classNames(new HashSet<>())
                 .methodNames(new HashSet<>())
                 .language(val.getFirst().language())
+                .content(compressToBase64(content))
+                .contentHash(hash(content))
                 .createdAt(request.createdAt())
                 .updatedAt(request.updatedAt())
                 .build();
