@@ -9,11 +9,13 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.stereotype.Component;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.List;
 
 @EnableAsync
@@ -33,13 +35,13 @@ public class ASTronautApplication {
         private final SnippetCache cache;
         private final ObjectMapper mapper;
 
-        @Value("${index.path}")
-        private String path;
+        @Value("${index.file-path}")
+        private String indexPath;
 
         @Override
         public void run(ApplicationArguments args) throws Exception {
-            ClassPathResource rs = new ClassPathResource(path);
-            List<SnippetIndex> snippets = mapper.readValue(rs.getInputStream(), new TypeReference<>(){});
+            Path p  = Path.of(indexPath);
+            List<SnippetIndex> snippets = mapper.readValue(Files.newInputStream(p, StandardOpenOption.READ), new TypeReference<>(){});
             cache.addAll(snippets == null ? List.of() : snippets);
 
         }

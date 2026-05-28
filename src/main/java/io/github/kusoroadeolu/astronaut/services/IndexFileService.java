@@ -5,10 +5,11 @@ import io.github.kusoroadeolu.astronaut.SnippetCache;
 import io.github.kusoroadeolu.astronaut.exceptions.IndexPersistenceException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 
 @Service
 @RequiredArgsConstructor
@@ -16,12 +17,14 @@ import java.io.IOException;
 public class IndexFileService {
     private final ObjectMapper mapper;
     private final SnippetCache cache;
-    private static final File file = new File("C:\\Users\\eastw\\Git Projects\\Personal\\ASTronaut\\src\\main\\resources\\index.json");
+    @Value("${index.file-path}")
+    private String indexPath;
 
 
 
     public void writeToIndex(){
         try {
+            var file = Path.of(indexPath).toFile();
             mapper.writerWithDefaultPrettyPrinter().writeValue(file, cache.values());
         }catch (IOException e) {
             log.error("An ex occurred while writing to index.json", e);

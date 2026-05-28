@@ -1,5 +1,7 @@
 package io.github.kusoroadeolu.astronaut.exceptions;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,6 +13,7 @@ import java.time.LocalDateTime;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    private static final Logger log = LogManager.getLogger(GlobalExceptionHandler.class);
     @Value("${frontend.url}")
     private String origin;
 
@@ -46,6 +49,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiError> handleGenericException(Exception e){
         ApiError error = new ApiError(500, "An unexpected error occurred", LocalDateTime.now());
+        log.error("An unexpected error occurred", e);
         return corsEntity(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 

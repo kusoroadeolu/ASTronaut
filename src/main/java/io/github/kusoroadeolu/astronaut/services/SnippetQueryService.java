@@ -6,12 +6,14 @@ import io.github.kusoroadeolu.astronaut.dtos.SnippetResponse;
 import io.github.kusoroadeolu.astronaut.entities.SnippetIndex;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.text.similarity.LevenshteinDistance;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -20,9 +22,13 @@ public class SnippetQueryService {
     private final SnippetMapper snippetMapper;
     private final SnippetCache cache;
 
+    @Value("${fuzzy-strength}")
+    private int similarity;
+    private static final LevenshteinDistance DISTANCE = LevenshteinDistance.getDefaultInstance();
 
     public List<SnippetResponse> searchBasedOnCriteria(String body) {
         SearchCriteria criteria = parseToCriteria(body);
+
         return cache.values().stream()
                 .filter(s -> matchesLanguage(s, criteria)
                         || matchesTags(s, criteria)
@@ -77,31 +83,53 @@ public class SnippetQueryService {
 
     private boolean matchesLanguage(SnippetIndex s, SearchCriteria criteria) {
         if (criteria.getLanguages().isEmpty()) return false;
-        return criteria.getLanguages().contains(s.getLanguage().toLowerCase());
+        return criteria.getLanguages()
+                .stream()
+                .map(String::toLowerCase)
+                .collect(Collectors.toSet())
+                .contains(s.getLanguage().toLowerCase());
     }
 
-    private boolean matchesTags(SnippetIndex s, SearchCriteria criteria) {
+    private boolean matchesTags(SnippetIndex index, SearchCriteria criteria) {
         if (criteria.getTags().isEmpty()) return false;
-        return !Collections.disjoint(s.getTags(), criteria.getTags());
+        for (String s : index.getTags()){
+            for (String ss : criteria.getTags()) {
+                if (DISTANCE.apply(s, ss) <= similarity) return true;
+            }
+        }
+
+        return false;
     }
 
     private boolean matchesFileNames(SnippetIndex s, SearchCriteria criteria) {
         if (criteria.getFileNames().isEmpty()) return false;
         for (String fileName : criteria.getFileNames()) {
-            if (s.getFileName().toLowerCase().contains(fileName)) return true;
+            if (DISTANCE.apply(fileName, s.getFileName()) <= similarity) return true;
         }
 
         return false;
     }
 
 
-    private boolean matchesMethodNames(SnippetIndex s, SearchCriteria criteria) {
+    private boolean matchesMethodNames(SnippetIndex index, SearchCriteria criteria) {
         if (criteria.getMethodNames().isEmpty()) return false;
-        return !Collections.disjoint(s.getMethodNames(), criteria.getMethodNames());
+        for (String s : index.getMethodNames()){
+            for (String ss : criteria.getMethodNames()) {
+                if (DISTANCE.apply(s, ss) <= similarity) return true;
+            }
+        }
+
+        return false;
     }
 
-    private boolean matchesClassNames(SnippetIndex s, SearchCriteria criteria) {
+    private boolean matchesClassNames(SnippetIndex index, SearchCriteria criteria) {
         if (criteria.getClassNames().isEmpty()) return false;
-        return !Collections.disjoint(s.getClassNames(), criteria.getClassNames());
+        for (String s : index.getClassNames()){
+            for (String ss : criteria.getClassNames()) {
+                if (DISTANCE.apply(s, ss) <= similarity) return true;
+            }
+        }
+
+        return false;
     }
 }

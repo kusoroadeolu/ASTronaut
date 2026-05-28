@@ -25,7 +25,7 @@
   "fileName" : "ArrayDESCStack.java",
   "description" : "A DECS(Dynamic Elimination Combining Stack) which uses arrays instead of linked list for the combining list. It's actually quite index prone (for basically worse performance) and harder to understand than the linked list approach",
   "language" : "Java",
-  "tags" : [ "java", "datastructure", "concurrency" ],
+  "tags" : [ "java", "cocurrency", "datastructure" ],
   "classNames" : [ ],
   "methodNames" : [ ],
   "createdAt" : "2026-05-23T11:16:03Z",
