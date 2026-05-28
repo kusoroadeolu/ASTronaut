@@ -6,9 +6,11 @@ import io.github.kusoroadeolu.astronaut.exceptions.GithubAuthException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
+import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -24,7 +26,7 @@ public class GistService {
                 .body(request)
                 .retrieve()
                 .onStatus(status -> status.value() == 403, (_, res)  -> {
-                    log.error("Failed to authorize user. Ensure you're using a valid PAT token. Err: {}", res.getStatusText());
+                    logAuthError(res);
                     throw new GithubAuthException("Failed to authorize user. Ensure you're using a valid PAT token. Err: %s".formatted(res.getStatusText()));
                 })
                 .onStatus(status -> status.value() == 422, (_, res) -> {
@@ -39,7 +41,7 @@ public class GistService {
                 .uri("/gists/%s".formatted(gistId))
                 .retrieve()
                 .onStatus(status -> status.value() == 403, (_, res)  -> {
-                    log.error("Failed to authorize user. Ensure you're using a valid PAT token. Err: {}", res.getStatusText());
+                    logAuthError(res);
                     throw new GithubAuthException("Failed to authorize user. Ensure you're using a valid PAT token. Err: %s".formatted(res.getStatusText()));
                 })
                 .onStatus(status -> status.value() == 404, (_, res)  -> {})
@@ -71,7 +73,7 @@ public class GistService {
                     throw new GistPersistenceException("Failed to get gist due to the gist being non existent. Err: %s".formatted(res.getStatusText()));
                 })
                 .onStatus(status -> status.value() == 403, (_, res) -> {
-                    log.error("Failed to authorize user. Ensure you're using a valid PAT token. Err: {}", res.getStatusText());
+                    logAuthError(res);
                     throw new GithubAuthException("Failed to authorize user. Ensure you're using a valid PAT token. Err: %s".formatted(res.getStatusText()));
                 })
                 .body(GistFetchResponse.class);
@@ -82,7 +84,7 @@ public class GistService {
                 .uri("/gists")
                 .retrieve()
                 .onStatus(status -> status.value() == 403, (_, res) -> {
-                    log.error("Failed to authorize user. Ensure you're using a valid PAT token. Err: {}", res.getStatusText());
+                    logAuthError(res);
                     throw new GithubAuthException("Failed to authorize user. Ensure you're using a valid PAT token. Err: %s".formatted(res.getStatusText()));
                 })
                 .body(GistMultiFetchRequest[].class);
@@ -90,5 +92,8 @@ public class GistService {
         else return Arrays.stream(result).toList();
     }
 
+    void logAuthError(ClientHttpResponse res) throws IOException {
+        log.error("Failed to authorize user. Ensure you're using a valid PAT token. Err: {}", res.getStatusText());
+    }
 
 }

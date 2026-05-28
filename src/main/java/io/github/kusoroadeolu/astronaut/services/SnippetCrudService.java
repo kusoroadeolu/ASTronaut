@@ -55,9 +55,11 @@ public class SnippetCrudService {
         if (snippetIndex == null) throw new NoSuchSnippetException("Failed to find a snippet with id: %s".formatted(gistId));
         log.info("Found snippet index: {}", snippetIndex);
         boolean updated = updateGist(gistId, snippetIndex, updateRequest);
-        snippetIndex.setTags(updateRequest.tags());
+
+        if (!snippetIndex.getTags().equals(updateRequest.tags())) snippetIndex.setTags(updateRequest.tags());
         if (updated && snippetIndex.isJavaSnippet()) snippetParsingService.parseSnippetContent(snippetIndex, updateRequest.content());
         if (!updateRequest.description().isBlank()) snippetIndex.setDescription(updateRequest.description());
+
         indexFileService.writeToIndex();
         log.info("Updated snippet index: {}", snippetIndex);
         return snippetMapper.toSnippetResponse(snippetIndex);
