@@ -1,0 +1,150 @@
+package io.github.kusoroadeolu.astronaut.services;
+
+import io.github.kusoroadeolu.astronaut.CompressionUtils;
+import io.github.kusoroadeolu.astronaut.SnippetCache;
+import io.github.kusoroadeolu.astronaut.dtos.*;
+import io.github.kusoroadeolu.astronaut.entities.SnippetIndex;
+import io.github.kusoroadeolu.astronaut.exceptions.IndexPersistenceException;
+import io.github.kusoroadeolu.astronaut.exceptions.NoSuchSnippetException;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.NonNull;
+import org.springframework.stereotype.Service;
+
+import java.util.Comparator;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.StructuredTaskScope;
+
+import static io.github.kusoroadeolu.astronaut.CompressionUtils.compressToBase64;
+import static io.github.kusoroadeolu.astronaut.CompressionUtils.hash;
+
+/**
+ * Service implementation for managing code snippet CRUD operations.
+ * Handles creating, reading, updating, and deleting snippets for users.
+ */
+@RequiredArgsConstructor
+@Service
+@Slf4j
+public class SnippetCrudService {
+
+    private final SnippetMapper snippetMapper;
+    private final GistMapper gistMapper;
+    private final GistService gistService;
+    private final SnippetCache cache;
+    private final IndexFileService indexFileService;
+    private final SnippetParsingService snippetParsingService;
+
+    public SnippetResponse createSnippet(@NonNull SnippetCreationRequest request) {
+        GistCreationRequest gistCreationRequest = gistMapper.fromSnippetCreationRequest(request);
+        GistCreationResponse response = gistService.createGist(gistCreationRequest);
+        SnippetIndex snippetIndex = snippetMapper.toSnippetIndex(request, response);
+
+        if (snippetIndex.isJavaSnippet())
+            snippetParsingService.parseSnippetContent(snippetIndex, request.content());
+
+        cache.add(snippetIndex);
+        indexFileService.writeToIndex();
+        return snippetMapper.toSnippetResponse(snippetIndex);
+    }
+
+    public void deleteSnippet(String gistId) {
+        boolean removed = cache.remove(gistId);
+        if (removed) {
+            gistService.deleteGist(gistId);
+            indexFileService.writeToIndex();
+        } else throw new NoSuchSnippetException("Failed to find snippet with ID: %s".formatted(gistId));
+    }
+
+    public SnippetResponse updateSnippet(String gistId, SnippetUpdateRequest updateRequest) {
+        SnippetIndex snippetIndex = cache.get(gistId);
+        if (snippetIndex == null) throw new NoSuchSnippetException("Failed to find a snippet with id: %s".formatted(gistId));
+        log.info("Found snippet index: {}", snippetIndex);
+        String hash = hash(updateRequest.content());
+        boolean updated = updateGist(gistId, hash ,snippetIndex, updateRequest);
+
+
+        if (!snippetIndex.getTags().equals(updateRequest.tags()))
+            snippetIndex.setTags(updateRequest.tags());
+
+        if (updated) {
+            snippetIndex.setContent(compressToBase64(updateRequest.content()));
+            snippetIndex.setContentHash(hash);
+            if (!updateRequest.description().isBlank())
+                snippetIndex.setDescription(updateRequest.description());
+
+            if (snippetIndex.isJavaSnippet())
+                snippetParsingService.parseSnippetContent(snippetIndex, updateRequest.content());
+        }
+
+
+
+        indexFileService.writeToIndex();
+        log.info("Updated snippet index: {}", snippetIndex);
+        return snippetMapper.toSnippetResponse(snippetIndex);
+    }
+
+    boolean updateGist(String gistId, String newHash ,SnippetIndex snippetIndex, SnippetUpdateRequest updateRequest) {
+        boolean shouldUpdateDescription = !updateRequest.description().equals(snippetIndex.getDescription()) && !updateRequest.description().isBlank();
+        if (!newHash.equals(snippetIndex.getContentHash()) || shouldUpdateDescription){
+            GistUpdateRequest gistUpdateRequest = gistMapper.fromSnippetUpdateRequest(snippetIndex.getFileName(), updateRequest);
+            gistService.updateGist(gistId, gistUpdateRequest);
+            return true;
+        }
+
+        return false;
+    }
+
+
+    public SnippetContentResponse findById(String gistId) {
+        SnippetIndex snippetIndex = cache.get(gistId);
+        if (snippetIndex == null) throw new NoSuchSnippetException("Failed to find a snippet with id: %s".formatted(gistId));
+        SnippetResponse snippetResponse = snippetMapper.toSnippetResponse(snippetIndex);
+        return new SnippetContentResponse(snippetResponse, CompressionUtils.decompressFromBase64(snippetIndex.getContent()));
+    }
+
+    public List<SnippetResponse> getSnippets(String order) {
+        var stream = cache.values().stream().map(snippetMapper::toSnippetResponse);
+        return switch (order) {
+            case "created_at" -> stream.sorted(Comparator.comparing(SnippetResponse::createdAt).reversed()).toList();
+            case "updated_at" -> stream.sorted(Comparator.comparing(SnippetResponse::updatedAt).reversed()).toList();
+            case "name" -> stream.sorted(Comparator.comparing(SnippetResponse::name)).toList();
+            default -> stream.toList();
+        };
+    }
+
+    public List<SnippetResponse> refreshGists() {
+        var results = gistService.getAllGists();
+        Set<SnippetIndex> set = ConcurrentHashMap.newKeySet();
+        try (var taskScope = StructuredTaskScope.open()) {
+            for (int i = 0; i < results.size(); i++) {
+                int j = i;
+                taskScope.fork(() -> {
+                   boolean isNew = false;
+                   GistMultiFetchRequest request = results.get(j);
+                   GistFetchResponse response = gistService.getGist(request.id());
+                   SnippetIndex index = cache.get(request.id());
+                   if (index == null) {
+                       index = snippetMapper.fromMultiFetchRequest(request, response.content());
+                       isNew = true;
+                   }
+
+                   snippetParsingService.parseSnippetContent(index, response.content());
+
+                   if (isNew) set.add(index);
+                });
+            }
+
+            taskScope.join();
+        } catch (InterruptedException e) {
+            throw new IndexPersistenceException("Failed to save some gists to index. Please try again", e);
+        }
+
+        cache.addAll(set);
+        indexFileService.writeToIndex();
+        return cache.values().stream()
+                .map(snippetMapper::toSnippetResponse)
+                .toList();
+    }
+}

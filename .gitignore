@@ -32,4 +32,4 @@ build/
 ### VS Code ###
 .vscode/
 smartcommit-config.json
-img.png
+src/main/resources/application.yml

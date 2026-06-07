@@ -1,0 +1,30 @@
+spring:
+  application:
+    name: ASTronaut
+
+  threads:
+    virtual:
+      enabled: true
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+  api-docs:
+    path: /v3/api-docs
+
+index:
+  file-path: some-path
+
+github:
+  token: some-token
+
+
+server:
+  port: 9093
+
+frontend:
+  url: http://localhost:5173/
+
+fuzzy-strength: 2 # Lower is better
+
+
