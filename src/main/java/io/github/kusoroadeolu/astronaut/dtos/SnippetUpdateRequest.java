@@ -17,10 +17,7 @@ public record SnippetUpdateRequest(
         Set<String> tags,
 
         @NotBlank(message = "Snippet content cannot be blank")
-        String content,
-
-        @NotBlank(message = "Previous snippet content cannot be blank")
-        String previousContent
+        String content
 ) {
 
     public SnippetUpdateRequest{
